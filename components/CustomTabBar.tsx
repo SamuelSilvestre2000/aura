@@ -1,11 +1,11 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, FONTS } from '../constants/colors';
+import { COLORS } from '../constants/colors';
 
-export const TAB_BAR_CONTENT_HEIGHT = 54;
+export const TAB_BAR_CONTENT_HEIGHT = 52;
 
 export const TAB_ORDER = ['index', 'clients', 'collections', 'settings'] as const;
 type TabName = (typeof TAB_ORDER)[number];
@@ -24,101 +24,89 @@ export const TAB_META: Record<TabName, TabMeta> = {
 };
 
 export function renderTabIcon(routeName: TabName, focused: boolean) {
-  const { label, icon, iconActive } = TAB_META[routeName];
+  const { icon, iconActive } = TAB_META[routeName];
   return (
-    <View style={tabStyles.item}>
-      <Ionicons
-        name={focused ? iconActive : icon}
-        size={24}
-        color={focused ? COLORS.primary : COLORS.tabInactive}
-      />
-      <Text style={[tabStyles.label, focused && tabStyles.labelActive]}>{label}</Text>
-    </View>
+    <Ionicons
+      name={focused ? iconActive : icon}
+      size={22}
+      color={focused ? COLORS.textPrimary : COLORS.textMuted}
+    />
   );
 }
 
 export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const bottomPad = Math.max(insets.bottom, 8);
+  const bottomPad = Math.max(insets.bottom, 6);
 
   const orderedRoutes = TAB_ORDER
     .map((name) => state.routes.find((r) => r.name === name))
     .filter((r): r is (typeof state.routes)[number] => r != null);
 
   return (
-    <View style={[styles.bar, { paddingBottom: bottomPad, height: TAB_BAR_CONTENT_HEIGHT + bottomPad }]}>
-      {orderedRoutes.map((route) => {
-        const { options } = descriptors[route.key];
-        const routeIndex = state.routes.findIndex((r) => r.key === route.key);
-        const isFocused = state.index === routeIndex;
+    <View style={[styles.wrapper, { paddingBottom: bottomPad }]}>
+      <View style={[styles.bar, { height: TAB_BAR_CONTENT_HEIGHT }]}>
+        {orderedRoutes.map((route) => {
+          const { options } = descriptors[route.key];
+          const routeIndex = state.routes.findIndex((r) => r.key === route.key);
+          const isFocused = state.index === routeIndex;
 
-        const onPress = () => {
-          const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-          if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
-        };
+          const onPress = () => {
+            const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
+            if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
+          };
 
-        const onLongPress = () =>
-          navigation.emit({ type: 'tabLongPress', target: route.key });
+          const onLongPress = () =>
+            navigation.emit({ type: 'tabLongPress', target: route.key });
 
-        return (
-          <Pressable
-            key={route.key}
-            accessibilityRole="button"
-            accessibilityState={isFocused ? { selected: true } : {}}
-            accessibilityLabel={options.tabBarAccessibilityLabel}
-            onPress={onPress}
-            onLongPress={onLongPress}
-            style={styles.tabButton}
-          >
-            {options.tabBarIcon?.({
-              focused: isFocused,
-              color: isFocused ? COLORS.primary : COLORS.tabInactive,
-              size: 24,
-            })}
-          </Pressable>
-        );
-      })}
+          return (
+            <Pressable
+              key={route.key}
+              accessibilityRole="button"
+              accessibilityState={isFocused ? { selected: true } : {}}
+              accessibilityLabel={options.tabBarAccessibilityLabel}
+              onPress={onPress}
+              onLongPress={onLongPress}
+              style={[styles.tabPill, isFocused && styles.tabPillActive]}
+            >
+              {options.tabBarIcon?.({
+                focused: isFocused,
+                color: isFocused ? COLORS.textPrimary : COLORS.textMuted,
+                size: 22,
+              })}
+            </Pressable>
+          );
+        })}
+      </View>
     </View>
   );
 }
 
-const tabStyles = StyleSheet.create({
-  item: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 3,
-  },
-  label: {
-    fontSize: FONTS.sizes.xs,
-    color: COLORS.tabInactive,
-    fontWeight: '400',
-  },
-  labelActive: {
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
-});
-
 const styles = StyleSheet.create({
-  bar: {
+  wrapper: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    flexDirection: 'row',
+    paddingHorizontal: 12,
     paddingTop: 6,
-    backgroundColor: COLORS.tabBackground,
+    backgroundColor: COLORS.backgroundSubtle,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: COLORS.surfaceBorder,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
   },
-  tabButton: {
+  bar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORS.backgroundSubtle,
+  },
+  tabPill: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    height: 44,
+    borderRadius: 999,
+  },
+  tabPillActive: {
+    backgroundColor: '#E9E9E7',
   },
 });

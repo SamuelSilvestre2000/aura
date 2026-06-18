@@ -7,6 +7,8 @@ import {
 } from './categories';
 import { deleteUserPhoto, persistUserPhoto } from './userPhotos';
 import { getDatabase, generateId } from './database';
+import { ensureUserOrganization } from './organizations';
+import { createRepresentativeScope } from './scopes';
 
 const ROW_TO_USER = (row: any): Omit<User, 'categories'> => ({
   id: row.id,
@@ -89,6 +91,11 @@ export async function createRepresentative(data: CreateRepresentativeData): Prom
       [id, name, 'representative', pin, email, photoUri, now]
     );
     await setUserCategories(id, data.categoryIds);
+    await ensureUserOrganization(id, 'representative');
+    await createRepresentativeScope({
+      userId: id,
+      accessMode: 'all_in_org',
+    });
   } catch (error) {
     if (photoUri) await deleteUserPhoto(photoUri);
     throw error;

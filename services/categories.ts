@@ -1,16 +1,22 @@
 import { Category } from '../types';
+import { DEFAULT_ORG_ID } from '../constants/organizations';
 import { getDatabase } from './database';
 
 const ROW_TO_CATEGORY = (row: any): Category => ({
   id: row.id,
   name: row.name,
   slug: row.slug,
+  organizationId: row.organization_id ?? undefined,
+  dimensionId: row.dimension_id ?? undefined,
 });
 
-export async function listCategories(): Promise<Category[]> {
+export async function listCategories(organizationId: string = DEFAULT_ORG_ID): Promise<Category[]> {
   const db = await getDatabase();
   const rows = await db.getAllAsync<any>(
-    'SELECT * FROM categories ORDER BY name ASC'
+    `SELECT * FROM categories
+     WHERE organization_id = ? OR organization_id IS NULL
+     ORDER BY name ASC`,
+    [organizationId]
   );
   return rows.map(ROW_TO_CATEGORY);
 }

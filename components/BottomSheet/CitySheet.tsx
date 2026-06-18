@@ -1,8 +1,10 @@
 import React, { useCallback, useMemo } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
+import { Ionicons } from '@expo/vector-icons';
 import { CityGeoData, Client, CityStatus, Collection } from '../../types';
 import { STATUS_COLORS, COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { NotionHeader } from '../NotionHeader';
 import { ClientCard } from './ClientCard';
 
 type Props = {
@@ -40,51 +42,82 @@ export function CitySheet({
   const snapPoints = useMemo(() => ['40%', '70%', '92%'], []);
   const statusColor = STATUS_COLORS[cityStatus];
 
+  const countLabel =
+    clients.length === 0
+      ? 'Nenhum cliente'
+      : `${clients.length} cliente${clients.length !== 1 ? 's' : ''}`;
+
   const renderHeader = useCallback(() => {
     if (!selectedCity) return null;
     return (
       <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.cityName}>{selectedCity.name}</Text>
-            <Text style={styles.clientCount}>
-              {clients.length === 0
-                ? 'Nenhum cliente cadastrado'
-                : `${clients.length} cliente${clients.length !== 1 ? 's' : ''}`}
+        <NotionHeader
+          title={selectedCity.name}
+          showBorder
+          rightAction={
+            canManageClients ? (
+              <TouchableOpacity
+                onPress={onAddClient}
+                style={styles.newButton}
+                activeOpacity={0.7}
+                hitSlop={8}
+              >
+                <Text style={styles.newButtonText}>Adicionar</Text>
+              </TouchableOpacity>
+            ) : undefined
+          }
+        />
+
+        <View style={styles.metaRow}>
+          <View style={[styles.statusPill, { borderColor: `${statusColor}55` }]}>
+            <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+            <Text style={[styles.statusText, { color: statusColor }]}>
+              {STATUS_LABELS[cityStatus]}
             </Text>
           </View>
-          <View style={styles.headerRight}>
-            <View style={[styles.statusPill, { backgroundColor: `${statusColor}18`, borderColor: `${statusColor}44` }]}>
-              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
-              <Text style={[styles.statusText, { color: statusColor }]}>{STATUS_LABELS[cityStatus]}</Text>
+          {activeCollection && (
+            <View style={styles.collectionPill}>
+              <Ionicons name="albums-outline" size={13} color={COLORS.textMuted} />
+              <Text style={styles.collectionPillText} numberOfLines={1}>
+                {activeCollection.name}
+              </Text>
             </View>
-            {canManageClients && (
-              <TouchableOpacity onPress={onAddClient} style={styles.addBtn} activeOpacity={0.8}>
-                <Text style={styles.addBtnText}>+ Novo</Text>
-              </TouchableOpacity>
-            )}
-          </View>
+          )}
         </View>
-        {activeCollection && (
-          <View style={styles.collectionBadge}>
-            <Text style={styles.collectionBadgeText}>{activeCollection.name}</Text>
-          </View>
+
+        {clients.length > 0 && (
+          <Text style={styles.sectionLabel}>{countLabel}</Text>
         )}
       </View>
     );
-  }, [selectedCity, cityStatus, statusColor, clients.length, canManageClients, onAddClient, activeCollection]);
+  }, [
+    selectedCity,
+    cityStatus,
+    statusColor,
+    countLabel,
+    canManageClients,
+    onAddClient,
+    activeCollection,
+    clients.length,
+  ]);
 
   const renderEmpty = useCallback(() => {
     if (clients.length > 0) return null;
     return (
       <View style={styles.empty}>
+        <View style={styles.emptyIconWrap}>
+          <Ionicons name="storefront-outline" size={32} color={COLORS.textMuted} />
+        </View>
         <Text style={styles.emptyTitle}>Nenhum cliente em {selectedCity?.name}</Text>
         <Text style={styles.emptySubtitle}>
-          {canManageClients ? 'Adicione o primeiro cliente desta cidade.' : 'Nenhum cliente cadastrado aqui.'}
+          {canManageClients
+            ? 'Cadastre o primeiro cliente desta cidade para acompanhar no mapa.'
+            : 'Nenhum cliente cadastrado nesta cidade.'}
         </Text>
         {canManageClients && (
-          <TouchableOpacity style={styles.emptyBtn} onPress={onAddClient} activeOpacity={0.8}>
-            <Text style={styles.emptyBtnText}>+ Adicionar cliente</Text>
+          <TouchableOpacity style={styles.addRow} onPress={onAddClient} activeOpacity={0.7}>
+            <Ionicons name="add" size={18} color={COLORS.textMuted} />
+            <Text style={styles.addRowText}>Novo cliente</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -92,15 +125,17 @@ export function CitySheet({
   }, [clients.length, selectedCity?.name, canManageClients, onAddClient]);
 
   const renderItem = useCallback(
-    ({ item }: { item: Client }) => (
+    ({ item, index }: { item: Client; index: number }) => (
       <ClientCard
         client={item}
+        index={index}
+        isLast={index === clients.length - 1}
         collectionId={activeCollection?.id ?? null}
         purchased={activeCollection ? getPurchaseStatus(item.id, activeCollection.id) : false}
         onToggle={() => onTogglePurchase(item.id)}
       />
     ),
-    [activeCollection, getPurchaseStatus, onTogglePurchase]
+    [activeCollection, clients.length, getPurchaseStatus, onTogglePurchase]
   );
 
   return (
@@ -130,12 +165,10 @@ export function CitySheet({
 const styles = StyleSheet.create({
   sheet: { zIndex: 50, elevation: 50 },
   sheetBg: {
-    backgroundColor: COLORS.surface,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    backgroundColor: COLORS.backgroundSubtle,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    borderRightWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
   },
   handle: {
@@ -145,30 +178,27 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   header: {
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.md,
-    paddingBottom: SPACING.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.surfaceBorder,
+    marginHorizontal: -SPACING.lg,
+    paddingBottom: SPACING.sm,
     gap: SPACING.sm,
+    backgroundColor: COLORS.backgroundSubtle,
   },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: SPACING.md,
+  newButton: {
+    paddingVertical: 6,
+    paddingHorizontal: SPACING.xs,
+    backgroundColor: 'transparent',
   },
-  headerLeft: { flex: 1, gap: 2 },
-  headerRight: { alignItems: 'flex-end', gap: SPACING.sm },
-  cityName: {
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.xl,
-    fontWeight: '700',
-    letterSpacing: -0.3,
-  },
-  clientCount: {
-    color: COLORS.textSecondary,
+  newButtonText: {
+    color: COLORS.primary,
+    fontWeight: '600',
     fontSize: FONTS.sizes.sm,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
   },
   statusPill: {
     flexDirection: 'row',
@@ -177,37 +207,59 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.sm,
     paddingVertical: 4,
     borderRadius: RADIUS.full,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
+    backgroundColor: COLORS.surface,
   },
   statusDot: { width: 6, height: 6, borderRadius: 3 },
   statusText: { fontSize: FONTS.sizes.xs, fontWeight: '600' },
-  addBtn: {
-    backgroundColor: COLORS.primary,
-    borderRadius: RADIUS.full,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 6,
-  },
-  addBtnText: { color: '#fff', fontWeight: '600', fontSize: FONTS.sizes.sm },
-  collectionBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: COLORS.backgroundSubtle,
-    borderRadius: RADIUS.full,
+  collectionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     paddingHorizontal: SPACING.sm,
-    paddingVertical: 3,
-    borderWidth: 1,
+    paddingVertical: 4,
+    borderRadius: RADIUS.full,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
+    backgroundColor: COLORS.surface,
+    maxWidth: 160,
   },
-  collectionBadgeText: {
+  collectionPillText: {
     color: COLORS.textSecondary,
     fontSize: FONTS.sizes.xs,
     fontWeight: '500',
+    flexShrink: 1,
   },
-  listContent: { flexGrow: 1, paddingBottom: 48 },
+  sectionLabel: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.xs,
+    fontWeight: '600',
+    letterSpacing: 0.6,
+    paddingHorizontal: SPACING.lg,
+    marginTop: SPACING.xs,
+  },
+  listContent: {
+    flexGrow: 1,
+    paddingBottom: 48,
+    paddingHorizontal: SPACING.lg,
+    backgroundColor: COLORS.backgroundSubtle,
+  },
   empty: {
     alignItems: 'center',
-    paddingHorizontal: SPACING.xxl,
+    paddingHorizontal: SPACING.xl,
     paddingVertical: SPACING.xxl,
     gap: SPACING.sm,
+  },
+  emptyIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: COLORS.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
   },
   emptyTitle: {
     color: COLORS.textPrimary,
@@ -221,12 +273,16 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
-  emptyBtn: {
-    marginTop: SPACING.md,
-    backgroundColor: COLORS.primary,
-    borderRadius: RADIUS.full,
-    paddingHorizontal: SPACING.xl,
+  addRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    marginTop: SPACING.lg,
     paddingVertical: SPACING.md,
   },
-  emptyBtnText: { color: '#fff', fontWeight: '600', fontSize: FONTS.sizes.md },
+  addRowText: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '500',
+  },
 });

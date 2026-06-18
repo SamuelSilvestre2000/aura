@@ -17,6 +17,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useClients } from '../../hooks/useClients';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useAuth } from '../../hooks/useAuth';
+import { listCategories } from '../../services/categories';
+import { CategoryMultiSelect } from '../../components/CategoryMultiSelect';
+import { Category } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 
 export default function EditClientScreen() {
@@ -39,19 +42,26 @@ export default function EditClientScreen() {
   const [citySearch, setCitySearch] = useState('');
   const [selectedCity, setSelectedCity] = useState<{ code: string; name: string; lat: number; lng: number } | null>(null);
   const [showCityDropdown, setShowCityDropdown] = useState(false);
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    listCategories().then(setCategories);
+  }, []);
 
   useEffect(() => {
     if (client) {
       setName(client.name);
       setPhone(client.phone || '');
       setNotes(client.notes || '');
+      setCategoryIds(client.categoryIds ?? []);
       setCitySearch(client.city);
       setSelectedCity({
         code: client.cityCode,
         name: client.city,
-        lat: client.lat,
-        lng: client.lng,
+        lat: client.lat ?? 0,
+        lng: client.lng ?? 0,
       });
     }
   }, [client]);
@@ -79,7 +89,11 @@ export default function EditClientScreen() {
       return;
     }
     if (!selectedCity) {
-      Alert.alert('Atenção', 'Selecione uma cidade da lista.');
+      Alert.alert('Atenção', 'Selecione a cidade do cliente para exibir no mapa.');
+      return;
+    }
+    if (categoryIds.length === 0) {
+      Alert.alert('Atenção', 'Selecione ao menos uma categoria.');
       return;
     }
 
@@ -95,6 +109,7 @@ export default function EditClientScreen() {
         lng: selectedCity.lng,
         phone: phone.trim() || undefined,
         notes: notes.trim() || undefined,
+        categoryIds,
       });
       router.back();
     } catch (err) {
@@ -123,7 +138,7 @@ export default function EditClientScreen() {
     );
   }
 
-  const isValid = name.trim().length > 0 && !!selectedCity;
+  const isValid = name.trim().length > 0 && !!selectedCity && categoryIds.length > 0;
 
   return (
     <View style={styles.container}>
@@ -167,7 +182,8 @@ export default function EditClientScreen() {
 
           {/* Cidade */}
           <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Cidade *</Text>
+            <Text style={styles.label}>Cidade no Piauí *</Text>
+            <Text style={styles.fieldHint}>Necessário para exibir o cliente no mapa.</Text>
             <View>
               <TextInput
                 style={[styles.input, selectedCity && styles.inputSelected]}
@@ -203,6 +219,15 @@ export default function EditClientScreen() {
                 </View>
               )}
             </View>
+          </View>
+
+          <View style={styles.fieldGroup}>
+            <Text style={styles.label}>Categoria *</Text>
+            <CategoryMultiSelect
+              categories={categories}
+              selectedIds={categoryIds}
+              onChange={setCategoryIds}
+            />
           </View>
 
           {/* Telefone */}
@@ -302,6 +327,11 @@ const styles = StyleSheet.create({
     paddingBottom: 60,
   },
   fieldGroup: { gap: SPACING.sm },
+  fieldHint: {
+    color: COLORS.textPlaceholder,
+    fontSize: FONTS.sizes.xs,
+    marginBottom: 2,
+  },
   label: {
     color: COLORS.textSecondary,
     fontSize: FONTS.sizes.sm,

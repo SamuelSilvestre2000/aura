@@ -1,0 +1,6065 @@
+{
+  "clients": [
+    {
+      "id": "cli_imp_1001584",
+      "externalCode": "1001584",
+      "name": "AFONSO CON",
+      "tradeName": "AFONSO CON",
+      "legalName": "AFONSO PACHECO DE BRITO ME",
+      "street": "R. ALMIRANTE GERVASIO SAMPAIO, 875",
+      "neighborhood": "CENTRO",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64200-250",
+      "phone": "(86) 3321-1752",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1001586",
+      "externalCode": "1001586",
+      "name": "A NORTISTA",
+      "tradeName": "A NORTISTA",
+      "legalName": "A H PEREIRA DE SA",
+      "street": "R. RIACHUELO, 170",
+      "neighborhood": "CENTRO",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64001-050",
+      "phone": "(86) 3122-6500",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1001675",
+      "externalCode": "1001675",
+      "name": "2001 NOVID",
+      "tradeName": "2001 NOVID",
+      "legalName": "ANGELITA DE ARAUJO MOURA LUZ",
+      "street": "R. ISAIAS COELHO, 578",
+      "neighborhood": "CENTRO",
+      "city": "Simplício Mendes",
+      "cityCode": "2210805",
+      "state": "PI",
+      "zipCode": "64700-000",
+      "phone": "(89) 3482-1119",
+      "clientGroup": "Varejista",
+      "lat": -7.803822398559174,
+      "lng": -42.003485945097225,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1001977",
+      "externalCode": "1001977",
+      "name": "BELLY  MOD",
+      "tradeName": "BELLY  MOD",
+      "legalName": "T M  DE JESUS OLIVEIRA MOURA  ME",
+      "street": "R.  13  DE MAIO, 284",
+      "neighborhood": "CENTRO",
+      "city": "Alto Longá",
+      "cityCode": "2200301",
+      "state": "PI",
+      "zipCode": "64360-000",
+      "phone": "(86) 3256-1141",
+      "clientGroup": "Varejista",
+      "lat": -5.374086375312447,
+      "lng": -42.15068788713892,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1002146",
+      "externalCode": "1002146",
+      "name": "DEDE BOUTI",
+      "tradeName": "DEDE BOUTI",
+      "legalName": "MARIA DO AMPARO DE MOURA FRAZAO4438",
+      "street": "R. DEPUTADO JOSE NUNES, 1057",
+      "neighborhood": "CENTRO",
+      "city": "Valença do Piauí",
+      "cityCode": "2211308",
+      "state": "PI",
+      "zipCode": "64300-000",
+      "phone": "(89) 3465-1584",
+      "clientGroup": "Varejista",
+      "lat": -6.383984578918064,
+      "lng": -41.808626623067084,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1002412",
+      "externalCode": "1002412",
+      "name": "PATRICIA",
+      "tradeName": "PATRICIA",
+      "legalName": "A M DE ALENCAR - ME",
+      "street": "R. ISRAEL ANTAO DE CARVALHO, 166",
+      "neighborhood": "CENTRO",
+      "city": "Francisco Macedo",
+      "cityCode": "2204154",
+      "state": "PI",
+      "zipCode": "64683-000",
+      "phone": "(89) 3435-0019",
+      "clientGroup": "Varejista",
+      "lat": -7.322377973632233,
+      "lng": -40.779328736594714,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1002528",
+      "externalCode": "1002528",
+      "name": "FIK SHIK",
+      "tradeName": "FIK SHIK",
+      "legalName": "FRANCISCA DE SOUSA ARAUJO",
+      "street": "AV. CENTRAL, 430",
+      "neighborhood": "CENTRO",
+      "city": "São Julião",
+      "cityCode": "2210300",
+      "state": "PI",
+      "zipCode": "64670-000",
+      "phone": "(89) 3438-9105",
+      "clientGroup": "Varejista",
+      "lat": -7.088409237511756,
+      "lng": -40.829221031366565,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1002819",
+      "externalCode": "1002819",
+      "name": "F.  MODAS",
+      "tradeName": "F.  MODAS",
+      "legalName": "F DE SOUSA PIMENTEL",
+      "street": "R. LANDRE SALES, 437",
+      "neighborhood": "CENTRO",
+      "city": "Pimenteiras",
+      "cityCode": "2208106",
+      "state": "PI",
+      "zipCode": "64320-000",
+      "phone": null,
+      "clientGroup": "Varejista",
+      "lat": -6.353758781374434,
+      "lng": -41.15624116751659,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1002952",
+      "externalCode": "1002952",
+      "name": "LOJAO PERN",
+      "tradeName": "LOJAO PERN",
+      "legalName": "LIMA FEITOZA & COSTA LTDA - ME",
+      "street": "AV. NECO TEIXEIRA, 570",
+      "neighborhood": "CENTRO",
+      "city": "Água Branca",
+      "cityCode": "2200202",
+      "state": "PI",
+      "zipCode": "64460-000",
+      "phone": "(86) 3282-2397",
+      "clientGroup": "Varejista",
+      "lat": -5.9148727053540275,
+      "lng": -42.62197779276048,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1003901",
+      "externalCode": "1003901",
+      "name": "PINTOS CD",
+      "tradeName": "PINTOS CD",
+      "legalName": "PINTOS",
+      "street": "AV PROFESSOR VALTER ALENCAR, 1674",
+      "neighborhood": "MONTE CASTELO",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64019-625",
+      "phone": "(86)3194-7500",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1003927",
+      "externalCode": "1003927",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "AV. RIO BRANCO",
+      "neighborhood": "CENTRO",
+      "city": "Pedreiras",
+      "cityCode": "2108207",
+      "state": "MA",
+      "zipCode": "65725-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Varejista",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1003930",
+      "externalCode": "1003930",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "R. DO COMERCIO, 359",
+      "neighborhood": "CENTRO",
+      "city": "Santa Inês",
+      "cityCode": "2109908",
+      "state": "MA",
+      "zipCode": "65300-046",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Varejista",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1003933",
+      "externalCode": "1003933",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "PC SILVA NETO, 52",
+      "neighborhood": "CENTRO",
+      "city": "Bacabal",
+      "cityCode": "2101202",
+      "state": "MA",
+      "zipCode": "65700-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Varejista",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1003936",
+      "externalCode": "1003936",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "R. AFONSO PENA, 516",
+      "neighborhood": "CENTRO",
+      "city": "Codó",
+      "cityCode": "2103307",
+      "state": "MA",
+      "zipCode": "65400-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Varejista",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1003939",
+      "externalCode": "1003939",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "R. AFONSO CUNHA, 531",
+      "neighborhood": "CENTRO",
+      "city": "Caxias",
+      "cityCode": "2103000",
+      "state": "MA",
+      "zipCode": "65604-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Varejista",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1003947",
+      "externalCode": "1003947",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A-LOJAS DE DEPARTAMENTOS",
+      "street": "R SIMPLICIO MOREIRA, 1590",
+      "neighborhood": "CENTRO",
+      "city": "Imperatriz",
+      "cityCode": "2105302",
+      "state": "MA",
+      "zipCode": "65901-490",
+      "phone": "(86) 3194-7784",
+      "clientGroup": "Varejista",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1003950",
+      "externalCode": "1003950",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "R. GETULIO VARGAS, 661",
+      "neighborhood": "CENTRO",
+      "city": "Pinheiro",
+      "cityCode": "2108603",
+      "state": "MA",
+      "zipCode": "65200-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Varejista",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1003953",
+      "externalCode": "1003953",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "AV PRESIDENTE G VARGAS, 119",
+      "neighborhood": "CENTRO",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64200-200",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1003956",
+      "externalCode": "1003956",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "PC. CORONEL BORGES, 111",
+      "neighborhood": "CENTRO",
+      "city": "Floriano",
+      "cityCode": "2203909",
+      "state": "PI",
+      "zipCode": "64800-001",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Varejista",
+      "lat": -7.020284924122783,
+      "lng": -43.07736005741338,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1003959",
+      "externalCode": "1003959",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "HERMINIO CONDE, SN",
+      "neighborhood": "TABULETA",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64019-700",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1003967",
+      "externalCode": "1003967",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S.A.LOJAS DE DEPARTAMENTOS",
+      "street": "R. CLERISTON ANDRADE, 1115",
+      "neighborhood": "CENTRO",
+      "city": "Barreiras",
+      "cityCode": "2903201",
+      "state": "BA",
+      "zipCode": "47801-250",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Varejista",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1004623",
+      "externalCode": "1004623",
+      "name": "LUZIA DE O",
+      "tradeName": "LUZIA DE O",
+      "legalName": "LUZIA DE OLIVERA AMORIM",
+      "street": "R. HERMINIO C.BRANCO, 572",
+      "neighborhood": "CENTRO",
+      "city": "Esperantina",
+      "cityCode": "2203701",
+      "state": "PI",
+      "zipCode": "64180-000",
+      "phone": "(86) 3383-1464",
+      "clientGroup": "Varejista",
+      "lat": -3.810029788966928,
+      "lng": -42.19333424976415,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1004908",
+      "externalCode": "1004908",
+      "name": "CONFECCOES",
+      "tradeName": "CONFECCOES",
+      "legalName": "VALDILENE DE ARAUJO SOUSA CONFECCOE",
+      "street": "Rua 7 de dezembro, 209",
+      "neighborhood": "CENTRO",
+      "city": "Ipiranga do Piauí",
+      "cityCode": "2204808",
+      "state": "PI",
+      "zipCode": "64540-000",
+      "phone": "(89) 3422-5701",
+      "clientGroup": "Varejista",
+      "lat": -6.8148499528906505,
+      "lng": -41.78445767732143,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1005093",
+      "externalCode": "1005093",
+      "name": "IDALINA CO",
+      "tradeName": "IDALINA CO",
+      "legalName": "MARIA IDALINA MARQUES SANTOS",
+      "street": "PC JOSINO FERREIRA, 239",
+      "neighborhood": "CENTRO",
+      "city": "Picos",
+      "cityCode": "2208007",
+      "state": "PI",
+      "zipCode": "64600-096",
+      "phone": "(89)3422-6835",
+      "clientGroup": "Varejista",
+      "lat": -7.071764588142733,
+      "lng": -41.513246533244654,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1005354",
+      "externalCode": "1005354",
+      "name": "M & M VARI",
+      "tradeName": "M & M VARI",
+      "legalName": "MARIA AURIZETE DA SILVA PAIVA SOUSA",
+      "street": "AV. ENGENHEIRO RIBEIRO GONCALVES",
+      "neighborhood": "SERRANOPOLIS",
+      "city": "Jaicós",
+      "cityCode": "2205201",
+      "state": "PI",
+      "zipCode": "64575-000",
+      "phone": "(89) 3457-1091",
+      "clientGroup": "Varejista",
+      "lat": -7.39325483947434,
+      "lng": -41.18982273469254,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1005561",
+      "externalCode": "1005561",
+      "name": "STILUS VAR",
+      "tradeName": "STILUS VAR",
+      "legalName": "MARIA AUZAIR SOUSA BRITO",
+      "street": "AV. RAIMUNDO ALVES PEREIRA, 0",
+      "neighborhood": "CENTRO",
+      "city": "Cocal",
+      "cityCode": "2202703",
+      "state": "PI",
+      "zipCode": "64235-000",
+      "phone": "(86) 3362-1464",
+      "clientGroup": "Varejista",
+      "lat": -3.43183512400888,
+      "lng": -41.532742951974285,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1005577",
+      "externalCode": "1005577",
+      "name": "CACHINHOS",
+      "tradeName": "CACHINHOS",
+      "legalName": "G NUNES  DE ALMEIDA",
+      "street": "AVENIDA DAVID MASCARENHAS, 193",
+      "neighborhood": "CENTRO",
+      "city": "Parnaguá",
+      "cityCode": "2207603",
+      "state": "PI",
+      "zipCode": "64970-000",
+      "phone": "(89)3572-1146",
+      "clientGroup": "Varejista",
+      "lat": -10.30615085647778,
+      "lng": -44.573858174710644,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1005785",
+      "externalCode": "1005785",
+      "name": "J G RIBEIR",
+      "tradeName": "J G RIBEIR",
+      "legalName": "J G RIBEIRO & SILVA LTDA",
+      "street": "R. JOAO DOS SANTOS, 692",
+      "neighborhood": "CENTRO",
+      "city": "Canto do Buriti",
+      "cityCode": "2202307",
+      "state": "PI",
+      "zipCode": "64890-000",
+      "phone": "(89) 9919-3000",
+      "clientGroup": "Varejista",
+      "lat": -8.332769011552582,
+      "lng": -43.32933546795901,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1007405",
+      "externalCode": "1007405",
+      "name": "SARAIVA E",
+      "tradeName": "SARAIVA E",
+      "legalName": "SARAIVA E VELOSO LTDA",
+      "street": "AVENIDA GETULIO VARGAS, 214",
+      "neighborhood": "CENTRO",
+      "city": "Floriano",
+      "cityCode": "2203909",
+      "state": "PI",
+      "zipCode": "64800-060",
+      "phone": "(89) 3522-1321",
+      "clientGroup": "Varejista",
+      "lat": -7.020284924122783,
+      "lng": -43.07736005741338,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1008948",
+      "externalCode": "1008948",
+      "name": "CIDA MODAS",
+      "tradeName": "CIDA MODAS",
+      "legalName": "DENNER ANTONIO SOARES ARRAIS",
+      "street": "R. SEBASTAO ARRAIS, 59",
+      "neighborhood": "CENTRO",
+      "city": "Pio IX",
+      "cityCode": "2208205",
+      "state": "PI",
+      "zipCode": "64660-000",
+      "phone": "(89) 3453-1477",
+      "clientGroup": "Varejista",
+      "lat": -6.789757794105619,
+      "lng": -40.71826753114044,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1009019",
+      "externalCode": "1009019",
+      "name": "T L MODAS",
+      "tradeName": "T L MODAS",
+      "legalName": "ALDENIR FERREIRA DE OLIVEIRA",
+      "street": "R. LEONIDAS MELO, 265",
+      "neighborhood": "CENTRO",
+      "city": "Barras",
+      "cityCode": "2201200",
+      "state": "PI",
+      "zipCode": "64100-000",
+      "phone": "(86) 3242-1718",
+      "clientGroup": "Varejista",
+      "lat": -4.1848776090470805,
+      "lng": -42.38049815779103,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1009072",
+      "externalCode": "1009072",
+      "name": "R. T. DE S",
+      "tradeName": "R. T. DE S",
+      "legalName": "R. T. DE SA OLIVEIRA MEE",
+      "street": "PCA MAJOR TOINHO, 387",
+      "neighborhood": "CENTRO",
+      "city": "São Raimundo Nonato",
+      "cityCode": "2210607",
+      "state": "PI",
+      "zipCode": "64770-000",
+      "phone": "(89) 3582-1770",
+      "clientGroup": "Varejista",
+      "lat": -8.973099028632348,
+      "lng": -42.732774779817184,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1009344",
+      "externalCode": "1009344",
+      "name": "CONFECCOES",
+      "tradeName": "CONFECCOES",
+      "legalName": "MARIA EVA DE CARVALHO BEZERRA DE SO",
+      "street": "R. ADELMAR ROCHA, 292",
+      "neighborhood": "CENTRO",
+      "city": "Inhuma",
+      "cityCode": "2204709",
+      "state": "PI",
+      "zipCode": "64535-000",
+      "phone": "(89) 9927-1101",
+      "clientGroup": "Varejista",
+      "lat": -6.6667798309163375,
+      "lng": -41.6813209786481,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1010941",
+      "externalCode": "1010941",
+      "name": "COELHO  VA",
+      "tradeName": "COELHO  VA",
+      "legalName": "MC MANOS UNIAO LTDA ME",
+      "street": "R. IPIRANGA, 406",
+      "neighborhood": "CENTRO",
+      "city": "Corrente",
+      "cityCode": "2202901",
+      "state": "PI",
+      "zipCode": "64980-000",
+      "phone": "(89) 3573-1662",
+      "clientGroup": "Varejista",
+      "lat": -10.393012988370373,
+      "lng": -45.13146752405058,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1012976",
+      "externalCode": "1012976",
+      "name": "VAREJAO",
+      "tradeName": "VAREJAO",
+      "legalName": "S R BRASIL & CIA LTDA",
+      "street": "R. PIO XI, 3390",
+      "neighborhood": "SAO PEDRO",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64018-130",
+      "phone": "(86) 3122-6500",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1013770",
+      "externalCode": "1013770",
+      "name": "LUZILANDIA",
+      "tradeName": "LUZILANDIA",
+      "legalName": "LUZILANDIA MONTEIRO MOTA-ME",
+      "street": "R. HILARIO MONTEIRO, 105",
+      "neighborhood": "CENTRO",
+      "city": "Uruçuí",
+      "cityCode": "2211209",
+      "state": "PI",
+      "zipCode": "64860-000",
+      "phone": "(89) 3544-1400",
+      "clientGroup": "Varejista",
+      "lat": -7.789204021057235,
+      "lng": -44.56818467900225,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1014158",
+      "externalCode": "1014158",
+      "name": "ORIGINAL",
+      "tradeName": "ORIGINAL",
+      "legalName": "SORTE EMPREENDIMENTOS LTDA - EPP",
+      "street": "AV. HOMERO CASTELO BRANCO, 1670",
+      "neighborhood": "JOQUEI",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64048-400",
+      "phone": "(86) 3232-3350",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1014179",
+      "externalCode": "1014179",
+      "name": "LOJA ADAO",
+      "tradeName": "LOJA ADAO",
+      "legalName": "E.L.R.BAIAO-ME",
+      "street": "AV. GETULIO VARGAS, 0",
+      "neighborhood": "CENTRO",
+      "city": "Bom Jesus",
+      "cityCode": "2201903",
+      "state": "PI",
+      "zipCode": "64900-000",
+      "phone": "(89) 3562-1120",
+      "clientGroup": "Varejista",
+      "lat": -9.245647088349466,
+      "lng": -44.53692492971783,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1014209",
+      "externalCode": "1014209",
+      "name": "RITA MAGAZ",
+      "tradeName": "RITA MAGAZ",
+      "legalName": "RITA DE CACIA MIRANDA DANTAS SOUSA",
+      "street": "R. NICOLAU BARREIRO, SN",
+      "neighborhood": "CENTRO",
+      "city": "Bom Jesus",
+      "cityCode": "2201903",
+      "state": "PI",
+      "zipCode": "64900-000",
+      "phone": "(89) 3662-1198",
+      "clientGroup": "Varejista",
+      "lat": -9.245647088349466,
+      "lng": -44.53692492971783,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1014447",
+      "externalCode": "1014447",
+      "name": "STILOS. MO",
+      "tradeName": "STILOS. MO",
+      "legalName": "J. EUDSON DA SILVA & CIA LTDA",
+      "street": "AV. JOSE DE DEUS LACERDA, 1172",
+      "neighborhood": "CENTRO",
+      "city": "Miguel Alves",
+      "cityCode": "2206209",
+      "state": "PI",
+      "zipCode": "64130-000",
+      "phone": "(86) 9947-6000",
+      "clientGroup": "Varejista",
+      "lat": -4.23867744518892,
+      "lng": -42.76254979905099,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1014556",
+      "externalCode": "1014556",
+      "name": "LARA VERSA",
+      "tradeName": "LARA VERSA",
+      "legalName": "G S MARTINS DE SOUSA",
+      "street": "R.  JOAO XXIII, 0",
+      "neighborhood": "CENTRO",
+      "city": "Santa Rosa do Piauí",
+      "cityCode": "2209377",
+      "state": "PI",
+      "zipCode": "64518-000",
+      "phone": "(89) 3428-1296",
+      "clientGroup": "Varejista",
+      "lat": -6.801581200587315,
+      "lng": -42.24652754531388,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1015148",
+      "externalCode": "1015148",
+      "name": "REALCE BAB",
+      "tradeName": "REALCE BAB",
+      "legalName": "RAIMUNDO NONATO DA COSTA",
+      "street": "R. 13 DE MAIO, 163",
+      "neighborhood": "CENTRO",
+      "city": "Elesbão Veloso",
+      "cityCode": "2203503",
+      "state": "PI",
+      "zipCode": "64325-000",
+      "phone": "(86) 3285-1286",
+      "clientGroup": "Varejista",
+      "lat": -6.178997579100571,
+      "lng": -42.1962802156842,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1015152",
+      "externalCode": "1015152",
+      "name": "TRES ESTRE",
+      "tradeName": "TRES ESTRE",
+      "legalName": "M I GOMES COMERCIO E DISTRIBUICAO",
+      "street": "R. LEONIDAS MELO, 692",
+      "neighborhood": "CENTRO",
+      "city": "Barras",
+      "cityCode": "2201200",
+      "state": "PI",
+      "zipCode": "64100-000",
+      "phone": "(86) 3242-1440",
+      "clientGroup": "Varejista",
+      "lat": -4.1848776090470805,
+      "lng": -42.38049815779103,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1015155",
+      "externalCode": "1015155",
+      "name": "CASA SANTO",
+      "tradeName": "CASA SANTO",
+      "legalName": "MARIA DO SOCORRO SILVA SANTOS",
+      "street": "R. ALVARO MENDES, 0",
+      "neighborhood": "CENTRO",
+      "city": "Redenção do Gurguéia",
+      "cityCode": "2208700",
+      "state": "PI",
+      "zipCode": "64915-000",
+      "phone": "(89) 3566-1139",
+      "clientGroup": "Varejista",
+      "lat": -9.521651776457233,
+      "lng": -44.46585533612121,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1015171",
+      "externalCode": "1015171",
+      "name": "JOYCE VARI",
+      "tradeName": "JOYCE VARI",
+      "legalName": "JOSEANA BRITO DE CARVALHO",
+      "street": "1.AV. JOAO JUSTINO DE BRITO, 170",
+      "neighborhood": "CENTRO",
+      "city": "Cocal",
+      "cityCode": "2202703",
+      "state": "PI",
+      "zipCode": "64235-000",
+      "phone": "(86) 3362-1691",
+      "clientGroup": "Varejista",
+      "lat": -3.43183512400888,
+      "lng": -41.532742951974285,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1015204",
+      "externalCode": "1015204",
+      "name": "LOJA SAO B",
+      "tradeName": "LOJA SAO B",
+      "legalName": "B F DANTAS",
+      "street": "R.  EPAMINONDAS  NOGUEIRA, 641",
+      "neighborhood": "CENTRO",
+      "city": "Valença do Piauí",
+      "cityCode": "2211308",
+      "state": "PI",
+      "zipCode": "64300-000",
+      "phone": "(89) 3465-1528",
+      "clientGroup": "Varejista",
+      "lat": -6.383984578918064,
+      "lng": -41.808626623067084,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1015205",
+      "externalCode": "1015205",
+      "name": "MIOSOTES M",
+      "tradeName": "MIOSOTES M",
+      "legalName": "EDILSON DE A. FREITAS ME",
+      "street": "R. ALCENOR CANDEIRA, 28",
+      "neighborhood": "CENTRO",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64200-190",
+      "phone": "(86) 3323-9702",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1015207",
+      "externalCode": "1015207",
+      "name": "MARIA AP.G",
+      "tradeName": "MARIA AP.G",
+      "legalName": "MARIA AP.GONCALVES BARROS-ME",
+      "street": "R. ZACARIAS DE GOES VASCONCELOS, 0",
+      "neighborhood": "CENTRO",
+      "city": "Oeiras",
+      "cityCode": "2207009",
+      "state": "PI",
+      "zipCode": "64500-000",
+      "phone": "(89) 3462-1969",
+      "clientGroup": "Varejista",
+      "lat": -6.95072360210872,
+      "lng": -42.169079773463864,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1015210",
+      "externalCode": "1015210",
+      "name": "MARIA VALD",
+      "tradeName": "MARIA VALD",
+      "legalName": "MARIA VALDINEIDE G.SILVA RODRIGUES",
+      "street": "R. IPIRANGA, 161",
+      "neighborhood": "CENTRO",
+      "city": "Corrente",
+      "cityCode": "2202901",
+      "state": "PI",
+      "zipCode": "64980-000",
+      "phone": "(89) 3573-1934",
+      "clientGroup": "Varejista",
+      "lat": -10.393012988370373,
+      "lng": -45.13146752405058,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1016094",
+      "externalCode": "1016094",
+      "name": "MAURO PERE",
+      "tradeName": "MAURO PERE",
+      "legalName": "MAURO PEREIRA MEDIO-ME",
+      "street": "AV. CEL.CORDEIRO, 241",
+      "neighborhood": "CENTRO",
+      "city": "Pedro II",
+      "cityCode": "2207900",
+      "state": "PI",
+      "zipCode": "64255-000",
+      "phone": "(89) 3271-1612",
+      "clientGroup": "Varejista",
+      "lat": -4.468392814127724,
+      "lng": -41.41743972826379,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1016183",
+      "externalCode": "1016183",
+      "name": "MOURA MODA",
+      "tradeName": "MOURA MODA",
+      "legalName": "LUIZ MORAES DE MOURA-ME",
+      "street": "R. CARAMURU, 847",
+      "neighborhood": "S FRANCISCO",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64215-400",
+      "phone": "(86) 3323-1043",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1016185",
+      "externalCode": "1016185",
+      "name": "MAGAZINE J",
+      "tradeName": "MAGAZINE J",
+      "legalName": "JOBSON CESAR SOUSA LIMA & CIA",
+      "street": "RUA MIGUEL OLIVEIRA, 262",
+      "neighborhood": "CENTRO",
+      "city": "Oeiras",
+      "cityCode": "2207009",
+      "state": "PI",
+      "zipCode": "64500-000",
+      "phone": "(89)9 9405-4415",
+      "clientGroup": "Varejista",
+      "lat": -6.95072360210872,
+      "lng": -42.169079773463864,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1016187",
+      "externalCode": "1016187",
+      "name": "JANARA MOD",
+      "tradeName": "JANARA MOD",
+      "legalName": "J M SOUSA CONFECCOES -ME",
+      "street": "CJ BOA ESPERANCA I, 1",
+      "neighborhood": "ITARARE",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64076-410",
+      "phone": "(86) 3235-8116",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1016211",
+      "externalCode": "1016211",
+      "name": "DINAMICA",
+      "tradeName": "DINAMICA",
+      "legalName": "MARIA INES TECLA DE CARVALHO  MEE",
+      "street": "R. FELIPE ALVES, 179",
+      "neighborhood": "CENTRO",
+      "city": "Simões",
+      "cityCode": "2210706",
+      "state": "PI",
+      "zipCode": "64585-000",
+      "phone": "(89) 3456-1198",
+      "clientGroup": "Varejista",
+      "lat": -7.664307207543785,
+      "lng": -40.760998218588306,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1016213",
+      "externalCode": "1016213",
+      "name": "LARTE CONF",
+      "tradeName": "LARTE CONF",
+      "legalName": "LUCIA DE FATIMA MARTINS VALE MEE",
+      "street": "R. DOM PEDRO II, 97",
+      "neighborhood": "CENTRO",
+      "city": "Altos",
+      "cityCode": "2200400",
+      "state": "PI",
+      "zipCode": "64290-000",
+      "phone": "(86) 3262-3503",
+      "clientGroup": "Varejista",
+      "lat": -5.01353263294105,
+      "lng": -42.469496595493595,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1016312",
+      "externalCode": "1016312",
+      "name": "LEYLA PERF",
+      "tradeName": "LEYLA PERF",
+      "legalName": "E C DA SILVA PERFUMARIA",
+      "street": "R. PEDRO LARINO FILHO SN, 0",
+      "neighborhood": "CENTRO",
+      "city": "Gilbués",
+      "cityCode": "2204402",
+      "state": "PI",
+      "zipCode": "64930-000",
+      "phone": "(89) 3578-1561",
+      "clientGroup": "Varejista",
+      "lat": -9.633216975491333,
+      "lng": -45.39799577174778,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1016749",
+      "externalCode": "1016749",
+      "name": "TITICA MOD",
+      "tradeName": "TITICA MOD",
+      "legalName": "LETICIA DE CARVALHO BEZERRA-ME",
+      "street": "R. PRIMEIRO DE MAIO, 0",
+      "neighborhood": "CENTRO",
+      "city": "Curral Novo do Piauí",
+      "cityCode": "2203271",
+      "state": "PI",
+      "zipCode": "64595-000",
+      "phone": "(89) 3456-1198",
+      "clientGroup": "Varejista",
+      "lat": -7.906020356074272,
+      "lng": -40.73674023158813,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1017044",
+      "externalCode": "1017044",
+      "name": "INSINUANTE",
+      "tradeName": "INSINUANTE",
+      "legalName": "SARAIVA LIMA & CAJAZEIRAS MODAS",
+      "street": "R. JOSE MILTON MARTINS, 100",
+      "neighborhood": "CENTRO",
+      "city": "Bertolínia",
+      "cityCode": "2201705",
+      "state": "PI",
+      "zipCode": "64870-000",
+      "phone": "(89) 3546-1404",
+      "clientGroup": "Varejista",
+      "lat": -7.75208004056959,
+      "lng": -43.879334903395545,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1017099",
+      "externalCode": "1017099",
+      "name": "LOJAO DE S",
+      "tradeName": "LOJAO DE S",
+      "legalName": "NILSON QUEIROZ DO VALE - MEE",
+      "street": "R. IPIRANGA, 0",
+      "neighborhood": "CENTRO",
+      "city": "Corrente",
+      "cityCode": "2202901",
+      "state": "PI",
+      "zipCode": "64980-000",
+      "phone": "(89) 3573-2799",
+      "clientGroup": "Varejista-Extra",
+      "lat": -10.393012988370373,
+      "lng": -45.13146752405058,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1017493",
+      "externalCode": "1017493",
+      "name": "MODA MANIA",
+      "tradeName": "MODA MANIA",
+      "legalName": "ELIZETE BASTOS DE SOUSA-ME",
+      "street": "AV. PROF.JOAO MENEZES, 0",
+      "neighborhood": "CENTRO",
+      "city": "São Raimundo Nonato",
+      "cityCode": "2210607",
+      "state": "PI",
+      "zipCode": "64770-000",
+      "phone": "(89) 98101-7164",
+      "clientGroup": "Varejista",
+      "lat": -8.973099028632348,
+      "lng": -42.732774779817184,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1017498",
+      "externalCode": "1017498",
+      "name": "MARIA CLAU",
+      "tradeName": "MARIA CLAU",
+      "legalName": "MARIA CLAUDIANA DE ABREU CERQUEIRA",
+      "street": "RUA FREITAS JUNIOR, 750",
+      "neighborhood": "CENTRO",
+      "city": "Piripiri",
+      "cityCode": "2208403",
+      "state": "PI",
+      "zipCode": "64260-000",
+      "phone": "(86)99984-2582",
+      "clientGroup": "Varejista",
+      "lat": -4.330375938882506,
+      "lng": -41.768925402286364,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1017544",
+      "externalCode": "1017544",
+      "name": "EVANS MODA",
+      "tradeName": "EVANS MODA",
+      "legalName": "ARINALDO BENTO DE ARAUJO-ME",
+      "street": "AV. NOE MENDES, 26",
+      "neighborhood": "RENASCENCA I",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64082-010",
+      "phone": "(86) 3231-1499",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1018349",
+      "externalCode": "1018349",
+      "name": "LUANA",
+      "tradeName": "LUANA",
+      "legalName": "FASA LTDA",
+      "street": "R. ALMIRANTE GERVASIO SAMPAIO, 690",
+      "neighborhood": "CENTRO",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64200-250",
+      "phone": "(86)3322-3473",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1018400",
+      "externalCode": "1018400",
+      "name": "BJ VARIEDA",
+      "tradeName": "BJ VARIEDA",
+      "legalName": "MARIA DE JESUS P CARRIAS FILHO",
+      "street": "R. GAL.TAUMATURGO AZEVEDO, 0",
+      "neighborhood": "CENTRO",
+      "city": "Barras",
+      "cityCode": "2201200",
+      "state": "PI",
+      "zipCode": "64100-000",
+      "phone": "(86) 3242-1574",
+      "clientGroup": "Varejista",
+      "lat": -4.1848776090470805,
+      "lng": -42.38049815779103,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1019255",
+      "externalCode": "1019255",
+      "name": "CAROL VARI",
+      "tradeName": "CAROL VARI",
+      "legalName": "VALDIRA FRANCISCA DE ARAUJO SILVA",
+      "street": "R. CONSTANCIO CARVALHO, 306",
+      "neighborhood": "CENTRO",
+      "city": "Padre Marcos",
+      "cityCode": "2207207",
+      "state": "PI",
+      "zipCode": "64680-000",
+      "phone": "(89) 3431-1186",
+      "clientGroup": "Varejista",
+      "lat": -7.387679696059527,
+      "lng": -40.884064842143744,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1019766",
+      "externalCode": "1019766",
+      "name": "SANTA VARI",
+      "tradeName": "SANTA VARI",
+      "legalName": "F MARIA SALES",
+      "street": "RUA ALFREDO CARVALHO, 197",
+      "neighborhood": "CENTRO",
+      "city": "Luzilândia",
+      "cityCode": "2205805",
+      "state": "PI",
+      "zipCode": "64160-000",
+      "phone": "(86)3393-1601",
+      "clientGroup": "Varejista",
+      "lat": -3.6059336179217416,
+      "lng": -42.37569891121295,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1019952",
+      "externalCode": "1019952",
+      "name": "MANOS BOUT",
+      "tradeName": "MANOS BOUT",
+      "legalName": "M J SANTOS CARVALHO CONFECCOES MEE",
+      "street": "R. AIMORES, 166",
+      "neighborhood": "BOA ESPERANCA",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64215-370",
+      "phone": "(86) 3323-1228",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1020351",
+      "externalCode": "1020351",
+      "name": "MARTA VARI",
+      "tradeName": "MARTA VARI",
+      "legalName": "MARTA LUCIA CARVALHO DE RESENDE",
+      "street": "RUA LEONIDAS MELO, 405",
+      "neighborhood": "CENTRO",
+      "city": "Barras",
+      "cityCode": "2201200",
+      "state": "PI",
+      "zipCode": "64100-000",
+      "phone": "(86)99466-9427",
+      "clientGroup": "Varejista",
+      "lat": -4.1848776090470805,
+      "lng": -42.38049815779103,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1020355",
+      "externalCode": "1020355",
+      "name": "DANY MODAS",
+      "tradeName": "DANY MODAS",
+      "legalName": "F. FREITAS CAVALEIRO",
+      "street": "R. LEONIDAS MELO, 510",
+      "neighborhood": "CENTRO",
+      "city": "Barras",
+      "cityCode": "2201200",
+      "state": "PI",
+      "zipCode": "64100-000",
+      "phone": "86994690743",
+      "clientGroup": "Varejista",
+      "lat": -4.1848776090470805,
+      "lng": -42.38049815779103,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1020971",
+      "externalCode": "1020971",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "AV. DO COMERCIO, 5",
+      "neighborhood": "CENTRO",
+      "city": "Zé Doca",
+      "cityCode": "2114007",
+      "state": "MA",
+      "zipCode": "65365-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1020977",
+      "externalCode": "1020977",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "R. ALVARO MENDES, 1032",
+      "neighborhood": "CENTRO",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64000-060",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1020990",
+      "externalCode": "1020990",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "Q EF, 32",
+      "neighborhood": "CENTRO",
+      "city": "Casa Nova",
+      "cityCode": "2907202",
+      "state": "BA",
+      "zipCode": "47300-000",
+      "phone": "(74) 3536-1288",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1020998",
+      "externalCode": "1020998",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "AV. OLIVEIRA ROMA, 127",
+      "neighborhood": "CENTRO",
+      "city": "Chapadinha",
+      "cityCode": "2103208",
+      "state": "MA",
+      "zipCode": "65500-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021004",
+      "externalCode": "1021004",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "R. DORGIVAL P. DE SOUZA, 1039",
+      "neighborhood": "CENTRO",
+      "city": "Açailândia",
+      "cityCode": "2100055",
+      "state": "MA",
+      "zipCode": "65930-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021009",
+      "externalCode": "1021009",
+      "name": "ARMAZEN PA",
+      "tradeName": "ARMAZEN PA",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPTOS",
+      "street": "AV. CATULO, 60",
+      "neighborhood": "CENTRO",
+      "city": "Balsas",
+      "cityCode": "2101400",
+      "state": "MA",
+      "zipCode": "65800-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021020",
+      "externalCode": "1021020",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "R. FREDERICO FIGUEIRA, 370",
+      "neighborhood": "CENTRO",
+      "city": "Barra do Corda",
+      "cityCode": "2101608",
+      "state": "MA",
+      "zipCode": "65950-000",
+      "phone": "(99) 3643-1317",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021025",
+      "externalCode": "1021025",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "R. MAGALHAES DE ALMEIDA SN, 0",
+      "neighborhood": "CENTRO",
+      "city": "Presidente Dutra",
+      "cityCode": "2109106",
+      "state": "MA",
+      "zipCode": "65760-000",
+      "phone": "(99) 6310-4720",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021032",
+      "externalCode": "1021032",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "AVENIDA DUQUE DE CAXIAS, 133",
+      "neighborhood": "CENTRO",
+      "city": "Oeiras",
+      "cityCode": "2207009",
+      "state": "PI",
+      "zipCode": "64500-000",
+      "phone": "(86)3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": -6.95072360210872,
+      "lng": -42.169079773463864,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021037",
+      "externalCode": "1021037",
+      "name": "PARAIBA  M",
+      "tradeName": "PARAIBA  M",
+      "legalName": "CLAUDINO S.A LOJAS DE DEPARTAMENTOS",
+      "street": "AV. QUATRO DE JULHO, 305",
+      "neighborhood": "CENTRO",
+      "city": "Piripiri",
+      "cityCode": "2208403",
+      "state": "PI",
+      "zipCode": "64260-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": -4.330375938882506,
+      "lng": -41.768925402286364,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021040",
+      "externalCode": "1021040",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "R. CORONEL FRANCISCO SANTOS, 295",
+      "neighborhood": "CENTRO",
+      "city": "Picos",
+      "cityCode": "2208007",
+      "state": "PI",
+      "zipCode": "64600-098",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": -7.071764588142733,
+      "lng": -41.513246533244654,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021044",
+      "externalCode": "1021044",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "R. RAUL LOPES, 1000",
+      "neighborhood": "NOIVOS",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64000-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021058",
+      "externalCode": "1021058",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "AV. DENERVAL LOBAO, 867",
+      "neighborhood": "CENTRO",
+      "city": "Campo Maior",
+      "cityCode": "2202208",
+      "state": "PI",
+      "zipCode": "64280-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": -4.881291884580322,
+      "lng": -42.15427831327271,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021076",
+      "externalCode": "1021076",
+      "name": "CLAUDINO S",
+      "tradeName": "CLAUDINO S",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "R. PAISSANDU, 1111",
+      "neighborhood": "CENTRO",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64001-120",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021096",
+      "externalCode": "1021096",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S.A LOJAS DE DEPARTAMENTOS",
+      "street": "AV PROFESSOR JOAO M DE SOUSA, 757",
+      "neighborhood": "CENTRO",
+      "city": "Santa Luzia do Paruá",
+      "cityCode": "2110039",
+      "state": "MA",
+      "zipCode": "65272-970",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021116",
+      "externalCode": "1021116",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S.A.LOJAS DE DEPARTAMENTOS",
+      "street": "R. PERNAMBUCO, 0",
+      "neighborhood": "CENTRO",
+      "city": "Luís Eduardo Magalhães",
+      "cityCode": "2919553",
+      "state": "BA",
+      "zipCode": "47850-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021120",
+      "externalCode": "1021120",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "INACIO LINS, 138",
+      "neighborhood": "CENTRO",
+      "city": "Barreirinhas",
+      "cityCode": "2101707",
+      "state": "MA",
+      "zipCode": "65590-970",
+      "phone": "(98) 4900-6520",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021125",
+      "externalCode": "1021125",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "R. D PEDRO II, 205",
+      "neighborhood": "CENTRO",
+      "city": "Cururupu",
+      "cityCode": "2103703",
+      "state": "MA",
+      "zipCode": "65268-000",
+      "phone": "(98) 3391-2004",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021132",
+      "externalCode": "1021132",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "AVENIDA PRESIDENTE MEDICI, 444",
+      "neighborhood": "PARQUE PIAUI",
+      "city": "Timon",
+      "cityCode": "2112209",
+      "state": "MA",
+      "zipCode": "65631-390",
+      "phone": "(86)3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021143",
+      "externalCode": "1021143",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "R. ANTONIO FRANCISCO DOS REIS, 23",
+      "neighborhood": "CENTRO",
+      "city": "Grajaú",
+      "cityCode": "2104800",
+      "state": "MA",
+      "zipCode": "65940-000",
+      "phone": "(99) 3216-5882",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021147",
+      "externalCode": "1021147",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S. A. LOJAS DE DEPARTAMENT",
+      "street": "R. FIRMINO PANTOJA, 49",
+      "neighborhood": "CENTRO",
+      "city": "Carutapera",
+      "cityCode": "2102903",
+      "state": "MA",
+      "zipCode": "65295-000",
+      "phone": "(98) 3216-5882",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1021939",
+      "externalCode": "1021939",
+      "name": "LOJAS  MAR",
+      "tradeName": "LOJAS  MAR",
+      "legalName": "F M MODAS LTDA",
+      "street": "PRACA SEBASTIAO MARTINS, 350",
+      "neighborhood": "CENTRO",
+      "city": "Floriano",
+      "cityCode": "2203909",
+      "state": "PI",
+      "zipCode": "64800-078",
+      "phone": "(86) 3522-1699",
+      "clientGroup": "Varejista",
+      "lat": -7.020284924122783,
+      "lng": -43.07736005741338,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1022454",
+      "externalCode": "1022454",
+      "name": "FATILU",
+      "tradeName": "FATILU",
+      "legalName": "JEDEAO RIBEIRO DA SILVA",
+      "street": "R. SALVADOR XAVIER DE MACEDO",
+      "neighborhood": "CENTRO",
+      "city": "Anísio de Abreu",
+      "cityCode": "2200707",
+      "state": "PI",
+      "zipCode": "64780-000",
+      "phone": "(89) 3588-1181",
+      "clientGroup": "Varejista",
+      "lat": -9.219064435681021,
+      "lng": -43.04767060032379,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1023089",
+      "externalCode": "1023089",
+      "name": "MARIA VARI",
+      "tradeName": "MARIA VARI",
+      "legalName": "JOSE DE RIBAMAR COSTA MERCEARIA MEE",
+      "street": "AV. TER.FERNANDO DE NORONHA, 2207",
+      "neighborhood": "AEROPORTO",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64007-250",
+      "phone": "(86) 3225-3445",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1023929",
+      "externalCode": "1023929",
+      "name": "A A  FASHI",
+      "tradeName": "A A  FASHI",
+      "legalName": "AUCIELE R. DO NASCIMENTO -ME",
+      "street": "PC JOAO FERREIRA DA CR, 0",
+      "neighborhood": "CENTRO",
+      "city": "Betânia do Piauí",
+      "cityCode": "2201739",
+      "state": "PI",
+      "zipCode": "64753-000",
+      "phone": "(89) 9455-2079",
+      "clientGroup": "Varejista",
+      "lat": -8.118602090808169,
+      "lng": -40.755975995456566,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1023975",
+      "externalCode": "1023975",
+      "name": "NICOLLE VA",
+      "tradeName": "NICOLLE VA",
+      "legalName": "N DA SILVA LIMA COMERCIO MEE",
+      "street": "R. CEL.TOTE MACHADO, 110",
+      "neighborhood": "CENTRO",
+      "city": "Piracuruca",
+      "cityCode": "2208304",
+      "state": "PI",
+      "zipCode": "64240-000",
+      "phone": "(86) 99850-3840",
+      "clientGroup": "Varejista",
+      "lat": -3.844584715140516,
+      "lng": -41.60657173373334,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1024807",
+      "externalCode": "1024807",
+      "name": "ERASMO CAR",
+      "tradeName": "ERASMO CAR",
+      "legalName": "ERASMO CARLOS DOS SANTOS SOARES-ME",
+      "street": "AV. PROF.JOAO MENESES, 384",
+      "neighborhood": "CENTRO",
+      "city": "São Raimundo Nonato",
+      "cityCode": "2210607",
+      "state": "PI",
+      "zipCode": "64770-000",
+      "phone": "(89) 3582-1781",
+      "clientGroup": "Varejista",
+      "lat": -8.973099028632348,
+      "lng": -42.732774779817184,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1024848",
+      "externalCode": "1024848",
+      "name": "ATUAL MMOD",
+      "tradeName": "ATUAL MMOD",
+      "legalName": "M DO CARMO MOREIRA RAMOS - ME",
+      "street": "PC. CESAR CALS, 12",
+      "neighborhood": "CENTRO",
+      "city": "Guadalupe",
+      "cityCode": "2204501",
+      "state": "PI",
+      "zipCode": "64840-000",
+      "phone": "(89) 3552-1272",
+      "clientGroup": "Varejista",
+      "lat": -6.851217816178335,
+      "lng": -43.729582113980335,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1025250",
+      "externalCode": "1025250",
+      "name": "NATANIEL M",
+      "tradeName": "NATANIEL M",
+      "legalName": "NATANIEL MARLANIO BATISTA DE SOUSA",
+      "street": "AVENIDA JOSE AQUILES DE SOUSA, 1065",
+      "neighborhood": "CENTRO",
+      "city": "Fronteiras",
+      "cityCode": "2204303",
+      "state": "PI",
+      "zipCode": "64690-000",
+      "phone": "(89)3454-1102",
+      "clientGroup": "Varejista",
+      "lat": -7.073148254324615,
+      "lng": -40.59278286696424,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1025501",
+      "externalCode": "1025501",
+      "name": "M.G.MODAS",
+      "tradeName": "M.G.MODAS",
+      "legalName": "MARIA GONCALVES DA SILVA - ME",
+      "street": "R. ARNALDO FERREIRA DE CARVALHO, 409",
+      "neighborhood": "CENTRO",
+      "city": "Simplício Mendes",
+      "cityCode": "2210805",
+      "state": "PI",
+      "zipCode": "64700-000",
+      "phone": "(89) 3482-1492",
+      "clientGroup": "Varejista",
+      "lat": -7.803822398559174,
+      "lng": -42.003485945097225,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1025529",
+      "externalCode": "1025529",
+      "name": "BIA  MODAS",
+      "tradeName": "BIA  MODAS",
+      "legalName": "ANTONIETA SOUSA LIMA -ME",
+      "street": "R. MAJOR ARTUR ARAGAO, 117",
+      "neighborhood": "CENTRO",
+      "city": "São Miguel do Tapuio",
+      "cityCode": "2210409",
+      "state": "PI",
+      "zipCode": "64330-000",
+      "phone": "(86) 3249-1749",
+      "clientGroup": "Varejista",
+      "lat": -5.729075055517221,
+      "lng": -41.43707612864233,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1025970",
+      "externalCode": "1025970",
+      "name": "JEAN  CONF",
+      "tradeName": "JEAN  CONF",
+      "legalName": "JEAN RIBEIRO LUSTOSA ME",
+      "street": "R.  1. DE OUTUBRO, 253",
+      "neighborhood": "CENTRO",
+      "city": "Tanque do Piauí",
+      "cityCode": "2210979",
+      "state": "PI",
+      "zipCode": "64512-000",
+      "phone": "(89) 3427-0095",
+      "clientGroup": "Varejista",
+      "lat": -6.64989585741901,
+      "lng": -42.259630322554855,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1026072",
+      "externalCode": "1026072",
+      "name": "GIAN CARLO",
+      "tradeName": "GIAN CARLO",
+      "legalName": "J A DA CUNHA SOBRINHO",
+      "street": "1.AV.  JOAQUIM MANOEL, 496",
+      "neighborhood": "CENTRO",
+      "city": "Valença do Piauí",
+      "cityCode": "2211308",
+      "state": "PI",
+      "zipCode": "64300-000",
+      "phone": "(89) 3465-2909",
+      "clientGroup": "Varejista",
+      "lat": -6.383984578918064,
+      "lng": -41.808626623067084,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1026196",
+      "externalCode": "1026196",
+      "name": "CAS VARIED",
+      "tradeName": "CAS VARIED",
+      "legalName": "CARLA A DE SOUSA MEE",
+      "street": "AVE FREI SERAFIM, 2833",
+      "neighborhood": "CENTRO",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "640000-20",
+      "phone": "(86) 8849-7728",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1026664",
+      "externalCode": "1026664",
+      "name": "TOQUE FINA",
+      "tradeName": "TOQUE FINA",
+      "legalName": "D M NOVAES DA COSTA MEE",
+      "street": "R. 13 DE MAIO, 99",
+      "neighborhood": "CENTRO",
+      "city": "Elesbão Veloso",
+      "cityCode": "2203503",
+      "state": "PI",
+      "zipCode": "64325-000",
+      "phone": "(86) 3285-1955",
+      "clientGroup": "Varejista",
+      "lat": -6.178997579100571,
+      "lng": -42.1962802156842,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1027363",
+      "externalCode": "1027363",
+      "name": "LOJAO SAO",
+      "tradeName": "LOJAO SAO",
+      "legalName": "ADEMILTON QUEIROZ DO VALE ME",
+      "street": "R. CEL ROGERIO JOSE DE CARVALHO, 771",
+      "neighborhood": "CENTRO",
+      "city": "Uruçuí",
+      "cityCode": "2211209",
+      "state": "PI",
+      "zipCode": "64860-000",
+      "phone": "(89) 9982-4374",
+      "clientGroup": "Varejista",
+      "lat": -7.789204021057235,
+      "lng": -44.56818467900225,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1027425",
+      "externalCode": "1027425",
+      "name": "ANTONIA SI",
+      "tradeName": "ANTONIA SI",
+      "legalName": "ANTONIA SILVANA DE MOURA",
+      "street": "RUA PIRES FERREIRA, 110",
+      "neighborhood": "NOVA BRASILIA",
+      "city": "Água Branca",
+      "cityCode": "2200202",
+      "state": "PI",
+      "zipCode": "64460-000",
+      "phone": "(86)99927-1653",
+      "clientGroup": "Varejista",
+      "lat": -5.9148727053540275,
+      "lng": -42.62197779276048,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1028234",
+      "externalCode": "1028234",
+      "name": "MANDACARU",
+      "tradeName": "MANDACARU",
+      "legalName": "MANDACARU CONFECCOES LTDA",
+      "street": "AV. MARECHAL JUAREZ TAVORA, 0",
+      "neighborhood": "PARQUE PIAUI",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64025-196",
+      "phone": "86999677272",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1028842",
+      "externalCode": "1028842",
+      "name": "COMERCIAL",
+      "tradeName": "COMERCIAL",
+      "legalName": "JOAO JOSE DE SOUSA VESTUARIO",
+      "street": "R.  JOAO DANTAS, 169",
+      "neighborhood": "CENTRO",
+      "city": "Pimenteiras",
+      "cityCode": "2208106",
+      "state": "PI",
+      "zipCode": "64320-000",
+      "phone": "(89) 3465-1469",
+      "clientGroup": "Varejista",
+      "lat": -6.353758781374434,
+      "lng": -41.15624116751659,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1028847",
+      "externalCode": "1028847",
+      "name": "ISANGELA C",
+      "tradeName": "ISANGELA C",
+      "legalName": "ISANGELA MARIA DA SILVA MEE ME",
+      "street": "PC. NOE CARVALHO, 142",
+      "neighborhood": "CENTRO",
+      "city": "São João do Piauí",
+      "cityCode": "2210003",
+      "state": "PI",
+      "zipCode": "64760-000",
+      "phone": "(89) 3483-2276",
+      "clientGroup": "Varejista",
+      "lat": -8.309001224386963,
+      "lng": -42.25242658728586,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1029531",
+      "externalCode": "1029531",
+      "name": "ZAZA CONFE",
+      "tradeName": "ZAZA CONFE",
+      "legalName": "MARIA LOPES DE CARVALHO",
+      "street": "R CORONEL JOSE FORTES, 606",
+      "neighborhood": "CENTRO",
+      "city": "Esperantina",
+      "cityCode": "2203701",
+      "state": "PI",
+      "zipCode": "64180-000",
+      "phone": "(86) 3383-1060",
+      "clientGroup": "Varejista",
+      "lat": -3.810029788966928,
+      "lng": -42.19333424976415,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1030337",
+      "externalCode": "1030337",
+      "name": "L R CALCAD",
+      "tradeName": "L R CALCAD",
+      "legalName": "L R DA PAZ MEE",
+      "street": "R.  13 DE MAIO, 109",
+      "neighborhood": "CENTRO",
+      "city": "Elesbão Veloso",
+      "cityCode": "2203503",
+      "state": "PI",
+      "zipCode": "64325-000",
+      "phone": "(86) 3285-1366",
+      "clientGroup": "Varejista",
+      "lat": -6.178997579100571,
+      "lng": -42.1962802156842,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1030930",
+      "externalCode": "1030930",
+      "name": "L   MODAS",
+      "tradeName": "L   MODAS",
+      "legalName": "MARIA DO AMPARO DE SOUSA VESTUARIO",
+      "street": "R. EPAMINONDAS  NOGUEIRA, 667",
+      "neighborhood": "CENTRO",
+      "city": "Valença do Piauí",
+      "cityCode": "2211308",
+      "state": "PI",
+      "zipCode": "64300-000",
+      "phone": "(89) 3465-1469",
+      "clientGroup": "Varejista",
+      "lat": -6.383984578918064,
+      "lng": -41.808626623067084,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1031031",
+      "externalCode": "1031031",
+      "name": "ESSENCIAL",
+      "tradeName": "ESSENCIAL",
+      "legalName": "VERONICA BARBOSA ARAUJO QUARESMA ME",
+      "street": "R. CEL. JOSE FORTES, 717",
+      "neighborhood": "CENTRO",
+      "city": "Esperantina",
+      "cityCode": "2203701",
+      "state": "PI",
+      "zipCode": "64180-000",
+      "phone": "(86) 3383-1438",
+      "clientGroup": "Varejista",
+      "lat": -3.810029788966928,
+      "lng": -42.19333424976415,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1031129",
+      "externalCode": "1031129",
+      "name": "PAZ MODAS",
+      "tradeName": "PAZ MODAS",
+      "legalName": "L ALMEIDA SANTOS",
+      "street": "ALMIRANTE GERVASIO SAMPAIO, 05",
+      "neighborhood": "CENTRO",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64200-250",
+      "phone": "(86)3321-2539",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1031598",
+      "externalCode": "1031598",
+      "name": "RIDUJEAN C",
+      "tradeName": "RIDUJEAN C",
+      "legalName": "FRANCISCA FELICIA COELHO FERREIRA F",
+      "street": "AV. ENGENHEIRO GONCALVES, 0",
+      "neighborhood": "SERRANOPOLIS",
+      "city": "Jaicós",
+      "cityCode": "2205201",
+      "state": "PI",
+      "zipCode": "64575-000",
+      "phone": "(89) 3457-1747",
+      "clientGroup": "Varejista",
+      "lat": -7.39325483947434,
+      "lng": -41.18982273469254,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1031842",
+      "externalCode": "1031842",
+      "name": "CLAF MODAS",
+      "tradeName": "CLAF MODAS",
+      "legalName": "C. DE CASTRO FONTENELE",
+      "street": "R. CARAMURU, 2139",
+      "neighborhood": "PIAUI",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64210-140",
+      "phone": "(86) 3323-1957",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1032110",
+      "externalCode": "1032110",
+      "name": "PAYFRAN MO",
+      "tradeName": "PAYFRAN MO",
+      "legalName": "F.DAS C. FONTENELE FILHO - ME",
+      "street": "R. RAIMUNDO DE SOUSA, 390",
+      "neighborhood": "CENTRO",
+      "city": "Piracuruca",
+      "cityCode": "2208304",
+      "state": "PI",
+      "zipCode": "64240-000",
+      "phone": "(86) 8806-6551",
+      "clientGroup": "Varejista",
+      "lat": -3.844584715140516,
+      "lng": -41.60657173373334,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1033354",
+      "externalCode": "1033354",
+      "name": "LU CONFECC",
+      "tradeName": "LU CONFECC",
+      "legalName": "LUSINETE CARVALHO DE SOUSA",
+      "street": "R VIRGILIO FERREIRA SOARES BOX, 05",
+      "neighborhood": "CENTRO",
+      "city": "Água Branca",
+      "cityCode": "2200202",
+      "state": "PI",
+      "zipCode": "64460-000",
+      "phone": "(86) 3282-2218",
+      "clientGroup": "Varejista",
+      "lat": -5.9148727053540275,
+      "lng": -42.62197779276048,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1034372",
+      "externalCode": "1034372",
+      "name": "MODA & MAN",
+      "tradeName": "MODA & MAN",
+      "legalName": "M J PRADO PEREIRA - MEE",
+      "street": "R. OSCAR CLARK, 605",
+      "neighborhood": "CENTRO",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64200-130",
+      "phone": "(86) 3323-1531",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1035123",
+      "externalCode": "1035123",
+      "name": "ACROPOLES",
+      "tradeName": "ACROPOLES",
+      "legalName": "JOAO BOSCO PINHO GOMES",
+      "street": "1.AV.  CELSO PINHEIRO MACHADO, 339",
+      "neighborhood": "CENTRO",
+      "city": "Barras",
+      "cityCode": "2201200",
+      "state": "PI",
+      "zipCode": "64100-000",
+      "phone": "(86) 9905-4763",
+      "clientGroup": "Varejista",
+      "lat": -4.1848776090470805,
+      "lng": -42.38049815779103,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1035644",
+      "externalCode": "1035644",
+      "name": "APOCYNACEA",
+      "tradeName": "APOCYNACEA",
+      "legalName": "VALDINALVA RODRIGUES DOS REIS",
+      "street": "RUA GOVERNADOR DIX SEPTO ROSADO, 121",
+      "neighborhood": "CENTRO",
+      "city": "Jaicós",
+      "cityCode": "2205201",
+      "state": "PI",
+      "zipCode": "64575-000",
+      "phone": "(89)3457-1084",
+      "clientGroup": "Varejista",
+      "lat": -7.39325483947434,
+      "lng": -41.18982273469254,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1036075",
+      "externalCode": "1036075",
+      "name": "PIUY MODAS",
+      "tradeName": "PIUY MODAS",
+      "legalName": "A C DE OLIVEIRA ARAGAO ASSUNCAO",
+      "street": "PROFESSOR BEM, 710",
+      "neighborhood": "CENTRO",
+      "city": "Piripiri",
+      "cityCode": "2208403",
+      "state": "PI",
+      "zipCode": "64260-000",
+      "phone": "(86) 3276-2236",
+      "clientGroup": "Varejista",
+      "lat": -4.330375938882506,
+      "lng": -41.768925402286364,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1036080",
+      "externalCode": "1036080",
+      "name": "ROMILDA MA",
+      "tradeName": "ROMILDA MA",
+      "legalName": "ROMILDA MARY MACEDO RAMOS-EPP",
+      "street": "R. LUIZ JUBELINO DE MACEDO, 90",
+      "neighborhood": "CENTRO",
+      "city": "Padre Marcos",
+      "cityCode": "2207207",
+      "state": "PI",
+      "zipCode": "64680-000",
+      "phone": "(89) 3431-1176",
+      "clientGroup": "Varejista",
+      "lat": -7.387679696059527,
+      "lng": -40.884064842143744,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1036201",
+      "externalCode": "1036201",
+      "name": "M G DE LIM",
+      "tradeName": "M G DE LIM",
+      "legalName": "M G DE LIMA",
+      "street": "ZACARIAS DE GOES VASCONCELOS, 87",
+      "neighborhood": "CENTRO",
+      "city": "Oeiras",
+      "cityCode": "2207009",
+      "state": "PI",
+      "zipCode": "64500-000",
+      "phone": "(89) 3462-1704",
+      "clientGroup": "Varejista",
+      "lat": -6.95072360210872,
+      "lng": -42.169079773463864,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1036356",
+      "externalCode": "1036356",
+      "name": "VILA RICA",
+      "tradeName": "VILA RICA",
+      "legalName": "MARIA GORETE DA SILVA ARAUJO-ME",
+      "street": "ALA. ALMIRANTE GERVASIO SAMPAIO, 901",
+      "neighborhood": "CENTRO",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64200-250",
+      "phone": "(86) 3322-3340",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1036679",
+      "externalCode": "1036679",
+      "name": "ARMAZEM ME",
+      "tradeName": "ARMAZEM ME",
+      "legalName": "MESQUITA IRMAOS LTDA",
+      "street": "R. MARQUES DO HERVAL, 478",
+      "neighborhood": "CENTRO",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64200-340",
+      "phone": "(86) 3321-2886",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1036713",
+      "externalCode": "1036713",
+      "name": "ZERO UM",
+      "tradeName": "ZERO UM",
+      "legalName": "FRANCISCO CARLOS FONTENELE BARBOSA",
+      "street": "R. RUI BARBOSA, 5718",
+      "neighborhood": "MATINHA",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64002-180",
+      "phone": "(86) 8829-0256",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1036771",
+      "externalCode": "1036771",
+      "name": "MIOSOTIS",
+      "tradeName": "MIOSOTIS",
+      "legalName": "M M OLIVEIRA FREITAS",
+      "street": "ALCENOR CANDEIRA, 12",
+      "neighborhood": "CENTRO",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64200-190",
+      "phone": "(86) 3321-1497",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1037051",
+      "externalCode": "1037051",
+      "name": "LOJAS AGUI",
+      "tradeName": "LOJAS AGUI",
+      "legalName": "EGLIMARIA PEREIRA DOS SANTOS",
+      "street": "R. JOCO DOS SANTOS, 705",
+      "neighborhood": "CENTRO",
+      "city": "Canto do Buriti",
+      "cityCode": "2202307",
+      "state": "PI",
+      "zipCode": "64890-000",
+      "phone": "(89) 3531-1143",
+      "clientGroup": "Varejista",
+      "lat": -8.332769011552582,
+      "lng": -43.32933546795901,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1038005",
+      "externalCode": "1038005",
+      "name": "PONTO DA M",
+      "tradeName": "PONTO DA M",
+      "legalName": "F O OLIVEIRA CARRIAS",
+      "street": "R. LEONIDAS MELO, 782",
+      "neighborhood": "CENTRO",
+      "city": "Barras",
+      "cityCode": "2201200",
+      "state": "PI",
+      "zipCode": "64100-000",
+      "phone": "(86) 3242-1164",
+      "clientGroup": "Varejista",
+      "lat": -4.1848776090470805,
+      "lng": -42.38049815779103,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1038082",
+      "externalCode": "1038082",
+      "name": "LOJINHA NO",
+      "tradeName": "LOJINHA NO",
+      "legalName": "MARIA SUELY DE MOURA",
+      "street": "POVOADO FATIMA DO PIAUI, 1",
+      "neighborhood": "ZONA RURAL",
+      "city": "Picos",
+      "cityCode": "2208007",
+      "state": "PI",
+      "zipCode": "64600-001",
+      "phone": "(89) 99932-0049",
+      "clientGroup": "Varejista",
+      "lat": -7.071764588142733,
+      "lng": -41.513246533244654,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1038100",
+      "externalCode": "1038100",
+      "name": "ART MODAS",
+      "tradeName": "ART MODAS",
+      "legalName": "F M DE MOURA",
+      "street": "R. 13 DE MAIO, 109",
+      "neighborhood": "CENTRO",
+      "city": "Elesbão Veloso",
+      "cityCode": "2203503",
+      "state": "PI",
+      "zipCode": "64325-000",
+      "phone": "(86) 99927-3308",
+      "clientGroup": "Varejista",
+      "lat": -6.178997579100571,
+      "lng": -42.1962802156842,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1038316",
+      "externalCode": "1038316",
+      "name": "ROBEL MODA",
+      "tradeName": "ROBEL MODA",
+      "legalName": "ROBEL MODAS LTDA - ME",
+      "street": "GENTIL FREITAS, 250",
+      "neighborhood": "CENTRO",
+      "city": "José de Freitas",
+      "cityCode": "2205508",
+      "state": "PI",
+      "zipCode": "64110-000",
+      "phone": "(86) 3264-2211",
+      "clientGroup": "Varejista",
+      "lat": -4.707525384484946,
+      "lng": -42.51383948782444,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1038427",
+      "externalCode": "1038427",
+      "name": "LOJAO VASC",
+      "tradeName": "LOJAO VASC",
+      "legalName": "WILKER ARAGAO VASCONCELOS MEE",
+      "street": "R. MARECHAL DEODORO, 855",
+      "neighborhood": "CENTRO",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64200-450",
+      "phone": "(86) 3322-3611",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1038544",
+      "externalCode": "1038544",
+      "name": "DESTAQUE V",
+      "tradeName": "DESTAQUE V",
+      "legalName": "SAMARA RODRIGUES DE CARVALHO ME",
+      "street": "R. FRANCISCO TENOR, 221",
+      "neighborhood": "CENTRO",
+      "city": "Isaías Coelho",
+      "cityCode": "2204907",
+      "state": "PI",
+      "zipCode": "64570-000",
+      "phone": "(89) 3485-1321",
+      "clientGroup": "Varejista",
+      "lat": -7.646778940770468,
+      "lng": -41.651337500684264,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1038595",
+      "externalCode": "1038595",
+      "name": "HILMA MODA",
+      "tradeName": "HILMA MODA",
+      "legalName": "MARIA P  DE MACEDO",
+      "street": "AV. DERMEVAL LOBAO, 1011",
+      "neighborhood": "CENTRO",
+      "city": "Campo Maior",
+      "cityCode": "2202208",
+      "state": "PI",
+      "zipCode": "64280-000",
+      "phone": "(86) 3252-4318",
+      "clientGroup": "Varejista",
+      "lat": -4.881291884580322,
+      "lng": -42.15427831327271,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1038789",
+      "externalCode": "1038789",
+      "name": "CASA DAS S",
+      "tradeName": "CASA DAS S",
+      "legalName": "LEILA ABOU ARABI",
+      "street": "AV. BUCA NETO, 29",
+      "neighborhood": "CENTRO",
+      "city": "Floriano",
+      "cityCode": "2203909",
+      "state": "PI",
+      "zipCode": "64800-001",
+      "phone": "(89) 3522-2141",
+      "clientGroup": "Varejista",
+      "lat": -7.020284924122783,
+      "lng": -43.07736005741338,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1038839",
+      "externalCode": "1038839",
+      "name": "SANDRA MOD",
+      "tradeName": "SANDRA MOD",
+      "legalName": "SANDRA PORTELA MEDEIROS-MEE",
+      "street": "R. ALMIRANTE GERVASIO SAMPAIO, 837",
+      "neighborhood": "CENTRO",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64200-250",
+      "phone": "(86) 3322-3541",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1039418",
+      "externalCode": "1039418",
+      "name": "CRIATIVA",
+      "tradeName": "CRIATIVA",
+      "legalName": "M H DA S SOUSA",
+      "street": "AV EURIPEDES DE AGUIAR, 1614",
+      "neighborhood": "IRAPUA",
+      "city": "Floriano",
+      "cityCode": "2203909",
+      "state": "PI",
+      "zipCode": "64800-370",
+      "phone": "(89)3521-1330",
+      "clientGroup": "Varejista-Extra",
+      "lat": -7.020284924122783,
+      "lng": -43.07736005741338,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1041697",
+      "externalCode": "1041697",
+      "name": "T T MODAS",
+      "tradeName": "T T MODAS",
+      "legalName": "TERESINHA MARIA PEREIRA DA SILVA",
+      "street": "RUA DEP JOSE NUNES, 1092",
+      "neighborhood": "AMANDO LIMA",
+      "city": "Valença do Piauí",
+      "cityCode": "2211308",
+      "state": "PI",
+      "zipCode": "64300-000",
+      "phone": "(86) 9908-8910",
+      "clientGroup": "Varejista",
+      "lat": -6.383984578918064,
+      "lng": -41.808626623067084,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1043445",
+      "externalCode": "1043445",
+      "name": "SHOPPING D",
+      "tradeName": "SHOPPING D",
+      "legalName": "SHOPPING DAS FABRICAS URUCUI LTDA",
+      "street": "AVENIDA JOSE CAVALCANTE, 140",
+      "neighborhood": "CENTRO",
+      "city": "Uruçuí",
+      "cityCode": "2211209",
+      "state": "PI",
+      "zipCode": "64860-000",
+      "phone": "(89) 98552-5409",
+      "clientGroup": "Varejista",
+      "lat": -7.789204021057235,
+      "lng": -44.56818467900225,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1043593",
+      "externalCode": "1043593",
+      "name": "STYLLUS",
+      "tradeName": "STYLLUS",
+      "legalName": "C I DOS ANJOS - ME",
+      "street": "EURIPEDES MARTINS, 778",
+      "neighborhood": "CENTRO",
+      "city": "Valença do Piauí",
+      "cityCode": "2211308",
+      "state": "PI",
+      "zipCode": "64300-000",
+      "phone": "(89) 3465-1894",
+      "clientGroup": "Varejista",
+      "lat": -6.383984578918064,
+      "lng": -41.808626623067084,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1043830",
+      "externalCode": "1043830",
+      "name": "VIA UNICA",
+      "tradeName": "VIA UNICA",
+      "legalName": "L PROBO VIEIRA ME",
+      "street": "AV PRESIDENTE MEDICE, 198",
+      "neighborhood": "PARQUE PIAUI",
+      "city": "Timon",
+      "cityCode": "2112209",
+      "state": "MA",
+      "zipCode": "65636-010",
+      "phone": "(99) 3212-1504",
+      "clientGroup": "Varejista",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1044721",
+      "externalCode": "1044721",
+      "name": "N C VARIED",
+      "tradeName": "N C VARIED",
+      "legalName": "MESSIAS CAMPELO MAGALHAES",
+      "street": "AV PADRE JOAQUIM NONATO, 248",
+      "neighborhood": "CENTRO",
+      "city": "Demerval Lobão",
+      "cityCode": "2203305",
+      "state": "PI",
+      "zipCode": "64390-970",
+      "phone": "(86) 9406-1278",
+      "clientGroup": "Varejista",
+      "lat": -5.3421333333369105,
+      "lng": -42.64956666669671,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1045277",
+      "externalCode": "1045277",
+      "name": "VERSASE",
+      "tradeName": "VERSASE",
+      "legalName": "ANNALICE R BARROSO ME",
+      "street": "PRACA CEL ORLANDO CARVALHO, 385",
+      "neighborhood": "CENTRO",
+      "city": "Oeiras",
+      "cityCode": "2207009",
+      "state": "PI",
+      "zipCode": "64500-000",
+      "phone": "(89) 3462-1571",
+      "clientGroup": "Varejista",
+      "lat": -6.95072360210872,
+      "lng": -42.169079773463864,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1045841",
+      "externalCode": "1045841",
+      "name": "RAMIRO CON",
+      "tradeName": "RAMIRO CON",
+      "legalName": "RAMIRO JOSE DE MELO",
+      "street": "PRACA VALDEMAR PEREIRA DE ARAUJO, 71",
+      "neighborhood": "CENTRO",
+      "city": "Brasileira",
+      "cityCode": "2201960",
+      "state": "PI",
+      "zipCode": "64265-000",
+      "phone": "(86) 9327-4114",
+      "clientGroup": "Varejista",
+      "lat": -4.1299132140207435,
+      "lng": -41.63780243022461,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1047711",
+      "externalCode": "1047711",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMNTOS",
+      "street": "RUA ACACIO PEREIRA CASTRO, 887",
+      "neighborhood": "BOCA DA MATA",
+      "city": "Imperatriz",
+      "cityCode": "2105302",
+      "state": "MA",
+      "zipCode": "65910-500",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Varejista",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1050766",
+      "externalCode": "1050766",
+      "name": "INTUICAO",
+      "tradeName": "INTUICAO",
+      "legalName": "C MAGALHAES E",
+      "street": "AV GETULIO VARGAS, 225",
+      "neighborhood": "CENTRO",
+      "city": "Floriano",
+      "cityCode": "2203909",
+      "state": "PI",
+      "zipCode": "64800-058",
+      "phone": "(89) 3522-3446",
+      "clientGroup": "Varejista",
+      "lat": -7.020284924122783,
+      "lng": -43.07736005741338,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1050871",
+      "externalCode": "1050871",
+      "name": "KASUAL MOD",
+      "tradeName": "KASUAL MOD",
+      "legalName": "P DE OLIVEIRA PONTE JUNIOR. -  ME",
+      "street": "DAVID CALDAS, 688",
+      "neighborhood": "CENTRO",
+      "city": "Uruçuí",
+      "cityCode": "2211209",
+      "state": "PI",
+      "zipCode": "64860-000",
+      "phone": "(89) 3544-1144",
+      "clientGroup": "Varejista",
+      "lat": -7.789204021057235,
+      "lng": -44.56818467900225,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1051015",
+      "externalCode": "1051015",
+      "name": "BARROSO",
+      "tradeName": "BARROSO",
+      "legalName": "D B OLIVEIRA LTDA",
+      "street": "AVENIDA JOSE DOS SANTOS E SILVA, 800",
+      "neighborhood": "CENTRO",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64001-300",
+      "phone": "(86) 2106-3500",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1051149",
+      "externalCode": "1051149",
+      "name": "CRIS BABY",
+      "tradeName": "CRIS BABY",
+      "legalName": "CRISMAN COMERCIO LTDA",
+      "street": "AVENIDA DOM SEVERINO, 3330",
+      "neighborhood": "FATIMA",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64049-375",
+      "phone": "(86) 3233-5003",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1052789",
+      "externalCode": "1052789",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S/A LOJAS DE DEPARTAMENTOS",
+      "street": "RUA SAO SEBASTIAO, S/N",
+      "neighborhood": "CENTRO",
+      "city": "Vargem Grande",
+      "cityCode": "2112704",
+      "state": "MA",
+      "zipCode": "65430-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1053854",
+      "externalCode": "1053854",
+      "name": "J&V VARIED",
+      "tradeName": "J&V VARIED",
+      "legalName": "VANDERLI FERREIRA GOMES 92162673304",
+      "street": "AV MARECHAL CASTELO BRANCO, 319",
+      "neighborhood": "CENTRO",
+      "city": "São Gonçalo do Piauí",
+      "cityCode": "2209807",
+      "state": "PI",
+      "zipCode": "64435-000",
+      "phone": "(86) 94141934",
+      "clientGroup": "Varejista",
+      "lat": -6.0082141850443564,
+      "lng": -42.655441647167,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1056798",
+      "externalCode": "1056798",
+      "name": "VAL MODAS",
+      "tradeName": "VAL MODAS",
+      "legalName": "ISRAEL DE SANTANA",
+      "street": "JOSE F. DOS SANTOS, S/n",
+      "neighborhood": "CENTRO",
+      "city": "Fartura do Piauí",
+      "cityCode": "2203750",
+      "state": "PI",
+      "zipCode": "64788-000",
+      "phone": "(89) 9810-6682",
+      "clientGroup": "Varejista",
+      "lat": -9.47251508947627,
+      "lng": -42.77190092464777,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1057667",
+      "externalCode": "1057667",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S.A  LOJAS DE DEPTOS",
+      "street": "SENADOR LEITE, 773",
+      "neighborhood": "CENTRO",
+      "city": "Coroatá",
+      "cityCode": "2103604",
+      "state": "MA",
+      "zipCode": "65415-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1057690",
+      "externalCode": "1057690",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S.A LOJAS DE DEPTOS",
+      "street": "DR. PAULO RAMOS, 38",
+      "neighborhood": "CENTRO",
+      "city": "Coelho Neto",
+      "cityCode": "2103406",
+      "state": "MA",
+      "zipCode": "65620-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1058376",
+      "externalCode": "1058376",
+      "name": "ESPACO XIQ",
+      "tradeName": "ESPACO XIQ",
+      "legalName": "BRUNA MYKAELLY GOMES CARVALHO",
+      "street": "DR. JOSE LUIS FORTE CASTELO BRANCO, 210",
+      "neighborhood": "FATIMA",
+      "city": "Barras",
+      "cityCode": "2201200",
+      "state": "PI",
+      "zipCode": "64100-000",
+      "phone": "(86) 3242-2228",
+      "clientGroup": "Varejista",
+      "lat": -4.1848776090470805,
+      "lng": -42.38049815779103,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1059381",
+      "externalCode": "1059381",
+      "name": "EVIDENCIA",
+      "tradeName": "EVIDENCIA",
+      "legalName": "F M MARTINS SANTOS DA FONSECA MEE",
+      "street": "AV GETULIO VARGAS, 655",
+      "neighborhood": "CENTRO",
+      "city": "Bom Jesus",
+      "cityCode": "2201903",
+      "state": "PI",
+      "zipCode": "64900-000",
+      "phone": "(89) 8135-4378",
+      "clientGroup": "Varejista",
+      "lat": -9.245647088349466,
+      "lng": -44.53692492971783,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1059876",
+      "externalCode": "1059876",
+      "name": "DECORATA",
+      "tradeName": "DECORATA",
+      "legalName": "M S E S DE SOUSA",
+      "street": "JOSE NENEM, 436",
+      "neighborhood": "CENTRO",
+      "city": "Ipiranga do Piauí",
+      "cityCode": "2204808",
+      "state": "PI",
+      "zipCode": "64540-000",
+      "phone": "89988019077",
+      "clientGroup": "Varejista",
+      "lat": -6.8148499528906505,
+      "lng": -41.78445767732143,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1062142",
+      "externalCode": "1062142",
+      "name": "CATLEIA MO",
+      "tradeName": "CATLEIA MO",
+      "legalName": "ALDEIDE NASCIMENTO SILVA02879881390",
+      "street": "EZEQUIEL GOMES, 1817",
+      "neighborhood": "SANTA LUZIA",
+      "city": "Baixa Grande do Ribeiro",
+      "cityCode": "2201150",
+      "state": "PI",
+      "zipCode": "64868-000",
+      "phone": "(89) 9993-3735",
+      "clientGroup": "Varejista",
+      "lat": -8.506484861008028,
+      "lng": -45.16029869672474,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1062611",
+      "externalCode": "1062611",
+      "name": "DU PASSO C",
+      "tradeName": "DU PASSO C",
+      "legalName": "COMERCIO DE CALCADOS BOM JESUS LTDA",
+      "street": "AV GETULIO VARGAS, 711",
+      "neighborhood": "CENTRO",
+      "city": "Bom Jesus",
+      "cityCode": "2201903",
+      "state": "PI",
+      "zipCode": "64900-000",
+      "phone": "(89) 3562-1625",
+      "clientGroup": "Varejista-Extra",
+      "lat": -9.245647088349466,
+      "lng": -44.53692492971783,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1062671",
+      "externalCode": "1062671",
+      "name": "ELLO MODAS",
+      "tradeName": "ELLO MODAS",
+      "legalName": "ELLO MODAS &FOLHEADOS LTDA ME",
+      "street": "AV GETULIO VARGAS, 467",
+      "neighborhood": "CENTRO",
+      "city": "Picos",
+      "cityCode": "2208007",
+      "state": "PI",
+      "zipCode": "64600-002",
+      "phone": "(88) 99972-0228",
+      "clientGroup": "Varejista",
+      "lat": -7.071764588142733,
+      "lng": -41.513246533244654,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1064895",
+      "externalCode": "1064895",
+      "name": "PAULA MODA",
+      "tradeName": "PAULA MODA",
+      "legalName": "ANA PAULA LOBATO DA CONCEICAO",
+      "street": "RUA VICTOR LIRA, 164",
+      "neighborhood": "SAMARITANA",
+      "city": "São Gonçalo do Gurguéia",
+      "cityCode": "2209757",
+      "state": "PI",
+      "zipCode": "64993-000",
+      "phone": "89 981122733",
+      "clientGroup": "Varejista",
+      "lat": -10.101963919884657,
+      "lng": -45.33839377193635,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1065771",
+      "externalCode": "1065771",
+      "name": "J A CONFEC",
+      "tradeName": "J A CONFEC",
+      "legalName": "J A DA SILVA NASCIMENTO ME",
+      "street": "AV 4 DE JULHO, 147",
+      "neighborhood": "CENTRO",
+      "city": "Piripiri",
+      "cityCode": "2208403",
+      "state": "PI",
+      "zipCode": "64260-000",
+      "phone": "(86) 3276-5682",
+      "clientGroup": "Varejista",
+      "lat": -4.330375938882506,
+      "lng": -41.768925402286364,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1066164",
+      "externalCode": "1066164",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "AVENIDA CONEGO JOAO LIMA, 1155",
+      "neighborhood": "SETOR CENTRAL",
+      "city": "Araguaína",
+      "cityCode": "1702109",
+      "state": "TO",
+      "zipCode": "77804-010",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1066191",
+      "externalCode": "1066191",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "R CELSO FONSECA, 116",
+      "neighborhood": "CENTRO",
+      "city": "Tutóia",
+      "cityCode": "2112506",
+      "state": "MA",
+      "zipCode": "65580-970",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1066192",
+      "externalCode": "1066192",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "AV GOMES DE SOUSA, 237",
+      "neighborhood": "CENTRO",
+      "city": "Itapecuru Mirim",
+      "cityCode": "2105401",
+      "state": "MA",
+      "zipCode": "65485-970",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1066195",
+      "externalCode": "1066195",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "AVENIDA TOCANTINS, 8",
+      "neighborhood": "CENTRO (TAQUARALTO)",
+      "city": "Palmas",
+      "cityCode": "1721000",
+      "state": "TO",
+      "zipCode": "77064-580",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1066200",
+      "externalCode": "1066200",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "HERACLITO NINA, 2865",
+      "neighborhood": "CENTRO",
+      "city": "Rosário",
+      "cityCode": "2109601",
+      "state": "MA",
+      "zipCode": "65150-970",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1066501",
+      "externalCode": "1066501",
+      "name": "CLICARE",
+      "tradeName": "CLICARE",
+      "legalName": "CATIANE MOURA CARVALHO ME",
+      "street": "RUA GOVERNADOR JOCA PIRES, 1057",
+      "neighborhood": "FATIMA",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64049-522",
+      "phone": "(86) 3231-3105",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1066871",
+      "externalCode": "1066871",
+      "name": "+ SENSUAL",
+      "tradeName": "+ SENSUAL",
+      "legalName": "JOAO DE CASTRO FONTENELE FILHO",
+      "street": "QUADRA A (CONJ. BOA ESPERANCAII), 09",
+      "neighborhood": "PINDORAMA",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64215-332",
+      "phone": "(86)3323-1957",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1067383",
+      "externalCode": "1067383",
+      "name": "DINAMICA M",
+      "tradeName": "DINAMICA M",
+      "legalName": "LARISSA DE CARVALHO BEZERRA ME",
+      "street": "FELIPE ALVES, 135",
+      "neighborhood": "CENTRO",
+      "city": "Simões",
+      "cityCode": "2210706",
+      "state": "PI",
+      "zipCode": "64585-000",
+      "phone": "(89) 3456-1198",
+      "clientGroup": "Varejista",
+      "lat": -7.664307207543785,
+      "lng": -40.760998218588306,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1067432",
+      "externalCode": "1067432",
+      "name": "IMPERIO",
+      "tradeName": "IMPERIO",
+      "legalName": "EUDES SILVA CARVALHO",
+      "street": "EGIDIO LOPES DE OLIVEIRA, SN",
+      "neighborhood": "CENTRO",
+      "city": "Caridade do Piauí",
+      "cityCode": "2202554",
+      "state": "PI",
+      "zipCode": "64590-000",
+      "phone": "(89) 9944-0243",
+      "clientGroup": "Varejista",
+      "lat": -7.715523422736463,
+      "lng": -40.95853504846214,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1068215",
+      "externalCode": "1068215",
+      "name": "CLEA MODAS",
+      "tradeName": "CLEA MODAS",
+      "legalName": "ANA CLEA SOUSA AGUIAR",
+      "street": "RUA BERNARDO DE SENA, 15",
+      "neighborhood": "CENTRO",
+      "city": "Matias Olímpio",
+      "cityCode": "2206100",
+      "state": "PI",
+      "zipCode": "64150-000",
+      "phone": "(86) 3340-1107",
+      "clientGroup": "Varejista",
+      "lat": -3.71047861608305,
+      "lng": -42.58526459984498,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1068393",
+      "externalCode": "1068393",
+      "name": "NL MODAS",
+      "tradeName": "NL MODAS",
+      "legalName": "L DA S AMARAL VESTUARIO",
+      "street": "RUA SAO JOAO, SN",
+      "neighborhood": "CENTRO",
+      "city": "Cocal dos Alves",
+      "cityCode": "2202729",
+      "state": "PI",
+      "zipCode": "64238-000",
+      "phone": "(86) 99913-0110",
+      "clientGroup": "Varejista",
+      "lat": -3.619895012440006,
+      "lng": -41.407686781509334,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1069689",
+      "externalCode": "1069689",
+      "name": "BABY",
+      "tradeName": "BABY",
+      "legalName": "THAIS KENIA MARIA DE ARAUJO",
+      "street": "AV  RAIMUNDO ALVES PEREIRA, 574",
+      "neighborhood": "SAO FRANCISCO",
+      "city": "Cocal",
+      "cityCode": "2202703",
+      "state": "PI",
+      "zipCode": "64235-000",
+      "phone": "(86) 9964-6464",
+      "clientGroup": "Varejista",
+      "lat": -3.43183512400888,
+      "lng": -41.532742951974285,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1070258",
+      "externalCode": "1070258",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE",
+      "street": "JOAO CASTELO, 480",
+      "neighborhood": "CENTRO",
+      "city": "Buriticupu",
+      "cityCode": "2102325",
+      "state": "MA",
+      "zipCode": "65393-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1070380",
+      "externalCode": "1070380",
+      "name": "CASA HEROT",
+      "tradeName": "CASA HEROT",
+      "legalName": "J S BARBOSA TECIDOS X",
+      "street": "GEN PROPERCIO DE CASTRO, 254",
+      "neighborhood": "CENTRO",
+      "city": "Valença do Piauí",
+      "cityCode": "2211308",
+      "state": "PI",
+      "zipCode": "64300-000",
+      "phone": "(89) 9997-5061",
+      "clientGroup": "Varejista",
+      "lat": -6.383984578918064,
+      "lng": -41.808626623067084,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1070836",
+      "externalCode": "1070836",
+      "name": "ELOA MODAS",
+      "tradeName": "ELOA MODAS",
+      "legalName": "ANA LUCIA GOMES DA SILVA",
+      "street": "JOAQUIM SAMPAIO, 1354",
+      "neighborhood": "SANTO ANTONIO",
+      "city": "José de Freitas",
+      "cityCode": "2205508",
+      "state": "PI",
+      "zipCode": "64110-000",
+      "phone": "(86) 9944-9301",
+      "clientGroup": "Varejista",
+      "lat": -4.707525384484946,
+      "lng": -42.51383948782444,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1070939",
+      "externalCode": "1070939",
+      "name": "LOPES MODA",
+      "tradeName": "LOPES MODA",
+      "legalName": "LUCIMARA LOPES DE SOUSA NASCIMENTO",
+      "street": "ANTONIO JOSE DA SILVA, 118",
+      "neighborhood": "CARNAUBINHA",
+      "city": "Santo Inácio do Piauí",
+      "cityCode": "2209500",
+      "state": "PI",
+      "zipCode": "64560-000",
+      "phone": "(89) 9408-0434",
+      "clientGroup": "Varejista",
+      "lat": -7.468657607330739,
+      "lng": -42.02791049611398,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1071497",
+      "externalCode": "1071497",
+      "name": "EDNA ACESS",
+      "tradeName": "EDNA ACESS",
+      "legalName": "M E BATISTA DE CARVALHO",
+      "street": "SAO JOSE, 547",
+      "neighborhood": "CENTRO",
+      "city": "Valença do Piauí",
+      "cityCode": "2211308",
+      "state": "PI",
+      "zipCode": "64300-000",
+      "phone": "(89) 3465-1767",
+      "clientGroup": "Varejista",
+      "lat": -6.383984578918064,
+      "lng": -41.808626623067084,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1071665",
+      "externalCode": "1071665",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "ADOLF JOHN TERRY, 1354",
+      "neighborhood": "CENTRO",
+      "city": "Corrente",
+      "cityCode": "2202901",
+      "state": "PI",
+      "zipCode": "64980-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": -10.393012988370373,
+      "lng": -45.13146752405058,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1072167",
+      "externalCode": "1072167",
+      "name": "PONTUAL MO",
+      "tradeName": "PONTUAL MO",
+      "legalName": "MARCONES ELVIS SOUSA ARAUJO",
+      "street": "RUA SAO JOSE, 974",
+      "neighborhood": "CENTRO",
+      "city": "Barras",
+      "cityCode": "2201200",
+      "state": "PI",
+      "zipCode": "64100-000",
+      "phone": "(86) 9435-5898",
+      "clientGroup": "Varejista",
+      "lat": -4.1848776090470805,
+      "lng": -42.38049815779103,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1072335",
+      "externalCode": "1072335",
+      "name": "MAGAZINE N",
+      "tradeName": "MAGAZINE N",
+      "legalName": "TERESINHA FRANCISCA DE LIMA",
+      "street": "ZACARIAS DE GOES, 28",
+      "neighborhood": "CENTRO",
+      "city": "Oeiras",
+      "cityCode": "2207009",
+      "state": "PI",
+      "zipCode": "64500-000",
+      "phone": "(89) 3462-1520",
+      "clientGroup": "Varejista",
+      "lat": -6.95072360210872,
+      "lng": -42.169079773463864,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1072927",
+      "externalCode": "1072927",
+      "name": "CAMUFLADOS",
+      "tradeName": "CAMUFLADOS",
+      "legalName": "LUCIMAR B R MARTINS",
+      "street": "ALAMEDA PARNAIBA, 586",
+      "neighborhood": "MATINHA",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64003-200",
+      "phone": "(86) 99817-4808",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1074831",
+      "externalCode": "1074831",
+      "name": "LOPES MODA",
+      "tradeName": "LOPES MODA",
+      "legalName": "JEANE E MELO SOUSA",
+      "street": "AV JORDAO Q-Z29. C 11, 11",
+      "neighborhood": "PARQUE ESTRELA",
+      "city": "Campo Maior",
+      "cityCode": "2202208",
+      "state": "PI",
+      "zipCode": "64280-000",
+      "phone": "(86) 99425-1218",
+      "clientGroup": "Varejista",
+      "lat": -4.881291884580322,
+      "lng": -42.15427831327271,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1075462",
+      "externalCode": "1075462",
+      "name": "DONDOCAS",
+      "tradeName": "DONDOCAS",
+      "legalName": "F LIMA CONFECCOES",
+      "street": "AV JOSE DE DEUS LACERDA, 280",
+      "neighborhood": "CENTRO",
+      "city": "Miguel Alves",
+      "cityCode": "2206209",
+      "state": "PI",
+      "zipCode": "64130-000",
+      "phone": "(86) 9984-4750",
+      "clientGroup": "Varejista",
+      "lat": -4.23867744518892,
+      "lng": -42.76254979905099,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1075627",
+      "externalCode": "1075627",
+      "name": "ARCA DA AL",
+      "tradeName": "ARCA DA AL",
+      "legalName": "ENEDINA BORGES & CIVALDO FERREIRA",
+      "street": "PRACA SAO JOAO BATISTA, 43",
+      "neighborhood": "CENTRO",
+      "city": "Sebastião Leal",
+      "cityCode": "2210631",
+      "state": "PI",
+      "zipCode": "64873-000",
+      "phone": "(89) 99400-7796",
+      "clientGroup": "Varejista",
+      "lat": -7.751444148490357,
+      "lng": -44.0954354355105,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1075941",
+      "externalCode": "1075941",
+      "name": "MOACIR BAT",
+      "tradeName": "MOACIR BAT",
+      "legalName": "MOACY BATISTA",
+      "street": "SAO JOSE, 286",
+      "neighborhood": "CENTRO",
+      "city": "Picos",
+      "cityCode": "2208007",
+      "state": "PI",
+      "zipCode": "64600-008",
+      "phone": "(86) 3422-1903",
+      "clientGroup": "Varejista-Extra",
+      "lat": -7.071764588142733,
+      "lng": -41.513246533244654,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1076257",
+      "externalCode": "1076257",
+      "name": "T & T",
+      "tradeName": "T & T",
+      "legalName": "MARIA DE JESUS RODRIGUES DA SILVA",
+      "street": "PADRE VIRGILIO, 257",
+      "neighborhood": "CENTRO",
+      "city": "Arraial",
+      "cityCode": "2201002",
+      "state": "PI",
+      "zipCode": "64480-000",
+      "phone": "(89) 99433-1020",
+      "clientGroup": "Varejista",
+      "lat": -6.618624421037676,
+      "lng": -42.506496000467685,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1076634",
+      "externalCode": "1076634",
+      "name": "TODA LINDA",
+      "tradeName": "TODA LINDA",
+      "legalName": "EDLANIA GOMES DA SILVA",
+      "street": "ANTONIO PINHEIRO, SN",
+      "neighborhood": "CENTRO",
+      "city": "Palmeira do Piauí",
+      "cityCode": "2207405",
+      "state": "PI",
+      "zipCode": "64925-000",
+      "phone": "(89) 8124-2713",
+      "clientGroup": "Varejista",
+      "lat": -8.546684778518507,
+      "lng": -44.45678114095557,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1076761",
+      "externalCode": "1076761",
+      "name": "BERE",
+      "tradeName": "BERE",
+      "legalName": "BELA BERENICE LTDA",
+      "street": "ARSENIO SANTOS, 903",
+      "neighborhood": "CENTRO",
+      "city": "Bom Jesus",
+      "cityCode": "2201903",
+      "state": "PI",
+      "zipCode": "64900-000",
+      "phone": "(89) 9993-2242",
+      "clientGroup": "Varejista-Extra",
+      "lat": -9.245647088349466,
+      "lng": -44.53692492971783,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1076829",
+      "externalCode": "1076829",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "R JOSE MARIA LIMA, 295",
+      "neighborhood": "CENTRO",
+      "city": "Colinas",
+      "cityCode": "2103505",
+      "state": "MA",
+      "zipCode": "65690-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1076922",
+      "externalCode": "1076922",
+      "name": "BLUE",
+      "tradeName": "BLUE",
+      "legalName": "M. PEREIRA FOLHA MARTINS",
+      "street": "ANISIO DE ABREU, 700",
+      "neighborhood": "CENTRO",
+      "city": "Gilbués",
+      "cityCode": "2204402",
+      "state": "PI",
+      "zipCode": "64930-000",
+      "phone": "(89) 99978-0488",
+      "clientGroup": "Varejista",
+      "lat": -9.633216975491333,
+      "lng": -45.39799577174778,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1077270",
+      "externalCode": "1077270",
+      "name": "LUAR SPORT",
+      "tradeName": "LUAR SPORT",
+      "legalName": "A H P DE SA FILHO EPP",
+      "street": "AV MARECHAL CASTELO BRANCO, 911",
+      "neighborhood": "PORENQUANTO",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64003-087",
+      "phone": "(86) 99929-3775",
+      "clientGroup": "Grandes NegÃ³cios 4",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1078286",
+      "externalCode": "1078286",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPARTAMENTOS",
+      "street": "FREI BENJAMIN DE BORNO, 55",
+      "neighborhood": "CENTRO",
+      "city": "Grajaú",
+      "cityCode": "2104800",
+      "state": "MA",
+      "zipCode": "65940-000",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1078478",
+      "externalCode": "1078478",
+      "name": "A F MODAS",
+      "tradeName": "A F MODAS",
+      "legalName": "ALAYLTON WESLLEY MOURA FELIX",
+      "street": "AV 15 DE NOVEMBRO, 1563",
+      "neighborhood": "IEDA",
+      "city": "Valença do Piauí",
+      "cityCode": "2211308",
+      "state": "PI",
+      "zipCode": "64300-000",
+      "phone": "(89) 99827-0101",
+      "clientGroup": "Varejista",
+      "lat": -6.383984578918064,
+      "lng": -41.808626623067084,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1078919",
+      "externalCode": "1078919",
+      "name": "MEGA & CIA",
+      "tradeName": "MEGA & CIA",
+      "legalName": "MAURILIO GONCALVES DE OLIVEIRA",
+      "street": "ZECA COQUEIRO, 309",
+      "neighborhood": "CENTRO",
+      "city": "São Raimundo Nonato",
+      "cityCode": "2210607",
+      "state": "PI",
+      "zipCode": "64770-000",
+      "phone": "(89) 98133-0213",
+      "clientGroup": "Varejista",
+      "lat": -8.973099028632348,
+      "lng": -42.732774779817184,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1081422",
+      "externalCode": "1081422",
+      "name": "LA VITRINN",
+      "tradeName": "LA VITRINN",
+      "legalName": "IULY MOURA E SILVA MUNIZ",
+      "street": "03 DE MAIO, 329",
+      "neighborhood": "VISTA ALEGRE",
+      "city": "Demerval Lobão",
+      "cityCode": "2203305",
+      "state": "PI",
+      "zipCode": "64390-000",
+      "phone": "86995029992",
+      "clientGroup": "Varejista",
+      "lat": -5.3421333333369105,
+      "lng": -42.64956666669671,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1081440",
+      "externalCode": "1081440",
+      "name": "CALCADEIRA",
+      "tradeName": "CALCADEIRA",
+      "legalName": "EDSON FRANCISCO DA ROCHA JUNIOR",
+      "street": "AV MARECHAL DEODORO, 686",
+      "neighborhood": "CENTRO",
+      "city": "Paulistana",
+      "cityCode": "2207801",
+      "state": "PI",
+      "zipCode": "64750-000",
+      "phone": "(89) 3422-3721",
+      "clientGroup": "Varejista",
+      "lat": -8.103361126692358,
+      "lng": -41.11861825070445,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1081947",
+      "externalCode": "1081947",
+      "name": "GLUCK BOUT",
+      "tradeName": "GLUCK BOUT",
+      "legalName": "JHON HERBETH PEREIRA DOS SANTOS",
+      "street": "RUA VER. ABEL PEREIRA, 570",
+      "neighborhood": "CENTRO",
+      "city": "Água Branca",
+      "cityCode": "2200202",
+      "state": "PI",
+      "zipCode": "64460-000",
+      "phone": "(86) 9921-2887",
+      "clientGroup": "Varejista",
+      "lat": -5.9148727053540275,
+      "lng": -42.62197779276048,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1081968",
+      "externalCode": "1081968",
+      "name": "MOCA BONIT",
+      "tradeName": "MOCA BONIT",
+      "legalName": "R M DE SOUSA & CIA LTDA",
+      "street": "AVENIDA PRESIDENTE GETULIO VARGAS, 226",
+      "neighborhood": "CENTRO",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64200-200",
+      "phone": "(86) 99438-7576",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1081971",
+      "externalCode": "1081971",
+      "name": "PONTUAL MO",
+      "tradeName": "PONTUAL MO",
+      "legalName": "F N DOS SANTOS COMERCIO",
+      "street": "AV MARIA DE LOU MAC DE RESENDE, 2135",
+      "neighborhood": "FATIMA",
+      "city": "Piracuruca",
+      "cityCode": "2208304",
+      "state": "PI",
+      "zipCode": "64240-000",
+      "phone": "(86) 9864-8732",
+      "clientGroup": "Varejista",
+      "lat": -3.844584715140516,
+      "lng": -41.60657173373334,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1082010",
+      "externalCode": "1082010",
+      "name": "CASERNA CO",
+      "tradeName": "CASERNA CO",
+      "legalName": "THAYS CHAVES PINHEIRO",
+      "street": "AVENIDA SENADOR HELVIDIO NUNES, 4416",
+      "neighborhood": "JUNCO",
+      "city": "Picos",
+      "cityCode": "2208007",
+      "state": "PI",
+      "zipCode": "64607-760",
+      "phone": "(89) 9971-6372",
+      "clientGroup": "Varejista",
+      "lat": -7.071764588142733,
+      "lng": -41.513246533244654,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1082064",
+      "externalCode": "1082064",
+      "name": "DANY MODAS",
+      "tradeName": "DANY MODAS",
+      "legalName": "FRANCISCO GOMES FREITAS FILHO 39826",
+      "street": "R LEONIDAS MELO, 333",
+      "neighborhood": "CENTRO",
+      "city": "Barras",
+      "cityCode": "2201200",
+      "state": "PI",
+      "zipCode": "64100-000",
+      "phone": "(86) 98135-9177",
+      "clientGroup": "Varejista",
+      "lat": -4.1848776090470805,
+      "lng": -42.38049815779103,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1083928",
+      "externalCode": "1083928",
+      "name": "FRANCISCA",
+      "tradeName": "FRANCISCA",
+      "legalName": "F DE BRITO AGUIAR MEE",
+      "street": "AV ELIAS JOAO TAJRA, 947",
+      "neighborhood": "FATIMA",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64049-305",
+      "phone": "(86) 3222-9291",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1084349",
+      "externalCode": "1084349",
+      "name": "PICOS CAMU",
+      "tradeName": "PICOS CAMU",
+      "legalName": "DIONEIA PINTO DE BARROS",
+      "street": "AV SENADOR HELVIDIO NUNES, 70",
+      "neighborhood": "JARDIM NATAL",
+      "city": "Picos",
+      "cityCode": "2208007",
+      "state": "PI",
+      "zipCode": "64606-000",
+      "phone": "(86) 3213-2800",
+      "clientGroup": "Varejista",
+      "lat": -7.071764588142733,
+      "lng": -41.513246533244654,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1085212",
+      "externalCode": "1085212",
+      "name": "GRUPO EVOL",
+      "tradeName": "GRUPO EVOL",
+      "legalName": "ARADIR LOPES NOGUEIRA",
+      "street": "AVENIDA TANCREDO NEVES, 377",
+      "neighborhood": "CENTRO",
+      "city": "Cristalândia do Piauí",
+      "cityCode": "2203008",
+      "state": "PI",
+      "zipCode": "64995-000",
+      "phone": "(89)98137-1947",
+      "clientGroup": "Varejista",
+      "lat": -10.747105403557198,
+      "lng": -45.129200871880656,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1085765",
+      "externalCode": "1085765",
+      "name": "VIELE EXTR",
+      "tradeName": "VIELE EXTR",
+      "legalName": "T DOS S CAMOES",
+      "street": "TV REGINO MENDES, 100",
+      "neighborhood": "CENTRO",
+      "city": "Cajueiro da Praia",
+      "cityCode": "2202083",
+      "state": "PI",
+      "zipCode": "64222-000",
+      "phone": "(86) 8106-3385",
+      "clientGroup": "Varejista",
+      "lat": -2.996269849563664,
+      "lng": -41.36102017225927,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1087585",
+      "externalCode": "1087585",
+      "name": "UESLEI",
+      "tradeName": "UESLEI",
+      "legalName": "UESLEI DO NASCIMENTO PEREIRA",
+      "street": "R LIDIA CAVALCANTE, 20",
+      "neighborhood": "AGUA BRANCA",
+      "city": "Uruçuí",
+      "cityCode": "2211209",
+      "state": "PI",
+      "zipCode": "64860-000",
+      "phone": "(99) 98182-0915",
+      "clientGroup": "Varejista",
+      "lat": -7.789204021057235,
+      "lng": -44.56818467900225,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1088218",
+      "externalCode": "1088218",
+      "name": "MOURA BOUT",
+      "tradeName": "MOURA BOUT",
+      "legalName": "RENATO DE MOURA MORAIS",
+      "street": "DOM PEDRO I, 946",
+      "neighborhood": "PRIMAVERA",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64213-010",
+      "phone": "(86) 99463-4993",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1088962",
+      "externalCode": "1088962",
+      "name": "PIJAMAS ES",
+      "tradeName": "PIJAMAS ES",
+      "legalName": "ANA CLEIA PINHEIRO LEDA SILVA",
+      "street": "Q SACI, 06",
+      "neighborhood": "SACI",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64020-220",
+      "phone": "(86) 9952-2393",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1088970",
+      "externalCode": "1088970",
+      "name": "DESTAKE",
+      "tradeName": "DESTAKE",
+      "legalName": "MARINES FATIMA DAHMER BIANCHINI 940",
+      "street": "R AVENCIDA BRASIL, 00",
+      "neighborhood": "Nova Santa Rosa",
+      "city": "Uruçuí",
+      "cityCode": "2211209",
+      "state": "PI",
+      "zipCode": "64860-000",
+      "phone": "(89) 99909-9455",
+      "clientGroup": "Varejista",
+      "lat": -7.789204021057235,
+      "lng": -44.56818467900225,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1089341",
+      "externalCode": "1089341",
+      "name": "ESTRELA",
+      "tradeName": "ESTRELA",
+      "legalName": "LEIDE PEREIRA DE MARCEDO",
+      "street": "AV DEMERVAL LOBAO, 840",
+      "neighborhood": "CENTRO",
+      "city": "Campo Maior",
+      "cityCode": "2202208",
+      "state": "PI",
+      "zipCode": "64280-000",
+      "phone": "(86) 99401-6926",
+      "clientGroup": "Varejista",
+      "lat": -4.881291884580322,
+      "lng": -42.15427831327271,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1089992",
+      "externalCode": "1089992",
+      "name": "JEANE BOUT",
+      "tradeName": "JEANE BOUT",
+      "legalName": "JEANE DA SILVA GOMES",
+      "street": "RUA ITAUNA, 1644",
+      "neighborhood": "SAO FRANCISCO DA GUARITA",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64215-115",
+      "phone": "(86) 9943-6153",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1090626",
+      "externalCode": "1090626",
+      "name": "LOJAO POPU",
+      "tradeName": "LOJAO POPU",
+      "legalName": "J EUDSON DA SILVA & CIA LTDA",
+      "street": "RUA TORQUATO TORRES, 1218",
+      "neighborhood": "CENTRO",
+      "city": "Miguel Alves",
+      "cityCode": "2206209",
+      "state": "PI",
+      "zipCode": "64130-000",
+      "phone": null,
+      "clientGroup": "Varejista",
+      "lat": -4.23867744518892,
+      "lng": -42.76254979905099,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1090805",
+      "externalCode": "1090805",
+      "name": "CAROLINE P",
+      "tradeName": "CAROLINE P",
+      "legalName": "ANNA CAROLINE DE CARVALHO",
+      "street": "RUA HUGO NAPOLEAO, 3111",
+      "neighborhood": "ININGA",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64048-440",
+      "phone": "(86) 9916-1560",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1090806",
+      "externalCode": "1090806",
+      "name": "ERODITA MO",
+      "tradeName": "ERODITA MO",
+      "legalName": "ERODITA CARDOSO DE MORAES SILVA",
+      "street": "R SETE DE SETEMBRO, 1211",
+      "neighborhood": "VERMELHA",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64018-630",
+      "phone": "(86) 94141-7702",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1091411",
+      "externalCode": "1091411",
+      "name": "GLUCK BOUT",
+      "tradeName": "GLUCK BOUT",
+      "legalName": "ALLINE V FERREIRA LIMA SANTOS",
+      "street": "RUA VEREADOR ABEL PEREIRA, 578",
+      "neighborhood": "CENTRO",
+      "city": "Água Branca",
+      "cityCode": "2200202",
+      "state": "PI",
+      "zipCode": "64460-000",
+      "phone": "(86)99833-7534",
+      "clientGroup": "Varejista",
+      "lat": -5.9148727053540275,
+      "lng": -42.62197779276048,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1091813",
+      "externalCode": "1091813",
+      "name": "ELEGANCE",
+      "tradeName": "ELEGANCE",
+      "legalName": "ANA C DA SILVA",
+      "street": "ZACARIAS DE GOES VASCONCELOS, 55",
+      "neighborhood": "CENTRO",
+      "city": "Oeiras",
+      "cityCode": "2207009",
+      "state": "PI",
+      "zipCode": "64500-000",
+      "phone": "(89) 9944-8975",
+      "clientGroup": "Varejista",
+      "lat": -6.95072360210872,
+      "lng": -42.169079773463864,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1092478",
+      "externalCode": "1092478",
+      "name": "MOURA CONF",
+      "tradeName": "MOURA CONF",
+      "legalName": "SUZANA DE MOURA MORAIS",
+      "street": "RUA DOM PEDRO I, 946",
+      "neighborhood": "PRIMAVERA",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64213-010",
+      "phone": "(86) 99460-4602",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1092485",
+      "externalCode": "1092485",
+      "name": "TRES MARIA",
+      "tradeName": "TRES MARIA",
+      "legalName": "TRES MARIAS ROUPA INFANTO JUVENIL",
+      "street": "AV. JOSE MIGUEL, 997",
+      "neighborhood": "CENTRO",
+      "city": "Água Branca",
+      "cityCode": "2200202",
+      "state": "PI",
+      "zipCode": "64460-000",
+      "phone": "(86) 9443-9935",
+      "clientGroup": "Varejista",
+      "lat": -5.9148727053540275,
+      "lng": -42.62197779276048,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1092690",
+      "externalCode": "1092690",
+      "name": "ESTILO",
+      "tradeName": "ESTILO",
+      "legalName": "MARIA DA CONCEICAO PEREIRA CALDAS",
+      "street": "RUA OSCAR CLARK, 605",
+      "neighborhood": "CENTRO",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64200-205",
+      "phone": "(86) 99931-7455",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1092750",
+      "externalCode": "1092750",
+      "name": "SAO JOAO M",
+      "tradeName": "SAO JOAO M",
+      "legalName": "A CLESIO DA S O BARROSO ME",
+      "street": "AV CANDIDO COELHO, 1604",
+      "neighborhood": "CENTRO",
+      "city": "São João do Piauí",
+      "cityCode": "2210003",
+      "state": "PI",
+      "zipCode": "64760-000",
+      "phone": "(99) 8272-3328",
+      "clientGroup": "Varejista",
+      "lat": -8.309001224386963,
+      "lng": -42.25242658728586,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1092778",
+      "externalCode": "1092778",
+      "name": "MACAVICTOR",
+      "tradeName": "MACAVICTOR",
+      "legalName": "MARIA DE SOUSA ARAUJO",
+      "street": "AV FRANCELINO FRANCO PEREIRA, 330",
+      "neighborhood": "POVOADO MANDACARU",
+      "city": "São Julião",
+      "cityCode": "2210300",
+      "state": "PI",
+      "zipCode": "64670-000",
+      "phone": "(89)98147-8180",
+      "clientGroup": "Varejista",
+      "lat": -7.088409237511756,
+      "lng": -40.829221031366565,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1092974",
+      "externalCode": "1092974",
+      "name": "SANTOS BOU",
+      "tradeName": "SANTOS BOU",
+      "legalName": "NELLYSSANIA SANTOS DE ARAUJO",
+      "street": "R JOAO NUNES, 312",
+      "neighborhood": "OEIRAS NOVA",
+      "city": "Oeiras",
+      "cityCode": "2207009",
+      "state": "PI",
+      "zipCode": "64500-000",
+      "phone": "(89) 9456-4056",
+      "clientGroup": "Varejista",
+      "lat": -6.95072360210872,
+      "lng": -42.169079773463864,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1092982",
+      "externalCode": "1092982",
+      "name": "VELOSO STO",
+      "tradeName": "VELOSO STO",
+      "legalName": "MARIA DA CRUZ FRANCA VELOSO",
+      "street": "R. SAO JOAO, 673",
+      "neighborhood": "AMANDO LIMA",
+      "city": "Valença do Piauí",
+      "cityCode": "2211308",
+      "state": "PI",
+      "zipCode": "64300-000",
+      "phone": "(89) 9935-0768",
+      "clientGroup": "Varejista",
+      "lat": -6.383984578918064,
+      "lng": -41.808626623067084,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1093239",
+      "externalCode": "1093239",
+      "name": "MODA MANIA",
+      "tradeName": "MODA MANIA",
+      "legalName": "PAULO HENRIQUE RICHA",
+      "street": "AV. CANDIDO ALEIXO, 45",
+      "neighborhood": "CENTRO",
+      "city": "Oeiras",
+      "cityCode": "2207009",
+      "state": "PI",
+      "zipCode": "64500-000",
+      "phone": "(89) 9401-0126",
+      "clientGroup": "Varejista",
+      "lat": -6.95072360210872,
+      "lng": -42.169079773463864,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1093275",
+      "externalCode": "1093275",
+      "name": "VIEIRA MOD",
+      "tradeName": "VIEIRA MOD",
+      "legalName": "FRANCIVANIO VIEIRA DA SILVA",
+      "street": "AV FRANCISCO DA COSTA VELOSO, 535",
+      "neighborhood": "CENTRO",
+      "city": "Cabeceiras do Piauí",
+      "cityCode": "2202059",
+      "state": "PI",
+      "zipCode": "64105-000",
+      "phone": "(86) 98156-7484",
+      "clientGroup": "Varejista",
+      "lat": -4.43744008498011,
+      "lng": -42.3357772202703,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1094257",
+      "externalCode": "1094257",
+      "name": "ELES E ELA",
+      "tradeName": "ELES E ELA",
+      "legalName": "JAMILLY KAREN DA SILVA ARAUJO",
+      "street": "RUA SOUSA MARTINS, S/N",
+      "neighborhood": "CENTRO",
+      "city": "Santa Cruz do Piauí",
+      "cityCode": "2209104",
+      "state": "PI",
+      "zipCode": "64545-000",
+      "phone": "(89) 98817-4706",
+      "clientGroup": "Varejista",
+      "lat": -7.252000069198492,
+      "lng": -41.77786801195663,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1094626",
+      "externalCode": "1094626",
+      "name": "FRANCISCA",
+      "tradeName": "FRANCISCA",
+      "legalName": "FRANCISCA DAS CHAGAS VIEIRA",
+      "street": "PC CEL ANTONIO V DE SOUSA, Sn",
+      "neighborhood": "CENTRO",
+      "city": "Alto Longá",
+      "cityCode": "2200301",
+      "state": "PI",
+      "zipCode": "64360-000",
+      "phone": "(86) 3256-1226",
+      "clientGroup": "Varejista",
+      "lat": -5.374086375312447,
+      "lng": -42.15068788713892,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1094772",
+      "externalCode": "1094772",
+      "name": "ARMAZEM PA",
+      "tradeName": "ARMAZEM PA",
+      "legalName": "CLAUDINO S A LOJAS DE DEPTOS",
+      "street": "AVENIDA JOSE FRANCISCO DE ALMEIDA NETOQUADRA 168 LOTE 03 CAS, 4255",
+      "neighborhood": "DIRCEU I",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64077-970",
+      "phone": "(86) 3221-3535",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1095229",
+      "externalCode": "1095229",
+      "name": "L S CARVAL",
+      "tradeName": "L S CARVAL",
+      "legalName": "LEONEIDE DOS SANTOS CARVALHO 056767",
+      "street": "AV. CANDIDO ALEIXO, S/N",
+      "neighborhood": "CENTRO",
+      "city": "Oeiras",
+      "cityCode": "2207009",
+      "state": "PI",
+      "zipCode": "64500-000",
+      "phone": "(89) 99413-0416",
+      "clientGroup": "Varejista",
+      "lat": -6.95072360210872,
+      "lng": -42.169079773463864,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1095253",
+      "externalCode": "1095253",
+      "name": "DONA DONA",
+      "tradeName": "DONA DONA",
+      "legalName": "HELIA LEIDIANE SA DA SILVA 01377705",
+      "street": "AV. MARECHAL DEODORO, 723",
+      "neighborhood": "CENTRO",
+      "city": "Paulistana",
+      "cityCode": "2207801",
+      "state": "PI",
+      "zipCode": "64750-000",
+      "phone": "(89) 99413-2403",
+      "clientGroup": "Varejista",
+      "lat": -8.103361126692358,
+      "lng": -41.11861825070445,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1095349",
+      "externalCode": "1095349",
+      "name": "LEON MODAS",
+      "tradeName": "LEON MODAS",
+      "legalName": "JOSE DE LIMA CONFECCOES",
+      "street": "AV. CANDIDO ALEIXO, 159",
+      "neighborhood": "CENTRO",
+      "city": "Oeiras",
+      "cityCode": "2207009",
+      "state": "PI",
+      "zipCode": "64500-000",
+      "phone": "(89)99413-0416",
+      "clientGroup": "Varejista",
+      "lat": -6.95072360210872,
+      "lng": -42.169079773463864,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1095404",
+      "externalCode": "1095404",
+      "name": "LEMAR MODA",
+      "tradeName": "LEMAR MODA",
+      "legalName": "LEMAR MODAS E CIA LTDA",
+      "street": "R CEL PATRIOTINO LAGES, 922",
+      "neighborhood": "CENTRO",
+      "city": "Esperantina",
+      "cityCode": "2203701",
+      "state": "PI",
+      "zipCode": "64180-000",
+      "phone": "(86) 9452-7908",
+      "clientGroup": "Varejista",
+      "lat": -3.810029788966928,
+      "lng": -42.19333424976415,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1095480",
+      "externalCode": "1095480",
+      "name": "RITA CONFE",
+      "tradeName": "RITA CONFE",
+      "legalName": "RITA DE CASSIA CEREJO57918384334",
+      "street": "GERVASIO COSTA, S/N",
+      "neighborhood": "MATADOURO",
+      "city": "Barras",
+      "cityCode": "2201200",
+      "state": "PI",
+      "zipCode": "64100-000",
+      "phone": "86 994521848",
+      "clientGroup": "Varejista",
+      "lat": -4.1848776090470805,
+      "lng": -42.38049815779103,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1095771",
+      "externalCode": "1095771",
+      "name": "LOJA ESPER",
+      "tradeName": "LOJA ESPER",
+      "legalName": "LOJA ESPERANCA",
+      "street": "R ZECA COQUEIRO, 264",
+      "neighborhood": "CENTRO",
+      "city": "São Raimundo Nonato",
+      "cityCode": "2210607",
+      "state": "PI",
+      "zipCode": "64770-000",
+      "phone": "(89) 98107-0369",
+      "clientGroup": "Varejista Fidelidade",
+      "lat": -8.973099028632348,
+      "lng": -42.732774779817184,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1095835",
+      "externalCode": "1095835",
+      "name": "UNI MODAS",
+      "tradeName": "UNI MODAS",
+      "legalName": "ARTUR OLIVEIRA COSTA",
+      "street": "RUA FACHEIRO, SN",
+      "neighborhood": "CENTRO",
+      "city": "Dom Inocêncio",
+      "cityCode": "2203453",
+      "state": "PI",
+      "zipCode": "64790-000",
+      "phone": "(89) 98133-7311",
+      "clientGroup": "Varejista",
+      "lat": -8.90924887062822,
+      "lng": -41.91455683939773,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1096050",
+      "externalCode": "1096050",
+      "name": "AF MODAS",
+      "tradeName": "AF MODAS",
+      "legalName": "ANTONINA DE MOURA FRAZAO",
+      "street": "AV 15 DE NOVEMBRO, 1563",
+      "neighborhood": "SAO FRANCISCO",
+      "city": "Valença do Piauí",
+      "cityCode": "2211308",
+      "state": "PI",
+      "zipCode": "64300-000",
+      "phone": "(89) 99927-0101",
+      "clientGroup": "Varejista",
+      "lat": -6.383984578918064,
+      "lng": -41.808626623067084,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1096067",
+      "externalCode": "1096067",
+      "name": "MINHA LING",
+      "tradeName": "MINHA LING",
+      "legalName": "APARECIDA SOFIA FONSECA NUNES",
+      "street": "RUA ANISIO DE ABREU, 151",
+      "neighborhood": "CENTRO",
+      "city": "Amarante",
+      "cityCode": "2200509",
+      "state": "PI",
+      "zipCode": "64400-000",
+      "phone": "(86) 9906-7616",
+      "clientGroup": "Varejista",
+      "lat": -6.371258507482016,
+      "lng": -42.79328866410834,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1096557",
+      "externalCode": "1096557",
+      "name": "SAMARA MOD",
+      "tradeName": "SAMARA MOD",
+      "legalName": "LAMARTINE DIAS DE FIGUEIREDO",
+      "street": "R CAPITAO AURELIANO DIAS, 348",
+      "neighborhood": "CENTRO",
+      "city": "Caracol",
+      "cityCode": "2202505",
+      "state": "PI",
+      "zipCode": "64795-000",
+      "phone": "(89) 98105-2583",
+      "clientGroup": "Varejista",
+      "lat": -9.058418323992425,
+      "lng": -43.35010916363904,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1096611",
+      "externalCode": "1096611",
+      "name": "LILI MODAS",
+      "tradeName": "LILI MODAS",
+      "legalName": "LIDISSANDRA PEREIRA DE SOUSA",
+      "street": "R ROGERIO JOSE DE CARVALHO, 588",
+      "neighborhood": "CENTRO",
+      "city": "Uruçuí",
+      "cityCode": "2211209",
+      "state": "PI",
+      "zipCode": "64860-000",
+      "phone": "(89) 99935-2085",
+      "clientGroup": "Varejista",
+      "lat": -7.789204021057235,
+      "lng": -44.56818467900225,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1096841",
+      "externalCode": "1096841",
+      "name": "PRIMAVERA",
+      "tradeName": "PRIMAVERA",
+      "legalName": "F. R. AMORIM DE SOUSA SANTOS",
+      "street": "RUA CEL. TOTE MACHADO, 94",
+      "neighborhood": "CENTRO",
+      "city": "Piracuruca",
+      "cityCode": "2208304",
+      "state": "PI",
+      "zipCode": "64240-000",
+      "phone": "(86) 99903-7272",
+      "clientGroup": "Varejista",
+      "lat": -3.844584715140516,
+      "lng": -41.60657173373334,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1096963",
+      "externalCode": "1096963",
+      "name": "ARMAZE PAR",
+      "tradeName": "ARMAZE PAR",
+      "legalName": "CLAUDINO S A LOJAS DE DEPTOS",
+      "street": "AVENIDA JORNALISTA JOSIPIO LUSTOSA, 6611",
+      "neighborhood": "MOCAMBINHO",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64010-790",
+      "phone": "(86) 3131-5000",
+      "clientGroup": "Grandes NegÃ³cios 7",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1097101",
+      "externalCode": "1097101",
+      "name": "LOJINHA ME",
+      "tradeName": "LOJINHA ME",
+      "legalName": "VERA LUCIA PASSOS DE SANTANA",
+      "street": "RUA MANOEL MARTINS RIBEIRO, SN",
+      "neighborhood": "CENTRO",
+      "city": "Dirceu Arcoverde",
+      "cityCode": "2203354",
+      "state": "PI",
+      "zipCode": "64785-000",
+      "phone": "(89) 98124-7412",
+      "clientGroup": "Varejista",
+      "lat": -9.32672336139436,
+      "lng": -42.478591649849214,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1097186",
+      "externalCode": "1097186",
+      "name": "M&G OUTLET",
+      "tradeName": "M&G OUTLET",
+      "legalName": "DRIELLE CRISTINA DA CRUZ",
+      "street": "AV NOVA SANTA ROSA, 000",
+      "neighborhood": "NOVA SANTA ROSA",
+      "city": "Uruçuí",
+      "cityCode": "2211209",
+      "state": "PI",
+      "zipCode": "64860-000",
+      "phone": "(89) 98109-9971",
+      "clientGroup": "Varejista",
+      "lat": -7.789204021057235,
+      "lng": -44.56818467900225,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1097348",
+      "externalCode": "1097348",
+      "name": "DELICATTA",
+      "tradeName": "DELICATTA",
+      "legalName": "FRANCISCO DAS CHAGAS MATOS JUNIOR",
+      "street": "AV VEREADOR JOSE VIRGILIO RIBEIRO, 341",
+      "neighborhood": "CENTRO",
+      "city": "Belém do Piauí",
+      "cityCode": "2201572",
+      "state": "PI",
+      "zipCode": "64678-000",
+      "phone": "(89)99420-9893",
+      "clientGroup": "Varejista",
+      "lat": -7.385771292887915,
+      "lng": -40.98792577580709,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1097364",
+      "externalCode": "1097364",
+      "name": "COMERCIAL",
+      "tradeName": "COMERCIAL",
+      "legalName": "VL MONTEIRO DA SILVA COMERC DE PAPE",
+      "street": "AV. JOSIPIO LUSTOSA, 7051",
+      "neighborhood": "MOCAMBINHO I",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64010-790",
+      "phone": "(86) 9579-9938",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1097778",
+      "externalCode": "1097778",
+      "name": "INST. JANA",
+      "tradeName": "INST. JANA",
+      "legalName": "EDILEUSA FERNADES RIBEIRO SOUSA",
+      "street": "QUADRA 6, 01",
+      "neighborhood": "ITARARE",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64077-500",
+      "phone": "(86) 9887-4862",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1097893",
+      "externalCode": "1097893",
+      "name": "NALVA VARI",
+      "tradeName": "NALVA VARI",
+      "legalName": "MARINALVA ANDRADE LEAL MOURA",
+      "street": "COM PV BAIXA GRANDE, S/N",
+      "neighborhood": "ZONA RURAL",
+      "city": "Dom Expedito Lopes",
+      "cityCode": "2203404",
+      "state": "PI",
+      "zipCode": "64620-000",
+      "phone": "(89)98809-4338",
+      "clientGroup": "Varejista",
+      "lat": -6.9662781724627365,
+      "lng": -41.689615035501284,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1098450",
+      "externalCode": "1098450",
+      "name": "CASA DEUSD",
+      "tradeName": "CASA DEUSD",
+      "legalName": "EDLLA SAMARA LEAL ARAUJO DEUSDARA",
+      "street": "TRAVESSA LOURENCO PEREIRA, 10",
+      "neighborhood": "CENTRO",
+      "city": "Picos",
+      "cityCode": "2208007",
+      "state": "PI",
+      "zipCode": "64600-084",
+      "phone": "(89)98806-9838",
+      "clientGroup": "Varejista",
+      "lat": -7.071764588142733,
+      "lng": -41.513246533244654,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1098486",
+      "externalCode": "1098486",
+      "name": "SONHO DE G",
+      "tradeName": "SONHO DE G",
+      "legalName": "NADIA FERREIRA BARREIRA MACEDO",
+      "street": "PRACA SAO FRANCISCO, 0",
+      "neighborhood": "CENTRO",
+      "city": "Barreiras do Piauí",
+      "cityCode": "2201309",
+      "state": "PI",
+      "zipCode": "64990-000",
+      "phone": "(89)98107-1925",
+      "clientGroup": "Varejista",
+      "lat": -9.974695649459168,
+      "lng": -45.690194906384015,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1098525",
+      "externalCode": "1098525",
+      "name": "CAPITAL MA",
+      "tradeName": "CAPITAL MA",
+      "legalName": "CALCADOS E CONFECCOES PEDRO II",
+      "street": "AVENIDA CEL CORDEIRO, 245",
+      "neighborhood": "CENTRO",
+      "city": "Pedro II",
+      "cityCode": "2207900",
+      "state": "PI",
+      "zipCode": "64255-000",
+      "phone": "(64)93671-1366",
+      "clientGroup": "Varejista",
+      "lat": -4.468392814127724,
+      "lng": -41.41743972826379,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1100147",
+      "externalCode": "1100147",
+      "name": "MEGA E CIA",
+      "tradeName": "MEGA E CIA",
+      "legalName": "MAURILIO GONCALVES DE OLIVEIRA",
+      "street": "PRACA MAJOR TOINHO, 379",
+      "neighborhood": "CENTRO",
+      "city": "São Raimundo Nonato",
+      "cityCode": "2210607",
+      "state": "PI",
+      "zipCode": "64770-000",
+      "phone": "(89)98133-0213",
+      "clientGroup": "Varejista",
+      "lat": -8.973099028632348,
+      "lng": -42.732774779817184,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1100170",
+      "externalCode": "1100170",
+      "name": "MERCANTIL",
+      "tradeName": "MERCANTIL",
+      "legalName": "ROZILENE ROCHA DA SILVA MENDONCA",
+      "street": "RUA LIDIA CAVALCANTE, 423",
+      "neighborhood": "AGUA BRANCA",
+      "city": "Uruçuí",
+      "cityCode": "2211209",
+      "state": "PI",
+      "zipCode": "64860-000",
+      "phone": "(89)99981-3593",
+      "clientGroup": "Varejista",
+      "lat": -7.789204021057235,
+      "lng": -44.56818467900225,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1100171",
+      "externalCode": "1100171",
+      "name": "DENGO DE M",
+      "tradeName": "DENGO DE M",
+      "legalName": "MARIA FELIX DA SILVA MARTINS",
+      "street": "RUA SANTO ANTONIO, 665",
+      "neighborhood": "CENTRO",
+      "city": "Landri Sales",
+      "cityCode": "2205607",
+      "state": "PI",
+      "zipCode": "64850-000",
+      "phone": "(89)99474-7896",
+      "clientGroup": "Varejista",
+      "lat": -7.275816907188788,
+      "lng": -43.923639471195095,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1100432",
+      "externalCode": "1100432",
+      "name": "LOJAO MARI",
+      "tradeName": "LOJAO MARI",
+      "legalName": "LEANDRO PEREIRA CARVALHO",
+      "street": "RUA ANTONIO TUPINAMBA PORTELA, 379",
+      "neighborhood": "CENTRO",
+      "city": "Água Branca",
+      "cityCode": "2200202",
+      "state": "PI",
+      "zipCode": "64460-000",
+      "phone": "(86)99413-1249",
+      "clientGroup": "Varejista",
+      "lat": -5.9148727053540275,
+      "lng": -42.62197779276048,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1100580",
+      "externalCode": "1100580",
+      "name": "ME CONFECC",
+      "tradeName": "ME CONFECC",
+      "legalName": "E DE SOUSA MELO",
+      "street": "RUA EPAMINONDAS NOGUEIRA, 545",
+      "neighborhood": "CENTRO",
+      "city": "Valença do Piauí",
+      "cityCode": "2211308",
+      "state": "PI",
+      "zipCode": "64300-000",
+      "phone": "(89)99987-0800",
+      "clientGroup": "Varejista",
+      "lat": -6.383984578918064,
+      "lng": -41.808626623067084,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1100886",
+      "externalCode": "1100886",
+      "name": "GUSTAVO RO",
+      "tradeName": "GUSTAVO RO",
+      "legalName": "GUSTAVO ROCHA LIMA VESTUARIO",
+      "street": "RUA EPAMINONDAS NOGUEIRA, 571",
+      "neighborhood": "CENTRO",
+      "city": "Valença do Piauí",
+      "cityCode": "2211308",
+      "state": "PI",
+      "zipCode": "64300-000",
+      "phone": "(89)3465-1696",
+      "clientGroup": "Varejista",
+      "lat": -6.383984578918064,
+      "lng": -41.808626623067084,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1101183",
+      "externalCode": "1101183",
+      "name": "SAO FRANCI",
+      "tradeName": "SAO FRANCI",
+      "legalName": "CLEIDE L DE OLIVEIRA",
+      "street": "AV RAIMUNDO MARTINS, 812",
+      "neighborhood": "CENTRO",
+      "city": "Coivaras",
+      "cityCode": "2202737",
+      "state": "PI",
+      "zipCode": "64335-000",
+      "phone": "(86)94368383",
+      "clientGroup": "Varejista",
+      "lat": -5.12217470494088,
+      "lng": -42.29653532630379,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1101856",
+      "externalCode": "1101856",
+      "name": "BEBE  & CI",
+      "tradeName": "BEBE  & CI",
+      "legalName": "ELISETE FEITOSA DE LIMA BENEVIDES",
+      "street": "RUA CEL ELPIDIO COELHO, 508",
+      "neighborhood": "ESTACAO",
+      "city": "Paulistana",
+      "cityCode": "2207801",
+      "state": "PI",
+      "zipCode": "64750-000",
+      "phone": "(89)4871-494",
+      "clientGroup": "Varejista",
+      "lat": -8.103361126692358,
+      "lng": -41.11861825070445,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1102012",
+      "externalCode": "1102012",
+      "name": "CALCADEIRA",
+      "tradeName": "CALCADEIRA",
+      "legalName": "FRANCISCA IRACEMA DE MORAIS",
+      "street": "RUA FCA DE ARAGAO PAIVA, 172",
+      "neighborhood": "CENTRO",
+      "city": "São Miguel do Tapuio",
+      "cityCode": "2210409",
+      "state": "PI",
+      "zipCode": "64330-000",
+      "phone": "(86)98189-1439",
+      "clientGroup": "Varejista",
+      "lat": -5.729075055517221,
+      "lng": -41.43707612864233,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1102025",
+      "externalCode": "1102025",
+      "name": "TACI JOIAS",
+      "tradeName": "TACI JOIAS",
+      "legalName": "TACIANE DE JESUS SILVA AMORIM",
+      "street": "RUA VEREADOR RAMOS, 1077",
+      "neighborhood": "CENTRO",
+      "city": "Esperantina",
+      "cityCode": "2203701",
+      "state": "PI",
+      "zipCode": "64180-000",
+      "phone": "(86)99863-0234",
+      "clientGroup": "Varejista",
+      "lat": -3.810029788966928,
+      "lng": -42.19333424976415,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1102211",
+      "externalCode": "1102211",
+      "name": "NOROESTE",
+      "tradeName": "NOROESTE",
+      "legalName": "B CIRILO ALBINO E CIA",
+      "street": "RUA JOAO JOCA ASSUNCAO, 537",
+      "neighborhood": "PARQUE PIAUI I",
+      "city": "Timon",
+      "cityCode": "2112209",
+      "state": "MA",
+      "zipCode": "65631-080",
+      "phone": "(99)3317-8865",
+      "clientGroup": "Varejista",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1102225",
+      "externalCode": "1102225",
+      "name": "LUAR MAGAZ",
+      "tradeName": "LUAR MAGAZ",
+      "legalName": "L S E A H P DE SA FILHO",
+      "street": "AVENIDA HOMERO CASTELO BRANCO, 1036",
+      "neighborhood": "SAO CRISTOVAO",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64048-400",
+      "phone": "(86)99453-7424",
+      "clientGroup": "Grandes NegÃ³cios 4",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1102357",
+      "externalCode": "1102357",
+      "name": "SV MULTIST",
+      "tradeName": "SV MULTIST",
+      "legalName": "RODRIGO LOPES DA SILVA",
+      "street": "RUA PROFESSOR AMSTEIN, 875",
+      "neighborhood": "CENTRO",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64200-170",
+      "phone": "(86)99812-4955",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1102376",
+      "externalCode": "1102376",
+      "name": "PAZ MODAS",
+      "tradeName": "PAZ MODAS",
+      "legalName": "E P CARDOSO",
+      "street": "AVENIDA DOUTOR JOAO SILVA FILHO, 2715",
+      "neighborhood": "PLANALTO DE MONTESERRA THE",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64207-545",
+      "phone": "(86)98868-6349",
+      "clientGroup": "Loja de Departamento",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1102546",
+      "externalCode": "1102546",
+      "name": "INOVARI",
+      "tradeName": "INOVARI",
+      "legalName": "SONIA MARIA ARAUJO LIMA",
+      "street": "AVENIDA DOUTOR JOAO SILVA FILHO, 1988",
+      "neighborhood": "PIAUI",
+      "city": "Parnaíba",
+      "cityCode": "2207702",
+      "state": "PI",
+      "zipCode": "64208-105",
+      "phone": "(86)99504-5205",
+      "clientGroup": "Varejista",
+      "lat": -2.9529677417838043,
+      "lng": -41.76307456520125,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1102566",
+      "externalCode": "1102566",
+      "name": "NENEM MODA",
+      "tradeName": "NENEM MODA",
+      "legalName": "ALZERINA DE SOZA RAMOS",
+      "street": "AVENIDA PRESIDENTE VARGAS, 169",
+      "neighborhood": "CENTRO",
+      "city": "Luzilândia",
+      "cityCode": "2205805",
+      "state": "PI",
+      "zipCode": "64160-000",
+      "phone": "(86)99930-3896",
+      "clientGroup": "Varejista",
+      "lat": -3.6059336179217416,
+      "lng": -42.37569891121295,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1102685",
+      "externalCode": "1102685",
+      "name": "GLAMOUR MO",
+      "tradeName": "GLAMOUR MO",
+      "legalName": "NOELIA MIRANDA DOS SANTOS FARIAS",
+      "street": "VEREADOR JOAQUIM FERNANDES, 1202",
+      "neighborhood": "CENTRO",
+      "city": "Esperantina",
+      "cityCode": "2203701",
+      "state": "PI",
+      "zipCode": "64180-000",
+      "phone": "(86)99998-2561",
+      "clientGroup": "Varejista",
+      "lat": -3.810029788966928,
+      "lng": -42.19333424976415,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1102927",
+      "externalCode": "1102927",
+      "name": "BRUNNO WER",
+      "tradeName": "BRUNNO WER",
+      "legalName": "BRUNNO WERTON DE MAGALHAES LIMA",
+      "street": "RUA 25 DE DEZEMBRO, 71",
+      "neighborhood": "CENTRO",
+      "city": "Cocal",
+      "cityCode": "2202703",
+      "state": "PI",
+      "zipCode": "64235-000",
+      "phone": "(86)99931-9191",
+      "clientGroup": "Varejista",
+      "lat": -3.43183512400888,
+      "lng": -41.532742951974285,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1104550",
+      "externalCode": "1104550",
+      "name": "MENINA POL",
+      "tradeName": "MENINA POL",
+      "legalName": "POLIANA MENDES GOMES",
+      "street": "RUA GERALDINE GABRIEL, 783",
+      "neighborhood": "CENTRO",
+      "city": "Gilbués",
+      "cityCode": "2204402",
+      "state": "PI",
+      "zipCode": "64930-000",
+      "phone": "(89)99851-4078",
+      "clientGroup": "Varejista",
+      "lat": -9.633216975491333,
+      "lng": -45.39799577174778,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1105384",
+      "externalCode": "1105384",
+      "name": "OSTENTACAO",
+      "tradeName": "OSTENTACAO",
+      "legalName": "ALEXANDRE ALVES DA SILVA",
+      "street": "AVENIDA FRANCISCO CARLOS JANSEN, 1300",
+      "neighborhood": "PARQUE PIAUI I",
+      "city": "Timon",
+      "cityCode": "2112209",
+      "state": "MA",
+      "zipCode": "65631-240",
+      "phone": "(86) 99986-1382",
+      "clientGroup": "Varejista",
+      "lat": null,
+      "lng": null,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1105410",
+      "externalCode": "1105410",
+      "name": "MYLLA CONF",
+      "tradeName": "MYLLA CONF",
+      "legalName": "MYLLENA AQUINO SAMPAIO",
+      "street": "ANTONIETA MASCARENHAS, 54",
+      "neighborhood": "CENTRO",
+      "city": "Riacho Frio",
+      "cityCode": "2208858",
+      "state": "PI",
+      "zipCode": "64975-000",
+      "phone": "(89) 98122-9355",
+      "clientGroup": "Varejista",
+      "lat": -9.93252821609897,
+      "lng": -44.81657156429753,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1105827",
+      "externalCode": "1105827",
+      "name": "DALVA MODA",
+      "tradeName": "DALVA MODA",
+      "legalName": "FRANCISDALVA DOS SANTOS REGO",
+      "street": "TRAVESSA MARANHAO, 57",
+      "neighborhood": "CENTRO",
+      "city": "Buriti dos Lopes",
+      "cityCode": "2202000",
+      "state": "PI",
+      "zipCode": "64230-000",
+      "phone": "(86) 99411-3382",
+      "clientGroup": "Varejista",
+      "lat": -3.248498765397792,
+      "lng": -41.81562135382459,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1106100",
+      "externalCode": "1106100",
+      "name": "ELIX MAGAZ",
+      "tradeName": "ELIX MAGAZ",
+      "legalName": "ELIZETE SARAIVA DA COSTA",
+      "street": "RUA PEDRO CRUZ, 298",
+      "neighborhood": "TIJUCA",
+      "city": "José de Freitas",
+      "cityCode": "2205508",
+      "state": "PI",
+      "zipCode": "64110-000",
+      "phone": "(86) 9882-1031",
+      "clientGroup": "Varejista",
+      "lat": -4.707525384484946,
+      "lng": -42.51383948782444,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1106185",
+      "externalCode": "1106185",
+      "name": "NINAâ S",
+      "tradeName": "NINAâ S",
+      "legalName": "M BALSAN EIRELI ME",
+      "street": "AV SANTA ROSA POVOADO NOVA SANTA ROSA, 45",
+      "neighborhood": "ZONA RURAL",
+      "city": "Uruçuí",
+      "cityCode": "2211209",
+      "state": "PI",
+      "zipCode": "64860-000",
+      "phone": "(89) 99912-9669",
+      "clientGroup": "Varejista",
+      "lat": -7.789204021057235,
+      "lng": -44.56818467900225,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1106284",
+      "externalCode": "1106284",
+      "name": "BOUTIQUE F",
+      "tradeName": "BOUTIQUE F",
+      "legalName": "F M F DE ARAUJO LTDA",
+      "street": "MATIAS ANTONIO NONATO, 205",
+      "neighborhood": "CENTRO",
+      "city": "São José do Divino",
+      "cityCode": "2210052",
+      "state": "PI",
+      "zipCode": "64245-000",
+      "phone": "(86) 98154-0056",
+      "clientGroup": "Varejista",
+      "lat": -3.784793732117128,
+      "lng": -41.85276506499945,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1106664",
+      "externalCode": "1106664",
+      "name": "ATACADAO M",
+      "tradeName": "ATACADAO M",
+      "legalName": "FK VESTUARIO  LTDA",
+      "street": "RUA WALFRIDO SALMITO, 1724",
+      "neighborhood": "PROMORAR",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64027-236",
+      "phone": "(86) 99982-1216",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1106844",
+      "externalCode": "1106844",
+      "name": "CALCADEIRA",
+      "tradeName": "CALCADEIRA",
+      "legalName": "E F DA ROCHA COMERCIO",
+      "street": "AV. MARECHAL DEODORO, 686",
+      "neighborhood": "CENTRO",
+      "city": "Paulistana",
+      "cityCode": "2207801",
+      "state": "PI",
+      "zipCode": "64750-000",
+      "phone": "(89) 9940-5599",
+      "clientGroup": "Varejista",
+      "lat": -8.103361126692358,
+      "lng": -41.11861825070445,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1106854",
+      "externalCode": "1106854",
+      "name": "VILLA ROSA",
+      "tradeName": "VILLA ROSA",
+      "legalName": "REJANE MARIA CARLOS RIBEIRO",
+      "street": "AV.HUGO NAPOLEAO, 421",
+      "neighborhood": "CENTRO",
+      "city": "Agricolândia",
+      "cityCode": "2200103",
+      "state": "PI",
+      "zipCode": "64440-000",
+      "phone": "(86) 999502791",
+      "clientGroup": "Varejista",
+      "lat": -5.769500000001933,
+      "lng": -42.672366666680595,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1107036",
+      "externalCode": "1107036",
+      "name": "LUMODAS",
+      "tradeName": "LUMODAS",
+      "legalName": "I DA S RIBEIRO CONFECCOES",
+      "street": "MAJOR JERONIMO BELO, 234",
+      "neighborhood": "CENTRO",
+      "city": "Anísio de Abreu",
+      "cityCode": "2200707",
+      "state": "PI",
+      "zipCode": "64780-000",
+      "phone": null,
+      "clientGroup": "Varejista",
+      "lat": -9.219064435681021,
+      "lng": -43.04767060032379,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1107037",
+      "externalCode": "1107037",
+      "name": "F M CONFEC",
+      "tradeName": "F M CONFEC",
+      "legalName": "FRANCISCO DA SILVA MOREIRA FILHO 04",
+      "street": "AV. CANDIDO ALEIXO, 49",
+      "neighborhood": "CENTRO",
+      "city": "Oeiras",
+      "cityCode": "2207009",
+      "state": "PI",
+      "zipCode": "64500-000",
+      "phone": null,
+      "clientGroup": "Varejista",
+      "lat": -6.95072360210872,
+      "lng": -42.169079773463864,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1107843",
+      "externalCode": "1107843",
+      "name": "JJ-1135",
+      "tradeName": "JJ-1135",
+      "legalName": "CARNEIRO REPRESENTACOES LTDA",
+      "street": "R ANISIO DE ABREU, 2625",
+      "neighborhood": "AEROPORTO",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64003-645",
+      "phone": "(86)3213-2800",
+      "clientGroup": "Representantes",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1108533",
+      "externalCode": "1108533",
+      "name": "LU MODAS",
+      "tradeName": "LU MODAS",
+      "legalName": "JOANNA GUIMARAES MESSIAS",
+      "street": "1A R CASA, 000",
+      "neighborhood": "CENTRO",
+      "city": "Marcos Parente",
+      "cityCode": "2206001",
+      "state": "PI",
+      "zipCode": "64845-000",
+      "phone": "(89) 9431-5262",
+      "clientGroup": "Varejista",
+      "lat": -7.065148966322615,
+      "lng": -43.87352931072429,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1108550",
+      "externalCode": "1108550",
+      "name": "PEQUENO PA",
+      "tradeName": "PEQUENO PA",
+      "legalName": "SAMARA DA COSTA OLIVEIRA LTDA",
+      "street": "RUA JOAQUIM ALBANO DA SILVA, 1490",
+      "neighborhood": "CANTO DA VARZEA",
+      "city": "Picos",
+      "cityCode": "2208007",
+      "state": "PI",
+      "zipCode": "64600-173",
+      "phone": null,
+      "clientGroup": "Varejista",
+      "lat": -7.071764588142733,
+      "lng": -41.513246533244654,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1109278",
+      "externalCode": "1109278",
+      "name": "BELLA VIRT",
+      "tradeName": "BELLA VIRT",
+      "legalName": "MARIA RITA DOS SANTOS MACHADO",
+      "street": "R RIBEIRO GONCALVES, 170",
+      "neighborhood": "CENTRO",
+      "city": "Água Branca",
+      "cityCode": "2200202",
+      "state": "PI",
+      "zipCode": "64460-000",
+      "phone": "(86) 99803-4489",
+      "clientGroup": "Varejista",
+      "lat": -5.9148727053540275,
+      "lng": -42.62197779276048,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1110055",
+      "externalCode": "1110055",
+      "name": "ARACELIS B",
+      "tradeName": "ARACELIS B",
+      "legalName": "ARACELIS PEREIRA DOS SANTOS",
+      "street": "ZACARIAS DE GOES, 55",
+      "neighborhood": "CENTRO",
+      "city": "Oeiras",
+      "cityCode": "2207009",
+      "state": "PI",
+      "zipCode": "64500-000",
+      "phone": "(89) 99413-2375",
+      "clientGroup": "Varejista",
+      "lat": -6.95072360210872,
+      "lng": -42.169079773463864,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1110136",
+      "externalCode": "1110136",
+      "name": "PESSOA JUR",
+      "tradeName": "PESSOA JUR",
+      "legalName": "MIRELLA BARROS LEMOS PIMENTEL",
+      "street": "AV DESEMBARGADOR AMARAL, S/N",
+      "neighborhood": "CENTRO",
+      "city": "Corrente",
+      "cityCode": "2202901",
+      "state": "PI",
+      "zipCode": "64980-000",
+      "phone": "(89) 99938-2989",
+      "clientGroup": "Varejista",
+      "lat": -10.393012988370373,
+      "lng": -45.13146752405058,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1110283",
+      "externalCode": "1110283",
+      "name": "RG CALCADO",
+      "tradeName": "RG CALCADO",
+      "legalName": "RG CALCADOS URUCUI LTDA",
+      "street": "AV JOSE CAVALCANTE, 343",
+      "neighborhood": "CENTRO",
+      "city": "Uruçuí",
+      "cityCode": "2211209",
+      "state": "PI",
+      "zipCode": "64860-000",
+      "phone": "(64)98122-7498",
+      "clientGroup": "Varejista-Extra",
+      "lat": -7.789204021057235,
+      "lng": -44.56818467900225,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1110432",
+      "externalCode": "1110432",
+      "name": "OPCAO CALC",
+      "tradeName": "OPCAO CALC",
+      "legalName": "JL COMERCIO DE CALCADOS LTDA",
+      "street": "RUA SETE DE SETEMBRO, 607",
+      "neighborhood": "CENTRO",
+      "city": "União",
+      "cityCode": "2211100",
+      "state": "PI",
+      "zipCode": "64120-000",
+      "phone": "(64) 98126-1136",
+      "clientGroup": "Varejista-Extra",
+      "lat": -4.592376887795225,
+      "lng": -42.784285135007615,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1110533",
+      "externalCode": "1110533",
+      "name": "PASSO A PA",
+      "tradeName": "PASSO A PA",
+      "legalName": "J TEIXEIRA VARAO DE CARVALHO & CIA",
+      "street": "RUA CORONEL ROGERIO DE CARVALHO, 530",
+      "neighborhood": "CENTRO",
+      "city": "Uruçuí",
+      "cityCode": "2211209",
+      "state": "PI",
+      "zipCode": "64860-000",
+      "phone": "(86) 99973-5899",
+      "clientGroup": "Varejista",
+      "lat": -7.789204021057235,
+      "lng": -44.56818467900225,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1110731",
+      "externalCode": "1110731",
+      "name": "A PROTETOR",
+      "tradeName": "A PROTETOR",
+      "legalName": "M O GOMES MORAIS LTDA",
+      "street": "AV. CELSO PINHEIRO MACHADO, 60",
+      "neighborhood": "CENTRO",
+      "city": "Barras",
+      "cityCode": "2201200",
+      "state": "PI",
+      "zipCode": "64100-000",
+      "phone": "(86) 99533-9768",
+      "clientGroup": "Varejista",
+      "lat": -4.1848776090470805,
+      "lng": -42.38049815779103,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1111180",
+      "externalCode": "1111180",
+      "name": "ROSE TURNM",
+      "tradeName": "ROSE TURNM",
+      "legalName": "ROSILENE DE SOUSA BRITO",
+      "street": "PC ROCHA NETO, 400",
+      "neighborhood": "CENTRO",
+      "city": "Oeiras",
+      "cityCode": "2207009",
+      "state": "PI",
+      "zipCode": "64500-000",
+      "phone": "(89) 99413-2375",
+      "clientGroup": "Varejista",
+      "lat": -6.95072360210872,
+      "lng": -42.169079773463864,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1111231",
+      "externalCode": "1111231",
+      "name": "SOCORRO",
+      "tradeName": "SOCORRO",
+      "legalName": "MARIA DO SOCORRO MENDES",
+      "street": "RUA DR PEDRO TEIXEIRA, 266",
+      "neighborhood": "CENTRO",
+      "city": "Campo Maior",
+      "cityCode": "2202208",
+      "state": "PI",
+      "zipCode": "64280-000",
+      "phone": "(86)99806-5762",
+      "clientGroup": "Varejista",
+      "lat": -4.881291884580322,
+      "lng": -42.15427831327271,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1111503",
+      "externalCode": "1111503",
+      "name": "MUNDI STOR",
+      "tradeName": "MUNDI STOR",
+      "legalName": "ESMERITA DIAS TUPINANBA",
+      "street": "PC ABDIAS ALBUQUERQUE, sn",
+      "neighborhood": "CENTRO",
+      "city": "Curimatá",
+      "cityCode": "2203206",
+      "state": "PI",
+      "zipCode": "64960-000",
+      "phone": "(89) 9946-1472",
+      "clientGroup": "Varejista",
+      "lat": -9.94193784355488,
+      "lng": -44.29601309572594,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1112947",
+      "externalCode": "1112947",
+      "name": "MANDACARU",
+      "tradeName": "MANDACARU",
+      "legalName": "RSC COMERCIO DE ROUPAS LTDA",
+      "street": "AVENIDA MARECHAL JUAREZ TAVORA, 21",
+      "neighborhood": "PARQUE PIAUI",
+      "city": "Teresina",
+      "cityCode": "2211001",
+      "state": "PI",
+      "zipCode": "64025-520",
+      "phone": "(86) 9967-7272",
+      "clientGroup": "Varejista",
+      "lat": -5.145300835213886,
+      "lng": -42.74563699572628,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1114109",
+      "externalCode": "1114109",
+      "name": "J S CONFEC",
+      "tradeName": "J S CONFEC",
+      "legalName": "SANDRA MARIA VELOSO ROCHA 056558443",
+      "street": "RUA SAO PEDRO, 243",
+      "neighborhood": "CENTRO",
+      "city": "Picos",
+      "cityCode": "2208007",
+      "state": "PI",
+      "zipCode": "64600-050",
+      "phone": "(89) 9880-8044",
+      "clientGroup": "Varejista",
+      "lat": -7.071764588142733,
+      "lng": -41.513246533244654,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1114398",
+      "externalCode": "1114398",
+      "name": "CALCADEIRA",
+      "tradeName": "CALCADEIRA",
+      "legalName": "ANTONIA LUCIVANDIA DE ALENCAR LTDA",
+      "street": "RUA SANTO ANTONIO, 345",
+      "neighborhood": "CENTRO",
+      "city": "Picos",
+      "cityCode": "2208007",
+      "state": "PI",
+      "zipCode": "64600-004",
+      "phone": "(89) 9990-3090",
+      "clientGroup": "Varejista",
+      "lat": -7.071764588142733,
+      "lng": -41.513246533244654,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1114491",
+      "externalCode": "1114491",
+      "name": "BELA MODA",
+      "tradeName": "BELA MODA",
+      "legalName": "BELLA MODA LTDA",
+      "street": "RUA EPAMINONDAS NOGUEIRA, 557",
+      "neighborhood": "CENTRO",
+      "city": "Valença do Piauí",
+      "cityCode": "2211308",
+      "state": "PI",
+      "zipCode": "64300-000",
+      "phone": "(89) 9993-2379",
+      "clientGroup": "Varejista",
+      "lat": -6.383984578918064,
+      "lng": -41.808626623067084,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1114505",
+      "externalCode": "1114505",
+      "name": "BASIC STOR",
+      "tradeName": "BASIC STOR",
+      "legalName": "BELA VISTA CONFECCOES LIMITADA",
+      "street": "RUA CORINTO ADRADE, 290",
+      "neighborhood": "CENTRO",
+      "city": "Pedro II",
+      "cityCode": "2207900",
+      "state": "PI",
+      "zipCode": "64255-000",
+      "phone": "(86) 9815-2127",
+      "clientGroup": "Varejista",
+      "lat": -4.468392814127724,
+      "lng": -41.41743972826379,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    },
+    {
+      "id": "cli_imp_1114678",
+      "externalCode": "1114678",
+      "name": "ISOLETE CO",
+      "tradeName": "ISOLETE CO",
+      "legalName": "M  ISOLETE  A  DA SILVA",
+      "street": "AV. JOSE DE DEUS LACERDA, 1150",
+      "neighborhood": "CENTRO",
+      "city": "Miguel Alves",
+      "cityCode": "2206209",
+      "state": "PI",
+      "zipCode": "64130-000",
+      "phone": "(86) 9948-5253",
+      "clientGroup": "Varejista",
+      "lat": -4.23867744518892,
+      "lng": -42.76254979905099,
+      "categoryIds": [
+        "cat_adulto"
+      ]
+    }
+  ],
+  "unmatched": []
+}

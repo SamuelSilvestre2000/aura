@@ -5,15 +5,11 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  TextInput,
-  Modal,
   Alert,
-  StatusBar,
-  Platform,
   ActivityIndicator,
-  Pressable,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useCollections } from '../../hooks/useCollections';
 import { useClients } from '../../hooks/useClients';
@@ -22,6 +18,10 @@ import { useAuth } from '../../hooks/useAuth';
 import { Collection } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { TAB_BAR_CONTENT_HEIGHT } from '../../components/CustomTabBar';
+import { NotionHeader } from '../../components/NotionHeader';
+import { CollectionGoalSheet } from '../../components/CollectionGoalSheet';
+import { formatPeriodBR } from '../../utils/dates';
+import { formatBRL } from '../../utils/money';
 
 function progressColor(percent: number): string {
   if (percent === 100) return COLORS.success;
@@ -30,18 +30,25 @@ function progressColor(percent: number): string {
 }
 
 export default function CollectionsScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { can: canDo } = useAuth();
+  const { user, can: canDo, isAdmin } = useAuth();
   const canManageCollections = canDo('manage_collections');
-  const { collections, loading, createCollection, deleteCollection } = useCollections();
+  const { collections, loading, deleteCollection, refresh } = useCollections();
   const { clients } = useClients();
   const { purchases } = usePurchases();
 
-  const [showModal, setShowModal] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [creating, setCreating] = useState(false);
+  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+  const [showGoalSheet, setShowGoalSheet] = useState(false);
 
   const listBottom = TAB_BAR_CONTENT_HEIGHT + insets.bottom + SPACING.lg;
+
+  const openCreateScreen = () => router.push('/collection/new');
+
+  const openCollection = (col: Collection) => {
+    setSelectedCollection(col);
+    setShowGoalSheet(true);
+  };
 
   const getProgress = useCallback(
     (collectionId: string) => {
@@ -62,18 +69,6 @@ export default function CollectionsScreen() {
     [clients, purchases]
   );
 
-  const handleCreate = async () => {
-    if (!newName.trim()) return;
-    setCreating(true);
-    try {
-      await createCollection(newName.trim());
-      setNewName('');
-      setShowModal(false);
-    } finally {
-      setCreating(false);
-    }
-  };
-
   const handleDelete = (col: Collection) => {
     Alert.alert(
       'Remover coleção',
@@ -88,9 +83,17 @@ export default function CollectionsScreen() {
   const renderCollection = ({ item, index }: { item: Collection; index: number }) => {
     const progress = getProgress(item.id);
     const fillColor = progressColor(progress.percent);
+    const period =
+      item.startDate && item.endDate
+        ? formatPeriodBR(item.startDate, item.endDate)
+        : null;
 
     return (
-      <View style={[styles.row, index > 0 && styles.rowBorder]}>
+      <TouchableOpacity
+        style={[styles.row, index > 0 && styles.rowBorder]}
+        onPress={() => openCollection(item)}
+        activeOpacity={0.7}
+      >
         <View style={styles.rowIcon}>
           <Ionicons name="albums-outline" size={20} color={COLORS.textSecondary} />
         </View>
@@ -100,7 +103,10 @@ export default function CollectionsScreen() {
             <Text style={styles.rowTitle} numberOfLines={1}>{item.name}</Text>
             {canManageCollections && (
               <TouchableOpacity
-                onPress={() => handleDelete(item)}
+                onPress={(e) => {
+                  e.stopPropagation?.();
+                  handleDelete(item);
+                }}
                 hitSlop={10}
                 style={styles.deleteBtn}
                 activeOpacity={0.6}
@@ -109,6 +115,16 @@ export default function CollectionsScreen() {
               </TouchableOpacity>
             )}
           </View>
+
+          {period ? <Text style={styles.rowPeriod}>{period}</Text> : null}
+
+          {!isAdmin && (
+            <Text style={styles.rowGoal}>
+              {item.myGoalAmount != null && item.myGoalAmount > 0
+                ? `Meta: ${formatBRL(item.myGoalAmount)}`
+                : 'Definir meta'}
+            </Text>
+          )}
 
           <Text style={styles.rowMeta}>
             {progress.bought}/{progress.total} clientes · {progress.cities}/{progress.totalCities} cidades
@@ -121,26 +137,31 @@ export default function CollectionsScreen() {
             <Text style={[styles.progressPct, { color: fillColor }]}>{progress.percent}%</Text>
           </View>
         </View>
-      </View>
+
+        <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+      </TouchableOpacity>
     );
   };
 
   return (
     <View style={styles.container}>
       <SafeAreaView edges={['top']}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Coleções</Text>
-          {canManageCollections && (
-            <TouchableOpacity
-              style={styles.newButton}
-              onPress={() => setShowModal(true)}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="add" size={18} color={COLORS.primary} />
-              <Text style={styles.newButtonText}>Nova</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        <NotionHeader
+          title="Coleções"
+          showBorder
+          rightAction={
+            canManageCollections ? (
+              <TouchableOpacity
+                style={styles.newButton}
+                onPress={openCreateScreen}
+                activeOpacity={0.7}
+                hitSlop={8}
+              >
+                <Text style={styles.newButtonText}>Adicionar</Text>
+              </TouchableOpacity>
+            ) : undefined
+          }
+        />
       </SafeAreaView>
 
       {loading ? (
@@ -157,7 +178,7 @@ export default function CollectionsScreen() {
           {canManageCollections && (
             <TouchableOpacity
               style={styles.emptyButton}
-              onPress={() => setShowModal(true)}
+              onPress={openCreateScreen}
               activeOpacity={0.85}
             >
               <Ionicons name="add" size={18} color="#fff" />
@@ -182,7 +203,7 @@ export default function CollectionsScreen() {
           {canManageCollections && (
             <TouchableOpacity
               style={styles.addRow}
-              onPress={() => setShowModal(true)}
+              onPress={openCreateScreen}
               activeOpacity={0.7}
             >
               <Ionicons name="add" size={18} color={COLORS.textMuted} />
@@ -192,50 +213,14 @@ export default function CollectionsScreen() {
         </View>
       )}
 
-      <Modal
-        visible={showModal}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setShowModal(false)}
-      >
-        <Pressable style={styles.modalOverlay} onPress={() => setShowModal(false)}>
-          <Pressable style={styles.modal} onPress={(e) => e.stopPropagation()}>
-            <View style={styles.modalHandle} />
-            <Text style={styles.modalTitle}>Nova coleção</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Ex: Verão 2026"
-              placeholderTextColor={COLORS.textPlaceholder}
-              value={newName}
-              onChangeText={setNewName}
-              autoFocus
-              returnKeyType="done"
-              onSubmitEditing={handleCreate}
-            />
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={styles.modalCancel}
-                onPress={() => { setNewName(''); setShowModal(false); }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.modalCancelText}>Cancelar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalConfirm, !newName.trim() && styles.modalConfirmDisabled]}
-                onPress={handleCreate}
-                disabled={!newName.trim() || creating}
-                activeOpacity={0.85}
-              >
-                {creating ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <Text style={styles.modalConfirmText}>Criar</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </Pressable>
-        </Pressable>
-      </Modal>
+      <CollectionGoalSheet
+        visible={showGoalSheet}
+        collection={selectedCollection}
+        userId={user?.id ?? ''}
+        isRepresentative={!isAdmin}
+        onClose={() => setShowGoalSheet(false)}
+        onSaved={refresh}
+      />
     </View>
   );
 }
@@ -244,34 +229,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    backgroundColor: COLORS.background,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.surfaceBorder,
-  },
-  headerTitle: {
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.xxl,
-    fontWeight: '700',
-    letterSpacing: -0.3,
   },
   newButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: SPACING.md,
     paddingVertical: 6,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.surfaceBorder,
-    backgroundColor: COLORS.background,
+    paddingHorizontal: SPACING.xs,
+    backgroundColor: 'transparent',
   },
   newButtonText: {
     color: COLORS.primary,
@@ -291,7 +253,7 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sizes.xs,
     fontWeight: '600',
     letterSpacing: 0.6,
-    marginTop: SPACING.lg,
+    marginTop: SPACING.xs,
     marginBottom: SPACING.sm,
     marginHorizontal: SPACING.lg,
     paddingHorizontal: SPACING.xs,
@@ -337,6 +299,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   deleteBtn: { padding: 2 },
+  rowPeriod: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
+  },
+  rowGoal: {
+    color: COLORS.primary,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '500',
+  },
   rowMeta: {
     color: COLORS.textSecondary,
     fontSize: FONTS.sizes.sm,
@@ -423,77 +394,6 @@ const styles = StyleSheet.create({
     marginTop: SPACING.lg,
   },
   emptyButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: FONTS.sizes.md,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.25)',
-    justifyContent: 'flex-end',
-  },
-  modal: {
-    backgroundColor: COLORS.surface,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    paddingHorizontal: SPACING.xl,
-    paddingBottom: SPACING.xxl + 16,
-    paddingTop: SPACING.sm,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
-    gap: SPACING.lg,
-  },
-  modalHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: COLORS.surfaceBorderStrong,
-    alignSelf: 'center',
-    marginBottom: SPACING.xs,
-  },
-  modalTitle: {
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.lg,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-  },
-  modalInput: {
-    backgroundColor: COLORS.backgroundSubtle,
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
-    borderWidth: 1,
-    borderColor: COLORS.surfaceBorder,
-  },
-  modalActions: {
-    flexDirection: 'row',
-    gap: SPACING.md,
-  },
-  modalCancel: {
-    flex: 1,
-    paddingVertical: SPACING.md,
-    borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    borderColor: COLORS.surfaceBorder,
-    alignItems: 'center',
-    backgroundColor: COLORS.background,
-  },
-  modalCancelText: {
-    color: COLORS.textSecondary,
-    fontWeight: '500',
-    fontSize: FONTS.sizes.md,
-  },
-  modalConfirm: {
-    flex: 1,
-    paddingVertical: SPACING.md,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-  },
-  modalConfirmDisabled: { opacity: 0.45 },
-  modalConfirmText: {
     color: '#fff',
     fontWeight: '600',
     fontSize: FONTS.sizes.md,

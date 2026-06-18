@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/colors';
 
 type Props = {
@@ -27,7 +28,12 @@ export function SearchBar({
 
   return (
     <View style={[styles.container, isMap && styles.containerMap]}>
-      <Text style={styles.searchIcon}>⌕</Text>
+      <Ionicons
+        name="search-outline"
+        size={18}
+        color={COLORS.textMuted}
+        style={styles.searchIcon}
+      />
 
       <TextInput
         style={styles.input}
@@ -40,17 +46,15 @@ export function SearchBar({
       />
 
       {value.length > 0 && (
-        <TouchableOpacity onPress={onClear} hitSlop={8}>
-          <View style={styles.clearBtn}>
-            <Text style={styles.clearBtnText}>✕</Text>
-          </View>
+        <TouchableOpacity onPress={onClear} hitSlop={8} activeOpacity={0.7}>
+          <Ionicons name="close-circle" size={18} color={COLORS.textMuted} />
         </TouchableOpacity>
       )}
 
       {isMap && onProfilePress && (
         <>
           <View style={styles.divider} />
-          <TouchableOpacity onPress={onProfilePress} style={styles.profileBtn} activeOpacity={0.8} hitSlop={4}>
+          <TouchableOpacity onPress={onProfilePress} style={styles.profileBtn} activeOpacity={0.7} hitSlop={4}>
             {profileImageUri ? (
               <Image source={{ uri: profileImageUri }} style={styles.profileImg} />
             ) : (
@@ -70,32 +74,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.xl,
+    borderRadius: RADIUS.lg,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
     gap: SPACING.sm,
   },
   containerMap: {
-    borderRadius: 28,
-    paddingLeft: 14,
-    paddingRight: 8,
+    borderRadius: RADIUS.full,
+    paddingLeft: SPACING.md,
+    paddingRight: SPACING.sm,
     paddingVertical: 6,
-    minHeight: 46,
+    minHeight: 44,
+    backgroundColor: COLORS.surface,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.10,
-    shadowRadius: 6,
-    elevation: 4,
-    borderColor: 'transparent',
-    borderWidth: 0,
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   searchIcon: {
-    fontSize: 18,
-    color: COLORS.textMuted,
-    width: 20,
-    textAlign: 'center',
+    marginRight: 2,
   },
   input: {
     flex: 1,
@@ -103,23 +103,11 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sizes.md,
     paddingVertical: 0,
   },
-  clearBtn: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: COLORS.surfaceBorderStrong,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  clearBtnText: {
-    color: COLORS.textSecondary,
-    fontSize: 9,
-    fontWeight: '700',
-  },
   divider: {
-    width: 1,
+    width: StyleSheet.hairlineWidth,
     height: 22,
     backgroundColor: COLORS.surfaceBorder,
+    marginHorizontal: 2,
   },
   profileBtn: { padding: 2 },
   profileImg: { width: 32, height: 32, borderRadius: 16 },

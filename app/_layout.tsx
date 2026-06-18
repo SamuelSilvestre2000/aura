@@ -2,8 +2,10 @@ import { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../hooks/useAuth';
+import { NOTION_MODAL_OPTIONS } from '../constants/navigation';
 import { COLORS } from '../constants/colors';
 
 function AuthGate({ children }: { children: React.ReactNode }) {
@@ -37,20 +39,23 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <AuthProvider>
-        <StatusBar style="dark" />
-        <AuthGate>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="login" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="client/[id]" options={{ headerShown: false }} />
-            <Stack.Screen name="client/new" options={{ headerShown: false }} />
-            <Stack.Screen name="client/edit" options={{ headerShown: false }} />
-            <Stack.Screen name="representative/new" options={{ headerShown: false }} />
-            <Stack.Screen name="user/edit" options={{ headerShown: false }} />
-          </Stack>
-        </AuthGate>
-      </AuthProvider>
+      <BottomSheetModalProvider>
+        <AuthProvider>
+          <StatusBar style="dark" />
+          <AuthGate>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="login" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="client/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="client/new" options={NOTION_MODAL_OPTIONS} />
+              <Stack.Screen name="client/edit" options={{ headerShown: false }} />
+              <Stack.Screen name="collection/new" options={NOTION_MODAL_OPTIONS} />
+              <Stack.Screen name="representative/new" options={{ headerShown: false }} />
+              <Stack.Screen name="user/edit" options={{ headerShown: false }} />
+            </Stack>
+          </AuthGate>
+        </AuthProvider>
+      </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );
 }

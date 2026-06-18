@@ -6,8 +6,6 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  Platform,
-  StatusBar,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -17,8 +15,10 @@ import { useAuth } from '../../hooks/useAuth';
 import { Client } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { SearchBar } from '../../components/SearchBar';
-import { NewClientSheet } from '../../components/NewClientSheet';
 import { TAB_BAR_CONTENT_HEIGHT } from '../../components/CustomTabBar';
+import { CategoryPillRow } from '../../components/CategoryPill';
+import { labelsFromCategoryIds } from '../../constants/categoryPills';
+import { NotionHeader } from '../../components/NotionHeader';
 
 export default function ClientsScreen() {
   const router = useRouter();
@@ -27,7 +27,6 @@ export default function ClientsScreen() {
   const canManageClients = canDo('manage_clients');
   const { clients, loading } = useClients();
   const [search, setSearch] = useState('');
-  const [showNewClient, setShowNewClient] = useState(false);
 
   const listBottom = TAB_BAR_CONTENT_HEIGHT + insets.bottom + SPACING.lg;
 
@@ -42,28 +41,34 @@ export default function ClientsScreen() {
     );
   }, [clients, search]);
 
-  const renderClient = ({ item, index }: { item: Client; index: number }) => (
-    <TouchableOpacity
-      style={[styles.row, index > 0 && styles.rowBorder]}
-      activeOpacity={0.7}
-      onPress={() => router.push(`/client/${item.id}`)}
-    >
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{item.name.charAt(0).toUpperCase()}</Text>
-      </View>
-      <View style={styles.rowBody}>
-        <Text style={styles.rowTitle} numberOfLines={1}>{item.name}</Text>
-        <View style={styles.rowMeta}>
-          <Ionicons name="location-outline" size={12} color={COLORS.textMuted} />
-          <Text style={styles.rowMetaText} numberOfLines={1}>{item.city}, PI</Text>
+  const renderClient = ({ item, index }: { item: Client; index: number }) => {
+    const { labels, slugs } = labelsFromCategoryIds(item.categoryIds);
+    return (
+      <TouchableOpacity
+        style={[styles.row, index > 0 && styles.rowBorder]}
+        activeOpacity={0.7}
+        onPress={() => router.push(`/client/${item.id}`)}
+      >
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{item.name.charAt(0).toUpperCase()}</Text>
         </View>
-        {item.phone ? (
-          <Text style={styles.rowPhone} numberOfLines={1}>{item.phone}</Text>
-        ) : null}
-      </View>
-      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
-    </TouchableOpacity>
-  );
+        <View style={styles.rowBody}>
+          <Text style={styles.rowTitle} numberOfLines={1}>{item.name}</Text>
+          {labels.length > 0 ? (
+            <CategoryPillRow labels={labels} slugs={slugs} />
+          ) : null}
+          <View style={styles.rowMeta}>
+            <Ionicons name="location-outline" size={12} color={COLORS.textMuted} />
+            <Text style={styles.rowMetaText} numberOfLines={1}>{item.city}, PI</Text>
+          </View>
+          {item.phone ? (
+            <Text style={styles.rowPhone} numberOfLines={1}>{item.phone}</Text>
+          ) : null}
+        </View>
+        <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+      </TouchableOpacity>
+    );
+  };
 
   const countLabel = search.trim()
     ? `${filteredClients.length} resultado${filteredClients.length !== 1 ? 's' : ''}`
@@ -72,19 +77,22 @@ export default function ClientsScreen() {
   return (
     <View style={styles.container}>
       <SafeAreaView edges={['top']}>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Clientes</Text>
-          {canManageClients && (
-            <TouchableOpacity
-              style={styles.newButton}
-              onPress={() => setShowNewClient(true)}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="add" size={18} color={COLORS.primary} />
-              <Text style={styles.newButtonText}>Novo</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        <NotionHeader
+          title="Clientes"
+          showBorder
+          rightAction={
+            canManageClients ? (
+              <TouchableOpacity
+                style={styles.newButton}
+                onPress={() => router.push('/client/new')}
+                activeOpacity={0.7}
+                hitSlop={8}
+              >
+                <Text style={styles.newButtonText}>Adicionar</Text>
+              </TouchableOpacity>
+            ) : undefined
+          }
+        />
       </SafeAreaView>
 
       <View style={styles.searchWrap}>
@@ -120,7 +128,7 @@ export default function ClientsScreen() {
           {canManageClients && !search.trim() && (
             <TouchableOpacity
               style={styles.emptyButton}
-              onPress={() => setShowNewClient(true)}
+              onPress={() => router.push('/client/new')}
               activeOpacity={0.85}
             >
               <Ionicons name="add" size={18} color="#fff" />
@@ -144,7 +152,7 @@ export default function ClientsScreen() {
           {canManageClients && (
             <TouchableOpacity
               style={styles.addRow}
-              onPress={() => setShowNewClient(true)}
+              onPress={() => router.push('/client/new')}
               activeOpacity={0.7}
             >
               <Ionicons name="add" size={18} color={COLORS.textMuted} />
@@ -153,11 +161,6 @@ export default function ClientsScreen() {
           )}
         </View>
       )}
-
-      <NewClientSheet
-        visible={showNewClient}
-        onClose={() => setShowNewClient(false)}
-      />
     </View>
   );
 }
@@ -166,34 +169,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    backgroundColor: COLORS.background,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.surfaceBorder,
-  },
-  headerTitle: {
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.xxl,
-    fontWeight: '700',
-    letterSpacing: -0.3,
   },
   newButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: SPACING.md,
     paddingVertical: 6,
-    borderRadius: RADIUS.md,
-    borderWidth: 1,
-    borderColor: COLORS.surfaceBorder,
-    backgroundColor: COLORS.background,
+    paddingHorizontal: SPACING.xs,
+    backgroundColor: 'transparent',
   },
   newButtonText: {
     color: COLORS.primary,
@@ -202,7 +182,7 @@ const styles = StyleSheet.create({
   },
   searchWrap: {
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.md,
+    paddingTop: SPACING.xs,
     paddingBottom: SPACING.sm,
     backgroundColor: COLORS.backgroundSubtle,
   },
@@ -261,7 +241,7 @@ const styles = StyleSheet.create({
   },
   rowBody: {
     flex: 1,
-    gap: 2,
+    gap: 4,
   },
   rowTitle: {
     color: COLORS.textPrimary,

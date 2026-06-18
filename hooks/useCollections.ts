@@ -1,61 +1,67 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Collection } from '../types';
-import { getDatabase, generateId } from '../services/database';
+import {
+  listCollectionsForUser,
+  createCollection as createCollectionService,
+  deleteCollection as deleteCollectionService,
+  CreateCollectionInput,
+} from '../services/collections';
+import { useAuth } from './useAuth';
 
 type UseCollectionsReturn = {
   collections: Collection[];
   loading: boolean;
   activeCollection: Collection | null;
-  createCollection: (name: string) => Promise<Collection>;
+  createCollection: (input: CreateCollectionInput) => Promise<Collection>;
   deleteCollection: (id: string) => Promise<void>;
   setActiveCollection: (id: string) => Promise<void>;
   refresh: () => Promise<void>;
 };
 
 export function useCollections(): UseCollectionsReturn {
+  const { user } = useAuth();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
+    if (!user) {
+      setCollections([]);
+      setLoading(false);
+      return;
+    }
     try {
-      const db = await getDatabase();
-      const rows = await db.getAllAsync<Collection>(
-        'SELECT id, name, created_at as createdAt, is_active as isActive FROM collections ORDER BY created_at DESC'
-      );
-      setCollections(rows);
+      setLoading(true);
+      const data = await listCollectionsForUser(user.id, user.role);
+      setCollections(data);
     } catch (err) {
       console.error('[useCollections] Erro:', err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  const createCollection = useCallback(async (name: string): Promise<Collection> => {
-    const db = await getDatabase();
-    const now = new Date().toISOString();
-    const id = generateId('col');
-    await db.runAsync(
-      'INSERT INTO collections (id, name, created_at, is_active) VALUES (?, ?, ?, ?)',
-      [id, name, now, 1]
-    );
-    const newCol: Collection = { id, name, createdAt: now, isActive: 1 };
-    await load();
-    return newCol;
-  }, [load]);
+  const createCollection = useCallback(
+    async (input: CreateCollectionInput): Promise<Collection> => {
+      const newCol = await createCollectionService(input);
+      await load();
+      return newCol;
+    },
+    [load]
+  );
 
-  const deleteCollection = useCallback(async (id: string) => {
-    const db = await getDatabase();
-    await db.runAsync('DELETE FROM collections WHERE id = ?', [id]);
-    await load();
-  }, [load]);
+  const deleteCollection = useCallback(
+    async (id: string) => {
+      await deleteCollectionService(id);
+      await load();
+    },
+    [load]
+  );
 
-  const setActiveCollection = useCallback(async (id: string) => {
-    // Simplesmente selecionar por UI - não é persistido o estado "selected", usamos o primeiro como padrão
-    // A seleção ativa é gerenciada no state da tela principal
+  const setActiveCollection = useCallback(async (_id: string) => {
     await load();
   }, [load]);
 

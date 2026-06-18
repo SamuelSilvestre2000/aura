@@ -28,7 +28,6 @@ import { CityPolygon } from '../../components/MapView/CityPolygon';
 import { PiauiFocusMask } from '../../components/MapView/PiauiFocusMask';
 import { SearchBar } from '../../components/SearchBar';
 import { CitySheet } from '../../components/BottomSheet/CitySheet';
-import { NewClientSheet, InitialCity } from '../../components/NewClientSheet';
 import { Ionicons } from '@expo/vector-icons';
 
 import { CityGeoData } from '../../types';
@@ -56,8 +55,6 @@ export default function MapScreen() {
   const [selectedCity, setSelectedCity] = useState<CityGeoData | null>(null);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
-  const [showNewClient, setShowNewClient] = useState(false);
-  const [newClientInitialCity, setNewClientInitialCity] = useState<InitialCity | null>(null);
 
   const { theme: mapTheme } = useMapTheme();
   const { user, can: canDo } = useAuth();
@@ -91,19 +88,24 @@ export default function MapScreen() {
     [activeCollectionId, togglePurchase]
   );
 
-  const openNewClient = useCallback((city?: CityGeoData | null) => {
-    if (city) {
-      setNewClientInitialCity({
-        code: city.code,
-        name: city.name,
-        lat: city.centroid[1],
-        lng: city.centroid[0],
-      });
-    } else {
-      setNewClientInitialCity(null);
-    }
-    setShowNewClient(true);
-  }, []);
+  const openNewClient = useCallback(
+    (city?: CityGeoData | null) => {
+      if (city) {
+        router.push({
+          pathname: '/client/new',
+          params: {
+            city: city.name,
+            cityCode: city.code,
+            lat: String(city.centroid[1]),
+            lng: String(city.centroid[0]),
+          },
+        });
+      } else {
+        router.push('/client/new');
+      }
+    },
+    [router]
+  );
 
   const handleAddClient = useCallback(() => {
     const city = selectedCity;
@@ -283,26 +285,13 @@ export default function MapScreen() {
         </View>
 
         {!selectedCity && (
-          <View style={[styles.legend, { bottom: tabBarOffset + 12 }]}>
-            {Object.entries({ all: 'Todos', partial: 'Parcial', none: 'Nenhum' }).map(
-              ([status, label]) => (
-                <View key={status} style={styles.legendItem}>
-                  <View style={[styles.legendDot, { backgroundColor: (COLORS as any)[`status${status.charAt(0).toUpperCase() + status.slice(1)}`] }]} />
-                  <Text style={styles.legendText}>{label}</Text>
-                </View>
-              )
-            )}
-          </View>
-        )}
-
-        {!selectedCity && (
           <View style={[styles.bottomControls, { paddingBottom: tabBarOffset + 8 }]} pointerEvents="box-none">
-            <TouchableOpacity style={styles.locateButton} onPress={handleCenterMap}>
-              <Text style={styles.locateButtonText}>🎯</Text>
+            <TouchableOpacity style={styles.mapActionBtn} onPress={handleCenterMap} activeOpacity={0.7}>
+              <Ionicons name="locate-outline" size={20} color={COLORS.textSecondary} />
             </TouchableOpacity>
             {canManageClients && (
-              <TouchableOpacity style={styles.fab} onPress={() => openNewClient()} activeOpacity={0.85}>
-                <Text style={styles.fabText}>+</Text>
+              <TouchableOpacity style={styles.mapActionBtn} onPress={() => openNewClient()} activeOpacity={0.7}>
+                <Ionicons name="add" size={22} color={COLORS.primary} />
               </TouchableOpacity>
             )}
           </View>
@@ -364,11 +353,6 @@ export default function MapScreen() {
           canManageClients={canManageClients}
         />
 
-        <NewClientSheet
-          visible={showNewClient}
-          onClose={() => setShowNewClient(false)}
-          initialCity={newClientInitialCity}
-        />
       </View>
     </GestureHandlerRootView>
   );
@@ -401,17 +385,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'flex-start',
     gap: 6,
-    backgroundColor: 'rgba(255,255,255,0.97)',
+    backgroundColor: COLORS.surface,
     borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.md,
     paddingVertical: 6,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.07,
-    shadowRadius: 3,
-    elevation: 2,
   },
   collectionPillText: {
     color: COLORS.textPrimary,
@@ -515,36 +494,6 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     fontSize: FONTS.sizes.xs,
   },
-  legend: {
-    position: 'absolute',
-    left: SPACING.lg,
-    backgroundColor: 'rgba(255,255,255,0.97)',
-    borderRadius: RADIUS.lg,
-    padding: SPACING.md,
-    gap: SPACING.xs,
-    borderWidth: 1,
-    borderColor: COLORS.surfaceBorder,
-    zIndex: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
-  legendDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  legendText: {
-    color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.sm,
-  },
   bottomControls: {
     position: 'absolute',
     bottom: 0,
@@ -557,44 +506,20 @@ const styles = StyleSheet.create({
     zIndex: 5,
     pointerEvents: 'box-none',
   },
-  locateButton: {
+  mapActionBtn: {
     width: 44,
     height: 44,
     borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(255,255,255,0.97)',
+    backgroundColor: COLORS.surface,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.10,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  locateButtonText: {
-    fontSize: 18,
-    color: COLORS.textSecondary,
-  },
-  fab: {
-    width: 52,
-    height: 52,
-    borderRadius: RADIUS.full,
-    backgroundColor: COLORS.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 5,
-  },
-  fabText: {
-    color: '#fff',
-    fontSize: 26,
-    fontWeight: '300',
-    lineHeight: 28,
-    marginTop: -1,
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 2,
   },
   errorContainer: {
     flex: 1,

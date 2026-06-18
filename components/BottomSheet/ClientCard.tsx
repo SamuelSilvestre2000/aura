@@ -1,46 +1,70 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Client } from '../../types';
-import { STATUS_COLORS, COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { useRouter } from 'expo-router';
+import { CategoryPillRow } from '../CategoryPill';
+import { labelsFromCategoryIds } from '../../constants/categoryPills';
+import { PurchaseChip } from '../PurchaseChip';
 
 type Props = {
   client: Client;
+  index: number;
+  isLast: boolean;
   collectionId: string | null;
   purchased: boolean;
   onToggle: () => void;
 };
 
-export function ClientCard({ client, collectionId, purchased, onToggle }: Props) {
+export function ClientCard({
+  client,
+  index,
+  isLast,
+  collectionId,
+  purchased,
+  onToggle,
+}: Props) {
   const router = useRouter();
+  const { labels, slugs } = labelsFromCategoryIds(client.categoryIds);
 
   return (
     <TouchableOpacity
-      style={styles.container}
+      style={[
+        styles.container,
+        index === 0 && styles.containerFirst,
+        isLast && styles.containerLast,
+        index > 0 && styles.containerBorder,
+      ]}
       onPress={() => router.push(`/client/${client.id}`)}
       activeOpacity={0.7}
     >
-      <View style={styles.left}>
-        <View style={[styles.dot, { backgroundColor: purchased ? STATUS_COLORS.all : COLORS.surfaceBorderStrong }]} />
-        <View style={styles.info}>
-          <Text style={styles.name} numberOfLines={1}>{client.name}</Text>
-          {client.phone && (
-            <Text style={styles.phone} numberOfLines={1}>{client.phone}</Text>
-          )}
-        </View>
+      <View style={styles.avatar}>
+        <Text style={styles.avatarText}>{client.name.charAt(0).toUpperCase()}</Text>
       </View>
-      {collectionId && (
-        <TouchableOpacity
-          style={[styles.toggle, purchased && styles.toggleActive]}
-          onPress={(e) => { e.stopPropagation(); onToggle(); }}
-          hitSlop={8}
-          activeOpacity={0.7}
-        >
-          <Text style={[styles.toggleText, purchased && styles.toggleTextActive]}>
-            {purchased ? 'Comprou' : 'Pendente'}
-          </Text>
-        </TouchableOpacity>
-      )}
+
+      <View style={styles.body}>
+        <Text style={styles.name} numberOfLines={1}>{client.name}</Text>
+        {labels.length > 0 ? (
+          <CategoryPillRow labels={labels} slugs={slugs} />
+        ) : null}
+        {client.phone ? (
+          <View style={styles.phoneRow}>
+            <Ionicons name="call-outline" size={12} color={COLORS.textMuted} />
+            <Text style={styles.phone} numberOfLines={1}>{client.phone}</Text>
+          </View>
+        ) : null}
+      </View>
+
+      <View style={styles.actions}>
+        {collectionId && (
+          <PurchaseChip
+            purchased={purchased}
+            onPress={onToggle}
+          />
+        )}
+        <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+      </View>
     </TouchableOpacity>
   );
 }
@@ -49,57 +73,62 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.surfaceBorder,
-    gap: SPACING.sm,
-    backgroundColor: COLORS.surface,
-  },
-  left: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: SPACING.md,
-    flex: 1,
+    paddingVertical: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    backgroundColor: COLORS.surface,
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderRightWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    flexShrink: 0,
+  containerFirst: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopLeftRadius: RADIUS.lg,
+    borderTopRightRadius: RADIUS.lg,
   },
-  info: { flex: 1 },
+  containerLast: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomLeftRadius: RADIUS.lg,
+    borderBottomRightRadius: RADIUS.lg,
+  },
+  containerBorder: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: COLORS.surfaceBorder,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.primaryBg,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    color: COLORS.primary,
+    fontSize: FONTS.sizes.md,
+    fontWeight: '700',
+  },
+  body: { flex: 1, gap: 4 },
   name: {
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.md,
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  phoneRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
   },
   phone: {
     color: COLORS.textSecondary,
     fontSize: FONTS.sizes.sm,
-    marginTop: 1,
+    flex: 1,
   },
-  toggle: {
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 5,
-    borderRadius: RADIUS.full,
-    borderWidth: 1,
-    borderColor: COLORS.surfaceBorder,
-    backgroundColor: COLORS.backgroundSubtle,
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
     flexShrink: 0,
-  },
-  toggleActive: {
-    backgroundColor: COLORS.successBg,
-    borderColor: STATUS_COLORS.all,
-  },
-  toggleText: {
-    color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.sm,
-    fontWeight: '500',
-  },
-  toggleTextActive: {
-    color: STATUS_COLORS.all,
-    fontWeight: '600',
   },
 });

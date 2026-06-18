@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, type ComponentProps } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,13 +6,12 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
-  StatusBar,
-  Platform,
   ActivityIndicator,
   Image,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { clearGeoCache } from '../../services/ibge';
 import { getDatabase } from '../../services/database';
 import { deleteUser, listUsers } from '../../services/users';
@@ -23,9 +22,14 @@ import { ROLE_LABELS } from '../../constants/permissions';
 import { formatCategoryNames } from '../../constants/userCategories';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { MapTheme } from '../../services/preferences';
+import { TAB_BAR_CONTENT_HEIGHT } from '../../components/CustomTabBar';
+import { NotionHeader } from '../../components/NotionHeader';
+
+type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { theme: mapTheme, setTheme: setMapTheme } = useMapTheme();
   const { user, logout, can: canDo, isAdmin } = useAuth();
 
@@ -35,6 +39,7 @@ export default function SettingsScreen() {
   const canManageUsers = canDo('manage_users');
   const canResetDb = canDo('reset_database');
   const canClearCache = canDo('clear_geo_cache');
+  const scrollBottom = TAB_BAR_CONTENT_HEIGHT + insets.bottom + SPACING.lg;
 
   const loadUsers = useCallback(async () => {
     if (!canManageUsers) return;
@@ -71,12 +76,12 @@ export default function SettingsScreen() {
 
   const handleResetDB = async () => {
     Alert.alert(
-      '⚠️ Resetar banco de dados',
-      'ATENÇÃO: Todos os clientes, coleções e compras serão apagados permanentemente!',
+      'Resetar banco de dados',
+      'Todos os clientes, coleções e compras serão apagados permanentemente.',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Resetar TUDO',
+          text: 'Resetar tudo',
           style: 'destructive',
           onPress: async () => {
             const db = await getDatabase();
@@ -123,15 +128,16 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView>
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Configurações</Text>
-        </View>
+      <SafeAreaView edges={['top']}>
+        <NotionHeader title="Configurações" showBorder />
       </SafeAreaView>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={[styles.content, { paddingBottom: scrollBottom }]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>CONTA</Text>
+          <Text style={styles.sectionTitle}>Conta</Text>
           <View style={styles.card}>
             <TouchableOpacity
               style={styles.accountRow}
@@ -162,11 +168,13 @@ export default function SettingsScreen() {
                   </Text>
                 )}
               </View>
-              {isAdmin && <Text style={styles.editChevron}>›</Text>}
+              {isAdmin && (
+                <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+              )}
             </TouchableOpacity>
             <View style={styles.divider} />
             <SettingRow
-              icon="→"
+              icon="log-out-outline"
               title="Sair da conta"
               subtitle="Encerrar sessão neste dispositivo"
               onPress={handleLogout}
@@ -176,11 +184,16 @@ export default function SettingsScreen() {
 
         {canManageUsers && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>REPRESENTANTES</Text>
+            <Text style={styles.sectionTitle}>Representantes</Text>
             <View style={styles.card}>
               {loadingUsers ? (
                 <View style={styles.usersLoading}>
                   <ActivityIndicator size="small" color={COLORS.primary} />
+                </View>
+              ) : representatives.length === 0 ? (
+                <View style={styles.emptyUsers}>
+                  <Ionicons name="people-outline" size={28} color={COLORS.textMuted} />
+                  <Text style={styles.emptyUsersText}>Nenhum representante cadastrado</Text>
                 </View>
               ) : (
                 representatives.map((rep, index) => (
@@ -211,38 +224,43 @@ export default function SettingsScreen() {
                         <TouchableOpacity
                           onPress={() => router.push(`/user/edit?id=${rep.id}`)}
                           hitSlop={8}
+                          style={styles.iconAction}
+                          activeOpacity={0.6}
                         >
-                          <Text style={styles.userEditBtn}>Editar</Text>
+                          <Ionicons name="create-outline" size={18} color={COLORS.textMuted} />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => handleDeleteUser(rep)} hitSlop={8}>
-                          <Text style={styles.userDeleteBtn}>Remover</Text>
+                        <TouchableOpacity
+                          onPress={() => handleDeleteUser(rep)}
+                          hitSlop={8}
+                          style={styles.iconAction}
+                          activeOpacity={0.6}
+                        >
+                          <Ionicons name="trash-outline" size={18} color={COLORS.textMuted} />
                         </TouchableOpacity>
                       </View>
                     </View>
                   </React.Fragment>
                 ))
               )}
-              {representatives.length === 0 && !loadingUsers && (
-                <View style={styles.emptyUsers}>
-                  <Text style={styles.emptyUsersText}>Nenhum representante cadastrado</Text>
-                </View>
-              )}
-              <View style={styles.divider} />
-              <SettingRow
-                icon="+"
-                title="Novo representante"
-                subtitle="Nome, foto, categoria, e-mail e PIN"
-                onPress={() => router.push('/representative/new')}
-              />
             </View>
+            <TouchableOpacity
+              style={styles.addRow}
+              onPress={() => router.push('/representative/new')}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="add" size={18} color={COLORS.textMuted} />
+              <Text style={styles.addRowText}>Novo representante</Text>
+            </TouchableOpacity>
           </View>
         )}
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>MAPA</Text>
+          <Text style={styles.sectionTitle}>Mapa</Text>
           <View style={styles.card}>
             <View style={styles.themeRow}>
-              <Text style={styles.settingIcon}>◎</Text>
+              <View style={styles.iconWrap}>
+                <Ionicons name="map-outline" size={20} color={COLORS.textSecondary} />
+              </View>
               <View style={styles.settingInfo}>
                 <Text style={styles.settingTitle}>Estilo do mapa</Text>
                 <Text style={styles.settingSubtitle}>Fundo claro ou escuro</Text>
@@ -258,6 +276,11 @@ export default function SettingsScreen() {
                     onPress={() => setMapTheme(option)}
                     activeOpacity={0.7}
                   >
+                    <Ionicons
+                      name={option === 'light' ? 'sunny-outline' : 'moon-outline'}
+                      size={16}
+                      color={active ? COLORS.primary : COLORS.textMuted}
+                    />
                     <Text style={[styles.themeOptionText, active && styles.themeOptionTextActive]}>
                       {option === 'light' ? 'Claro' : 'Escuro'}
                     </Text>
@@ -269,11 +292,10 @@ export default function SettingsScreen() {
               <>
                 <View style={styles.divider} />
                 <SettingRow
-                  icon="↺"
+                  icon="refresh-outline"
                   title="Limpar cache do mapa"
                   subtitle="Força redownload dos dados do IBGE"
                   onPress={handleClearGeoCache}
-                  danger={false}
                 />
               </>
             )}
@@ -281,40 +303,34 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>TERRITÓRIO</Text>
+          <Text style={styles.sectionTitle}>Território</Text>
           <View style={styles.card}>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoIcon}>◉</Text>
-              <View>
-                <Text style={styles.infoTitle}>Estado atual</Text>
-                <Text style={styles.infoSubtitle}>Piauí (código IBGE: 22)</Text>
-              </View>
-            </View>
+            <InfoRow
+              icon="location-outline"
+              title="Estado atual"
+              subtitle="Piauí (código IBGE: 22)"
+            />
             <View style={styles.divider} />
-            <View style={styles.infoRow}>
-              <Text style={styles.infoIcon}>⊞</Text>
-              <View>
-                <Text style={styles.infoTitle}>Municípios</Text>
-                <Text style={styles.infoSubtitle}>224 municípios carregados via IBGE</Text>
-              </View>
-            </View>
+            <InfoRow
+              icon="grid-outline"
+              title="Municípios"
+              subtitle="224 municípios carregados via IBGE"
+            />
             <View style={styles.divider} />
-            <View style={styles.infoRow}>
-              <Text style={styles.infoIcon}>↓</Text>
-              <View>
-                <Text style={styles.infoTitle}>Modo offline</Text>
-                <Text style={styles.infoSubtitle}>Dados cacheados por 30 dias</Text>
-              </View>
-            </View>
+            <InfoRow
+              icon="cloud-download-outline"
+              title="Modo offline"
+              subtitle="Dados cacheados por 30 dias"
+            />
           </View>
         </View>
 
         {canResetDb && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>DADOS</Text>
+            <Text style={styles.sectionTitle}>Dados</Text>
             <View style={styles.card}>
               <SettingRow
-                icon="!"
+                icon="warning-outline"
                 title="Resetar banco de dados"
                 subtitle="Apaga todos os dados permanentemente"
                 onPress={handleResetDB}
@@ -328,8 +344,14 @@ export default function SettingsScreen() {
   );
 }
 
-function SettingRow({ icon, title, subtitle, onPress, danger }: {
-  icon: string;
+function SettingRow({
+  icon,
+  title,
+  subtitle,
+  onPress,
+  danger,
+}: {
+  icon: IoniconName;
   title: string;
   subtitle?: string;
   onPress: () => void;
@@ -337,49 +359,65 @@ function SettingRow({ icon, title, subtitle, onPress, danger }: {
 }) {
   return (
     <TouchableOpacity style={styles.settingRow} onPress={onPress} activeOpacity={0.7}>
-      <Text style={styles.settingIcon}>{icon}</Text>
+      <View style={styles.iconWrap}>
+        <Ionicons
+          name={icon}
+          size={20}
+          color={danger ? COLORS.error : COLORS.textSecondary}
+        />
+      </View>
       <View style={styles.settingInfo}>
         <Text style={[styles.settingTitle, danger && styles.settingTitleDanger]}>{title}</Text>
         {subtitle && <Text style={styles.settingSubtitle}>{subtitle}</Text>}
       </View>
-      <Text style={styles.settingChevron}>›</Text>
+      <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
     </TouchableOpacity>
+  );
+}
+
+function InfoRow({
+  icon,
+  title,
+  subtitle,
+}: {
+  icon: IoniconName;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <View style={styles.infoRow}>
+      <View style={styles.iconWrap}>
+        <Ionicons name={icon} size={20} color={COLORS.textSecondary} />
+      </View>
+      <View style={styles.settingInfo}>
+        <Text style={styles.settingTitle}>{title}</Text>
+        <Text style={styles.settingSubtitle}>{subtitle}</Text>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-  },
-  header: {
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.lg,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.surfaceBorder,
-  },
-  headerTitle: {
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.xxl,
-    fontWeight: '700',
+    backgroundColor: COLORS.backgroundSubtle,
   },
   content: {
-    padding: SPACING.lg,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.sm,
     gap: SPACING.xl,
-    paddingBottom: 60,
   },
   section: { gap: SPACING.sm },
   sectionTitle: {
     color: COLORS.textMuted,
     fontSize: FONTS.sizes.xs,
-    fontWeight: '700',
-    letterSpacing: 1.2,
-    paddingHorizontal: SPACING.sm,
+    fontWeight: '600',
+    letterSpacing: 0.6,
+    paddingHorizontal: SPACING.xs,
   },
   card: {
     backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.xl,
+    borderRadius: RADIUS.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
     overflow: 'hidden',
@@ -411,8 +449,8 @@ const styles = StyleSheet.create({
   accountInfo: { flex: 1 },
   accountName: {
     color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.lg,
-    fontWeight: '700',
+    fontSize: FONTS.sizes.md,
+    fontWeight: '600',
   },
   accountRole: {
     color: COLORS.textSecondary,
@@ -474,19 +512,35 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sizes.xs,
     marginTop: 2,
   },
-  editChevron: { fontSize: 18 },
   repActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.md,
+    gap: SPACING.xs,
   },
-  userEditBtn: { fontSize: FONTS.sizes.sm, color: COLORS.primary, fontWeight: '500' },
-  userDeleteBtn: { fontSize: FONTS.sizes.sm, color: COLORS.error, fontWeight: '500' },
-  emptyUsers: { padding: SPACING.lg },
+  iconAction: {
+    padding: 4,
+  },
+  emptyUsers: {
+    padding: SPACING.xl,
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
   emptyUsersText: {
     color: COLORS.textMuted,
     fontSize: FONTS.sizes.sm,
     textAlign: 'center',
+  },
+  addRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.xs,
+  },
+  addRowText: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '500',
   },
   settingRow: {
     flexDirection: 'row',
@@ -494,7 +548,10 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     gap: SPACING.md,
   },
-  settingIcon: { fontSize: 20, width: 28, textAlign: 'center' },
+  iconWrap: {
+    width: 28,
+    alignItems: 'center',
+  },
   settingInfo: { flex: 1 },
   settingTitle: {
     color: COLORS.textPrimary,
@@ -507,27 +564,11 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sizes.sm,
     marginTop: 2,
   },
-  settingChevron: {
-    color: COLORS.textMuted,
-    fontSize: 20,
-    fontWeight: '300',
-  },
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.md,
     padding: SPACING.lg,
-  },
-  infoIcon: { fontSize: 20, width: 28, textAlign: 'center' },
-  infoTitle: {
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
-    fontWeight: '500',
-  },
-  infoSubtitle: {
-    color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.sm,
-    marginTop: 2,
   },
   divider: {
     height: StyleSheet.hairlineWidth,
@@ -550,12 +591,15 @@ const styles = StyleSheet.create({
   },
   themeOption: {
     flex: 1,
-    paddingVertical: SPACING.md,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.backgroundSubtle,
-    borderWidth: 1,
-    borderColor: COLORS.surfaceBorder,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: SPACING.md,
+    borderRadius: RADIUS.md,
+    backgroundColor: COLORS.backgroundSubtle,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
   },
   themeOptionActive: {
     borderColor: COLORS.primary,
@@ -567,6 +611,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   themeOptionTextActive: {
-    color: COLORS.primaryLight,
+    color: COLORS.primary,
   },
 });
