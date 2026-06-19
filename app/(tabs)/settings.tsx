@@ -22,7 +22,7 @@ import { ROLE_LABELS } from '../../constants/permissions';
 import { formatCategoryNames } from '../../constants/userCategories';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { MapTheme } from '../../services/preferences';
-import { TAB_BAR_CONTENT_HEIGHT } from '../../components/CustomTabBar';
+import { getTabBarBottomInset } from '../../components/CustomTabBar';
 import { NotionHeader } from '../../components/NotionHeader';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
@@ -39,7 +39,7 @@ export default function SettingsScreen() {
   const canManageUsers = canDo('manage_users');
   const canResetDb = canDo('reset_database');
   const canClearCache = canDo('clear_geo_cache');
-  const scrollBottom = TAB_BAR_CONTENT_HEIGHT + insets.bottom + SPACING.lg;
+  const scrollBottom = getTabBarBottomInset(insets);
 
   const loadUsers = useCallback(async () => {
     if (!canManageUsers) return;
@@ -133,6 +133,7 @@ export default function SettingsScreen() {
       </SafeAreaView>
 
       <ScrollView
+        style={styles.scroll}
         contentContainerStyle={[styles.content, { paddingBottom: scrollBottom }]}
         showsVerticalScrollIndicator={false}
       >
@@ -401,6 +402,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
+  },
+  scroll: {
+    flex: 1,
   },
   content: {
     paddingHorizontal: SPACING.lg,

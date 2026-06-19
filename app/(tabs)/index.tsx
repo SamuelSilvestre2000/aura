@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback, useMemo } from 'react';
+import React, { useRef, useState, useCallback, useMemo, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -15,6 +15,7 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Location from 'expo-location';
 
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useClients } from '../../hooks/useClients';
@@ -28,8 +29,10 @@ import { CityPolygon } from '../../components/MapView/CityPolygon';
 import { PiauiFocusMask } from '../../components/MapView/PiauiFocusMask';
 import { SearchBar } from '../../components/SearchBar';
 import { CitySheet } from '../../components/BottomSheet/CitySheet';
+import { SaleSheet } from '../../components/SaleSheet';
 import { Ionicons } from '@expo/vector-icons';
 
+import { getTabBarBottomInset } from '../../components/CustomTabBar';
 import { CityGeoData } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { DARK_MAP_STYLE, LIGHT_MAP_STYLE } from '../../constants/mapStyles';
@@ -42,7 +45,15 @@ import {
   mapRegionChanged,
   MAP_MAX_ZOOM_LEVEL,
   MAP_MIN_ZOOM_LEVEL,
+  regionFromUserCoordinates,
 } from '../../constants/mapBounds';
+
+type SaleTarget = {
+  clientId: string;
+  clientName: string;
+  collectionId: string;
+  collectionName: string;
+};
 
 export default function MapScreen() {
   const router = useRouter();
@@ -55,14 +66,27 @@ export default function MapScreen() {
   const [selectedCity, setSelectedCity] = useState<CityGeoData | null>(null);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
+  const [saleTarget, setSaleTarget] = useState<SaleTarget | null>(null);
+  const didInitialLocate = useRef(false);
+  const mapRegionRef = useRef<Region>(DEFAULT_MAP_REGION);
+  const programmaticRegionChangeRef = useRef(false);
+  const pendingProgrammaticRegionRef = useRef<Region | null>(null);
+  const programmaticRegionClearTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const locateInFlightRef = useRef(false);
 
   const { theme: mapTheme } = useMapTheme();
   const { user, can: canDo } = useAuth();
   const canManageClients = canDo('manage_clients');
   const { cities, loading: geoLoading, refreshing: geoRefreshing, error: geoError } = useGeoJSON();
   const { clients, getClientsByCity } = useClients();
-  const { collections } = useCollections();
-  const { purchases, togglePurchase, getPurchaseStatus } = usePurchases();
+  const { collections, refresh: refreshCollections } = useCollections();
+  const {
+    purchases,
+    getPurchaseStatus,
+    getSaleForClientCollection,
+    recordSale,
+    clearSale,
+  } = usePurchases();
 
   const activeCollectionId = selectedCollectionId || collections[0]?.id || null;
   const activeCollection = collections.find((c) => c.id === activeCollectionId) || null;
@@ -81,11 +105,18 @@ export default function MapScreen() {
   }, []);
 
   const handleTogglePurchase = useCallback(
-    async (clientId: string) => {
-      if (!activeCollectionId) return;
-      await togglePurchase(clientId, activeCollectionId);
+    (clientId: string) => {
+      if (!activeCollectionId || !activeCollection) return;
+      const client = clients.find((c) => c.id === clientId);
+      if (!client) return;
+      setSaleTarget({
+        clientId,
+        clientName: client.name,
+        collectionId: activeCollectionId,
+        collectionName: activeCollection.name,
+      });
     },
-    [activeCollectionId, togglePurchase]
+    [activeCollectionId, activeCollection, clients]
   );
 
   const openNewClient = useCallback(
@@ -117,22 +148,110 @@ export default function MapScreen() {
     setSelectedCity(null);
   }, []);
 
+  const clearProgrammaticRegionGuard = useCallback((finalRegion?: Region) => {
+    if (programmaticRegionClearTimerRef.current) {
+      clearTimeout(programmaticRegionClearTimerRef.current);
+      programmaticRegionClearTimerRef.current = null;
+    }
+    programmaticRegionChangeRef.current = false;
+    pendingProgrammaticRegionRef.current = null;
+    if (finalRegion) {
+      const clamped = clampMapRegion(finalRegion);
+      mapRegionRef.current = clamped;
+      setMapRegion(clamped);
+    }
+  }, []);
+
+  const beginProgrammaticRegionChange = useCallback(
+    (region: Region, animated: boolean) => {
+      pendingProgrammaticRegionRef.current = region;
+      programmaticRegionChangeRef.current = true;
+      if (programmaticRegionClearTimerRef.current) {
+        clearTimeout(programmaticRegionClearTimerRef.current);
+      }
+      programmaticRegionClearTimerRef.current = setTimeout(() => {
+        clearProgrammaticRegionGuard(pendingProgrammaticRegionRef.current ?? undefined);
+      }, animated ? 900 : 200);
+    },
+    [clearProgrammaticRegionGuard]
+  );
+
   const applyNativeCenterBounds = useCallback((region: Region) => {
     if (isIos) return;
     const { northEast, southWest } = getCenterBoundsForRegion(region);
     mapRef.current?.setMapBoundaries(northEast, southWest);
   }, [isIos]);
 
+  const applyRegionToMap = useCallback(
+    (region: Region, animated = true) => {
+      const clamped = clampMapRegion(region);
+      mapRegionRef.current = clamped;
+      beginProgrammaticRegionChange(clamped, animated);
+      setMapRegion(clamped);
+      applyNativeCenterBounds(clamped);
+      mapRef.current?.animateToRegion(clamped, animated ? 600 : 0);
+    },
+    [applyNativeCenterBounds, beginProgrammaticRegionChange]
+  );
+
+  const resolveUserRegion = useCallback(
+    async (options?: { preferFresh?: boolean }): Promise<Region | null> => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return null;
+
+      if (!options?.preferFresh) {
+        const lastKnown = await Location.getLastKnownPositionAsync();
+        if (lastKnown) {
+          const fromLast = regionFromUserCoordinates(
+            lastKnown.coords.latitude,
+            lastKnown.coords.longitude
+          );
+          if (fromLast) return fromLast;
+        }
+      }
+
+      const current = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+      return regionFromUserCoordinates(current.coords.latitude, current.coords.longitude);
+    },
+    []
+  );
+
+  const centerOnUserLocation = useCallback(
+    async (options?: { preferFresh?: boolean }): Promise<boolean> => {
+      try {
+        const region = await resolveUserRegion(options);
+        if (!region) return false;
+        applyRegionToMap(region, true);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    [applyRegionToMap, resolveUserRegion]
+  );
+
+  useEffect(() => {
+    if (didInitialLocate.current) return;
+    didInitialLocate.current = true;
+    void centerOnUserLocation();
+  }, [centerOnUserLocation]);
+
   const handleMapReady = useCallback(() => {
-    applyNativeCenterBounds(DEFAULT_MAP_REGION);
-  }, [applyNativeCenterBounds]);
+    applyNativeCenterBounds(mapRegion);
+  }, [applyNativeCenterBounds, mapRegion]);
 
   const handleRegionChange = useCallback(
     (region: Region) => {
+      if (programmaticRegionChangeRef.current) return;
+
       if (isIos) {
         setMapRegion((prev) => {
           const clamped = clampMapRegion(region);
-          return mapRegionChanged(prev, clamped) ? clamped : prev;
+          if (!mapRegionChanged(prev, clamped)) return prev;
+          mapRegionRef.current = clamped;
+          return clamped;
         });
         return;
       }
@@ -143,29 +262,45 @@ export default function MapScreen() {
 
   const handleRegionChangeComplete = useCallback(
     (region: Region) => {
+      if (programmaticRegionChangeRef.current) {
+        const target = pendingProgrammaticRegionRef.current ?? clampMapRegion(region);
+        clearProgrammaticRegionGuard(target);
+        applyNativeCenterBounds(target);
+        if (mapRegionChanged(region, target)) {
+          mapRef.current?.animateToRegion(target, 0);
+        }
+        return;
+      }
+
       if (!isZoomOutOfBounds(region)) return;
 
       const zoom = clampMapZoom(region);
       const corrected: Region = { ...region, ...zoom };
 
       if (isIos) {
-        setMapRegion(clampMapRegion(corrected));
+        const clamped = clampMapRegion(corrected);
+        mapRegionRef.current = clamped;
+        setMapRegion(clamped);
       } else {
         applyNativeCenterBounds(corrected);
         mapRef.current?.animateToRegion(corrected, 0);
       }
     },
-    [applyNativeCenterBounds, isIos]
+    [applyNativeCenterBounds, clearProgrammaticRegionGuard, isIos]
   );
 
-  const handleCenterMap = useCallback(() => {
-    if (isIos) {
-      setMapRegion(DEFAULT_MAP_REGION);
-    } else {
-      applyNativeCenterBounds(DEFAULT_MAP_REGION);
-      mapRef.current?.animateToRegion(DEFAULT_MAP_REGION, 400);
+  const handleCenterMap = useCallback(async () => {
+    if (locateInFlightRef.current) return;
+    locateInFlightRef.current = true;
+    try {
+      const centered = await centerOnUserLocation({ preferFresh: true });
+      if (!centered) {
+        applyRegionToMap(DEFAULT_MAP_REGION, true);
+      }
+    } finally {
+      locateInFlightRef.current = false;
     }
-  }, [applyNativeCenterBounds, isIos]);
+  }, [applyRegionToMap, centerOnUserLocation]);
 
   const handleSearchClear = useCallback(() => setSearch(''), []);
 
@@ -183,7 +318,7 @@ export default function MapScreen() {
   const selectedCityStatus = selectedCity ? getCityStatus(selectedCity.code) : 'no-clients';
   const hasCities = cities.length > 0;
   const headerTop = insets.top + 4;
-  const tabBarOffset = 56 + insets.bottom;
+  const tabBarOffset = getTabBarBottomInset(insets, SPACING.sm);
   const mapCustomStyle = mapTheme === 'dark' ? DARK_MAP_STYLE : LIGHT_MAP_STYLE;
 
   return (
@@ -287,13 +422,13 @@ export default function MapScreen() {
         {!selectedCity && (
           <View style={[styles.bottomControls, { paddingBottom: tabBarOffset + 8 }]} pointerEvents="box-none">
             <TouchableOpacity style={styles.mapActionBtn} onPress={handleCenterMap} activeOpacity={0.7}>
-              <Ionicons name="locate-outline" size={20} color={COLORS.textSecondary} />
+              <Ionicons name="locate-outline" size={22} color={COLORS.primary} />
             </TouchableOpacity>
-            {canManageClients && (
+            {/* {canManageClients && (
               <TouchableOpacity style={styles.mapActionBtn} onPress={() => openNewClient()} activeOpacity={0.7}>
                 <Ionicons name="add" size={22} color={COLORS.primary} />
               </TouchableOpacity>
-            )}
+            )} */}
           </View>
         )}
 
@@ -351,6 +486,33 @@ export default function MapScreen() {
           onAddClient={handleAddClient}
           onClose={handleCloseSheet}
           canManageClients={canManageClients}
+        />
+
+        <SaleSheet
+          visible={saleTarget != null}
+          clientName={saleTarget?.clientName ?? ''}
+          collectionName={saleTarget?.collectionName ?? ''}
+          purchased={
+            saleTarget
+              ? getPurchaseStatus(saleTarget.clientId, saleTarget.collectionId)
+              : false
+          }
+          initialAmount={
+            saleTarget
+              ? getSaleForClientCollection(saleTarget.clientId, saleTarget.collectionId)?.amount ?? 0
+              : 0
+          }
+          onClose={() => setSaleTarget(null)}
+          onSave={async (amount) => {
+            if (!saleTarget || !user) return;
+            await recordSale(saleTarget.clientId, saleTarget.collectionId, user.id, amount);
+            await refreshCollections();
+          }}
+          onClear={async () => {
+            if (!saleTarget) return;
+            await clearSale(saleTarget.clientId, saleTarget.collectionId);
+            await refreshCollections();
+          }}
         />
 
       </View>
@@ -501,7 +663,7 @@ const styles = StyleSheet.create({
     left: 0,
     paddingHorizontal: SPACING.lg,
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'flex-end',
     zIndex: 5,
     pointerEvents: 'box-none',

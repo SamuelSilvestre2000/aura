@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -22,16 +22,30 @@ import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { CategoryPillRow } from '../../components/CategoryPill';
 import { labelsFromCategoryIds } from '../../constants/categoryPills';
 import { PurchaseChip } from '../../components/PurchaseChip';
+import { SaleSheet } from '../../components/SaleSheet';
+import { formatBRL } from '../../utils/money';
+
+type SaleTarget = {
+  collectionId: string;
+  collectionName: string;
+};
 
 export default function ClientDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
 
   const { clients, deleteClient, loading: clientsLoading } = useClients();
-  const { can: canDo } = useAuth();
+  const { can: canDo, user } = useAuth();
   const canManageClients = canDo('manage_clients');
-  const { collections } = useCollections();
-  const { togglePurchase, getPurchaseStatus } = usePurchases();
+  const { collections, refresh: refreshCollections } = useCollections();
+  const {
+    getPurchaseStatus,
+    getSaleForClientCollection,
+    recordSale,
+    clearSale,
+  } = usePurchases();
+
+  const [saleTarget, setSaleTarget] = useState<SaleTarget | null>(null);
 
   const client = clients.find((c) => c.id === id);
 
@@ -184,15 +198,23 @@ export default function ClientDetailScreen() {
             <View style={styles.card}>
               {collections.map((col, index) => {
                 const purchased = getPurchaseStatus(client.id, col.id);
+                const sale = getSaleForClientCollection(client.id, col.id);
                 return (
                   <React.Fragment key={col.id}>
                     {index > 0 && <View style={styles.rowDivider} />}
                     <TouchableOpacity
                       style={styles.collectionRow}
-                      onPress={() => togglePurchase(client.id, col.id)}
+                      onPress={() =>
+                        setSaleTarget({ collectionId: col.id, collectionName: col.name })
+                      }
                       activeOpacity={0.7}
                     >
-                      <Text style={styles.collectionName}>{col.name}</Text>
+                      <View style={styles.collectionInfo}>
+                        <Text style={styles.collectionName}>{col.name}</Text>
+                        {sale ? (
+                          <Text style={styles.collectionAmount}>{formatBRL(sale.amount)}</Text>
+                        ) : null}
+                      </View>
                       <PurchaseChip purchased={purchased} />
                     </TouchableOpacity>
                   </React.Fragment>
@@ -209,6 +231,31 @@ export default function ClientDetailScreen() {
           </TouchableOpacity>
         )}
       </ScrollView>
+
+      <SaleSheet
+        visible={saleTarget != null}
+        clientName={client.name}
+        collectionName={saleTarget?.collectionName ?? ''}
+        purchased={
+          saleTarget ? getPurchaseStatus(client.id, saleTarget.collectionId) : false
+        }
+        initialAmount={
+          saleTarget
+            ? getSaleForClientCollection(client.id, saleTarget.collectionId)?.amount ?? 0
+            : 0
+        }
+        onClose={() => setSaleTarget(null)}
+        onSave={async (amount) => {
+          if (!saleTarget || !user) return;
+          await recordSale(client.id, saleTarget.collectionId, user.id, amount);
+          await refreshCollections();
+        }}
+        onClear={async () => {
+          if (!saleTarget) return;
+          await clearSale(client.id, saleTarget.collectionId);
+          await refreshCollections();
+        }}
+      />
     </View>
   );
 }
@@ -383,11 +430,19 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     gap: SPACING.md,
   },
+  collectionInfo: {
+    flex: 1,
+    gap: 2,
+  },
   collectionName: {
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.md,
     fontWeight: '500',
-    flex: 1,
+  },
+  collectionAmount: {
+    color: COLORS.primary,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '500',
   },
   rowDivider: {
     height: StyleSheet.hairlineWidth,

@@ -3,9 +3,12 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../constants/colors';
+import { COLORS, RADIUS, SPACING } from '../constants/colors';
 
+/** Altura interna do dock (área dos ícones). */
 export const TAB_BAR_CONTENT_HEIGHT = 52;
+
+const DOCK_WRAPPER_PADDING_TOP = 8;
 
 export const TAB_ORDER = ['index', 'clients', 'collections', 'settings'] as const;
 type TabName = (typeof TAB_ORDER)[number];
@@ -17,11 +20,16 @@ type TabMeta = {
 };
 
 export const TAB_META: Record<TabName, TabMeta> = {
-  index:       { label: 'Mapa',     icon: 'map-outline',      iconActive: 'map'      },
-  clients:     { label: 'Clientes', icon: 'person-outline',   iconActive: 'person'   },
-  collections: { label: 'Coleções', icon: 'albums-outline',   iconActive: 'albums'   },
-  settings:    { label: 'Config',   icon: 'settings-outline', iconActive: 'settings' },
+  index: { label: 'Mapa', icon: 'map-outline', iconActive: 'map' },
+  clients: { label: 'Clientes', icon: 'person-outline', iconActive: 'person' },
+  collections: { label: 'Coleções', icon: 'albums-outline', iconActive: 'albums' },
+  settings: { label: 'Config', icon: 'settings-outline', iconActive: 'settings' },
 };
+
+/** Espaço reservado acima do dock para listas e controles flutuantes. */
+export function getTabBarBottomInset(insets: { bottom: number }, extra = SPACING.lg): number {
+  return TAB_BAR_CONTENT_HEIGHT + DOCK_WRAPPER_PADDING_TOP + Math.max(insets.bottom, 6) + extra;
+}
 
 export function renderTabIcon(routeName: TabName, focused: boolean) {
   const { icon, iconActive } = TAB_META[routeName];
@@ -38,21 +46,27 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
   const insets = useSafeAreaInsets();
   const bottomPad = Math.max(insets.bottom, 6);
 
-  const orderedRoutes = TAB_ORDER
-    .map((name) => state.routes.find((r) => r.name === name))
-    .filter((r): r is (typeof state.routes)[number] => r != null);
+  const orderedRoutes = TAB_ORDER.map((name) => state.routes.find((r) => r.name === name)).filter(
+    (r): r is (typeof state.routes)[number] => r != null
+  );
 
   return (
     <View style={[styles.wrapper, { paddingBottom: bottomPad }]}>
-      <View style={[styles.bar, { height: TAB_BAR_CONTENT_HEIGHT }]}>
+      <View style={[styles.dock, { height: TAB_BAR_CONTENT_HEIGHT }]}>
         {orderedRoutes.map((route) => {
           const { options } = descriptors[route.key];
           const routeIndex = state.routes.findIndex((r) => r.key === route.key);
           const isFocused = state.index === routeIndex;
 
           const onPress = () => {
-            const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
-            if (!isFocused && !event.defaultPrevented) navigation.navigate(route.name, route.params);
+            const event = navigation.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name, route.params);
+            }
           };
 
           const onLongPress = () =>
@@ -87,24 +101,32 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    paddingHorizontal: 12,
-    paddingTop: 6,
-    backgroundColor: COLORS.backgroundSubtle,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: COLORS.surfaceBorder,
+    paddingHorizontal: SPACING.lg,
+    paddingTop: DOCK_WRAPPER_PADDING_TOP,
+    backgroundColor: 'transparent',
+    pointerEvents: 'box-none',
   },
-  bar: {
+  dock: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: COLORS.backgroundSubtle,
+    padding: 4,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.full,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 6,
   },
   tabPill: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     height: 44,
-    borderRadius: 999,
+    borderRadius: RADIUS.full,
   },
   tabPillActive: {
     backgroundColor: '#E9E9E7',

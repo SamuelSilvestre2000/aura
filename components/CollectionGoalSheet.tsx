@@ -67,6 +67,12 @@ export function CollectionGoalSheet({
       ? formatPeriodBR(collection.startDate, collection.endDate)
       : 'Período não definido';
 
+  const soldAmount = collection.mySoldAmount ?? 0;
+  const savedGoalAmount = collection.myGoalAmount ?? 0;
+  const remaining = Math.max(0, savedGoalAmount - soldAmount);
+  const salesPercent =
+    savedGoalAmount > 0 ? Math.min(100, Math.round((soldAmount / savedGoalAmount) * 100)) : 0;
+
   const footer = (
     <View style={styles.actions}>
       <TouchableOpacity style={styles.cancelBtn} onPress={onClose} activeOpacity={0.7}>
@@ -103,6 +109,17 @@ export function CollectionGoalSheet({
           <Text style={styles.cardLabel}>PERÍODO</Text>
           <Text style={styles.periodText}>{period}</Text>
         </View>
+
+        {savedGoalAmount > 0 && (
+          <View style={styles.card}>
+            <Text style={styles.cardLabel}>DESEMPENHO</Text>
+            <Text style={styles.statLine}>Vendido: {formatBRL(soldAmount)}</Text>
+            <Text style={styles.statLine}>Meta: {formatBRL(savedGoalAmount)}</Text>
+            <Text style={styles.statLine}>
+              Faltam: {formatBRL(remaining)} ({100 - salesPercent}% restante)
+            </Text>
+          </View>
+        )}
 
         {isRepresentative ? (
           <View style={styles.card}>
@@ -143,6 +160,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   periodText: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.md,
+    fontWeight: '500',
+  },
+  statLine: {
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.md,
     fontWeight: '500',

@@ -90,6 +90,8 @@ export type Collection = {
   endDate?: string;
   /** Meta em R$ do usuário logado (quando carregada). */
   myGoalAmount?: number | null;
+  /** Total vendido pelo usuário logado nesta coleção. */
+  mySoldAmount?: number;
 };
 
 export type CollectionGoal = {
@@ -132,6 +134,17 @@ export type Purchase = {
   collectionId: string;
   purchased: number;  // 1 = comprou, 0 = pendente
   purchasedAt?: string;
+};
+
+/** Venda registrada ao marcar cliente como "comprou". */
+export type Sale = {
+  id: string;
+  clientId: string;
+  collectionId: string;
+  userId: string;
+  amount: number;
+  soldAt: string;
+  createdAt: string;
 };
 
 // ─── Status calculado por cidade ──────────────────────────────────────────────

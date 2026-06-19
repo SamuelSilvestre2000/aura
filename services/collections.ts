@@ -1,6 +1,7 @@
 import { Collection, UserRole } from '../types';
 import { queryVisibleCollections } from './access';
 import { getGoalsMapForUser } from './collectionGoals';
+import { getSalesTotalsMapForUser } from './sales';
 import { getDatabase, generateId } from './database';
 import { DEFAULT_BRAND_ID, getDefaultBrandId, getDefaultOrganizationId } from './organizations';
 
@@ -25,9 +26,11 @@ export async function listCollectionsForUser(userId: string, role: UserRole): Pr
   const rows = await queryVisibleCollections(userId, role);
   const collections = rows.map(ROW_TO_COLLECTION);
   const goals = await getGoalsMapForUser(userId);
+  const salesTotals = await getSalesTotalsMapForUser(userId);
   return collections.map((c) => ({
     ...c,
     myGoalAmount: goals.get(c.id) ?? null,
+    mySoldAmount: salesTotals.get(c.id) ?? 0,
   }));
 }
 
@@ -62,6 +65,7 @@ export async function createCollection(input: CreateCollectionInput): Promise<Co
     startDate: input.startDate,
     endDate: input.endDate,
     myGoalAmount: null,
+    mySoldAmount: 0,
   };
 }
 

@@ -11,6 +11,8 @@ type Props = {
   leftAction?: ReactNode;
   rightAction?: ReactNode;
   showBorder?: boolean;
+  /** Menos padding vertical — alinha com abas principais. */
+  compact?: boolean;
 };
 
 export function NotionHeader({
@@ -19,6 +21,7 @@ export function NotionHeader({
   leftAction,
   rightAction,
   showBorder = false,
+  compact = false,
 }: Props) {
   if (variant === 'sheet') {
     return (
@@ -33,7 +36,14 @@ export function NotionHeader({
   }
 
   return (
-    <View style={[styles.screenHeader, showBorder && styles.screenHeaderBorder]}>
+    <View
+      style={[
+        styles.screenHeader,
+        compact && styles.screenHeaderCompact,
+        showBorder && styles.screenHeaderBorder,
+        showBorder && compact && styles.screenHeaderBorderCompact,
+      ]}
+    >
       <View style={[styles.sideSlot, styles.sideLeft]}>{leftAction}</View>
       <Text style={styles.screenTitle} numberOfLines={1}>
         {title}
@@ -69,11 +79,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     backgroundColor: 'transparent',
   },
+  screenHeaderCompact: {
+    minHeight: 32,
+    paddingTop: 0,
+    paddingBottom: SPACING.xs,
+  },
   screenHeaderBorder: {
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: COLORS.surfaceBorder,
     paddingBottom: SPACING.sm,
     marginBottom: SPACING.xs,
+  },
+  screenHeaderBorderCompact: {
+    paddingBottom: SPACING.xs,
+    marginBottom: 0,
   },
   screenTitle: {
     flex: 1,

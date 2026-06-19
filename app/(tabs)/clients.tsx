@@ -15,7 +15,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { Client } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { SearchBar } from '../../components/SearchBar';
-import { TAB_BAR_CONTENT_HEIGHT } from '../../components/CustomTabBar';
+import { getTabBarBottomInset } from '../../components/CustomTabBar';
 import { CategoryPillRow } from '../../components/CategoryPill';
 import { labelsFromCategoryIds } from '../../constants/categoryPills';
 import { NotionHeader } from '../../components/NotionHeader';
@@ -28,7 +28,7 @@ export default function ClientsScreen() {
   const { clients, loading } = useClients();
   const [search, setSearch] = useState('');
 
-  const listBottom = TAB_BAR_CONTENT_HEIGHT + insets.bottom + SPACING.lg;
+  const listBottom = getTabBarBottomInset(insets);
 
   const filteredClients = useMemo(() => {
     if (!search.trim()) return clients;
@@ -137,7 +137,7 @@ export default function ClientsScreen() {
           )}
         </View>
       ) : (
-        <View style={[styles.listWrap, { paddingBottom: listBottom }]}>
+        <View style={styles.listWrap}>
           <Text style={styles.sectionLabel}>{countLabel}</Text>
           <View style={styles.cardList}>
             <FlatList
@@ -146,19 +146,10 @@ export default function ClientsScreen() {
               renderItem={renderClient}
               showsVerticalScrollIndicator={false}
               style={styles.cardFlatList}
+              contentContainerStyle={{ paddingBottom: listBottom }}
               keyboardShouldPersistTaps="handled"
             />
           </View>
-          {canManageClients && (
-            <TouchableOpacity
-              style={styles.addRow}
-              onPress={() => router.push('/client/new')}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="add" size={18} color={COLORS.textMuted} />
-              <Text style={styles.addRowText}>Novo cliente</Text>
-            </TouchableOpacity>
-          )}
         </View>
       )}
     </View>
@@ -261,24 +252,6 @@ const styles = StyleSheet.create({
   rowPhone: {
     color: COLORS.textMuted,
     fontSize: FONTS.sizes.sm,
-  },
-  addRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.lg,
-    marginHorizontal: SPACING.lg,
-    marginTop: SPACING.sm,
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
-  },
-  addRowText: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.sm,
-    fontWeight: '500',
   },
   emptyState: {
     flex: 1,

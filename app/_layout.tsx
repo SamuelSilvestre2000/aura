@@ -5,6 +5,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../hooks/useAuth';
+import { CollectionsProvider } from '../hooks/useCollections';
+import { PurchasesProvider } from '../hooks/usePurchases';
 import { NOTION_MODAL_OPTIONS } from '../constants/navigation';
 import { COLORS } from '../constants/colors';
 
@@ -41,6 +43,8 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
         <AuthProvider>
+          <CollectionsProvider>
+          <PurchasesProvider>
           <StatusBar style="dark" />
           <AuthGate>
             <Stack screenOptions={{ headerShown: false }}>
@@ -50,10 +54,13 @@ export default function RootLayout() {
               <Stack.Screen name="client/new" options={NOTION_MODAL_OPTIONS} />
               <Stack.Screen name="client/edit" options={{ headerShown: false }} />
               <Stack.Screen name="collection/new" options={NOTION_MODAL_OPTIONS} />
+              <Stack.Screen name="collection/[id]" options={NOTION_MODAL_OPTIONS} />
               <Stack.Screen name="representative/new" options={{ headerShown: false }} />
               <Stack.Screen name="user/edit" options={{ headerShown: false }} />
             </Stack>
           </AuthGate>
+          </PurchasesProvider>
+          </CollectionsProvider>
         </AuthProvider>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>

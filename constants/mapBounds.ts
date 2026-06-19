@@ -97,6 +97,34 @@ export function clampMapRegion(region: Region): Region {
   return { latitude, longitude, latitudeDelta, longitudeDelta };
 }
 
+export function isCoordinateInOuterBounds(latitude: number, longitude: number): boolean {
+  return (
+    latitude >= OUTER_BOUNDS.south &&
+    latitude <= OUTER_BOUNDS.north &&
+    longitude >= OUTER_BOUNDS.west &&
+    longitude <= OUTER_BOUNDS.east
+  );
+}
+
+/** Zoom regional ao focar na posição do usuário. */
+export const USER_LOCATION_MAP_ZOOM = {
+  latitudeDelta: 2.4,
+  longitudeDelta: 2.4,
+} as const;
+
+/** Região centrada no usuário, ou null se estiver fora da área do app. */
+export function regionFromUserCoordinates(
+  latitude: number,
+  longitude: number
+): Region | null {
+  if (!isCoordinateInOuterBounds(latitude, longitude)) return null;
+  return clampMapRegion({
+    latitude,
+    longitude,
+    ...USER_LOCATION_MAP_ZOOM,
+  });
+}
+
 export function mapRegionChanged(a: Region, b: Region, epsilon = 0.001): boolean {
   return (
     Math.abs(a.latitude - b.latitude) > epsilon ||

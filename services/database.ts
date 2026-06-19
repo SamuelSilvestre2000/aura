@@ -256,6 +256,7 @@ async function initDatabase(database: SQLite.SQLiteDatabase): Promise<void> {
 
   await migrateOrgModelV2(database);
   await migrateCollectionPeriodAndGoals(database);
+  await migrateSalesV1(database);
 
   const count = await database.getFirstAsync<{ count: number }>(
     'SELECT COUNT(*) as count FROM collections'
@@ -397,6 +398,30 @@ async function migrateCollectionPeriodAndGoals(database: SQLite.SQLiteDatabase):
 
   await database.runAsync(
     "INSERT OR REPLACE INTO app_meta (key, value) VALUES ('collection_period_goals_v1', '1')"
+  );
+}
+
+async function migrateSalesV1(database: SQLite.SQLiteDatabase): Promise<void> {
+  const migrated = await database.getFirstAsync<{ value: string }>(
+    "SELECT value FROM app_meta WHERE key = 'sales_v1'"
+  );
+  if (migrated?.value === '1') return;
+
+  await database.execAsync(`
+    CREATE TABLE IF NOT EXISTS sales (
+      id TEXT PRIMARY KEY,
+      client_id TEXT NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+      collection_id TEXT NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      amount REAL NOT NULL,
+      sold_at TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      UNIQUE(client_id, collection_id)
+    );
+  `);
+
+  await database.runAsync(
+    "INSERT OR REPLACE INTO app_meta (key, value) VALUES ('sales_v1', '1')"
   );
 }
 

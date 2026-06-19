@@ -1,15 +1,16 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   StyleSheet,
   View,
   Text,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
+  Modal,
+  Pressable,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useCollections } from '../../hooks/useCollections';
 import { useClients } from '../../hooks/useClients';
@@ -17,125 +18,161 @@ import { usePurchases } from '../../hooks/usePurchases';
 import { useAuth } from '../../hooks/useAuth';
 import { Collection } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
-import { TAB_BAR_CONTENT_HEIGHT } from '../../components/CustomTabBar';
+import { getTabBarBottomInset } from '../../components/CustomTabBar';
 import { NotionHeader } from '../../components/NotionHeader';
-import { CollectionGoalSheet } from '../../components/CollectionGoalSheet';
 import { formatPeriodBR } from '../../utils/dates';
 import { formatBRL } from '../../utils/money';
+import { getCollectionProgress, progressColor, progressColorOnTintedBg } from '../../utils/collectionStats';
+import {
+  filterCollectionsByYear,
+  getAvailableCollectionYears,
+} from '../../utils/collectionYears';
+import { getVigenteCollectionId } from '../../utils/collectionVigente';
 
-function progressColor(percent: number): string {
-  if (percent === 100) return COLORS.success;
-  if (percent > 50) return COLORS.warning;
-  return COLORS.error;
-}
+const CURRENT_YEAR = new Date().getFullYear();
 
 export default function CollectionsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { user, can: canDo, isAdmin } = useAuth();
+  const { can: canDo, isAdmin } = useAuth();
   const canManageCollections = canDo('manage_collections');
-  const { collections, loading, deleteCollection, refresh } = useCollections();
+  const { collections, loading, refresh, activeCollection } = useCollections();
   const { clients } = useClients();
-  const { purchases } = usePurchases();
+  const { purchases, refresh: refreshPurchases } = usePurchases();
+  const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
+  const [showYearPicker, setShowYearPicker] = useState(false);
 
-  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
-  const [showGoalSheet, setShowGoalSheet] = useState(false);
+  const availableYears = useMemo(
+    () => getAvailableCollectionYears(collections),
+    [collections]
+  );
 
-  const listBottom = TAB_BAR_CONTENT_HEIGHT + insets.bottom + SPACING.lg;
+  const filteredCollections = useMemo(
+    () => filterCollectionsByYear(collections, selectedYear),
+    [collections, selectedYear]
+  );
+
+  const vigenteCollectionId = useMemo(
+    () => getVigenteCollectionId(collections, activeCollection?.id ?? null),
+    [collections, activeCollection?.id]
+  );
+
+  const listBottom = getTabBarBottomInset(insets);
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+      refreshPurchases();
+    }, [refresh, refreshPurchases])
+  );
 
   const openCreateScreen = () => router.push('/collection/new');
 
   const openCollection = (col: Collection) => {
-    setSelectedCollection(col);
-    setShowGoalSheet(true);
+    router.push({ pathname: '/collection/[id]', params: { id: col.id } });
   };
 
   const getProgress = useCallback(
     (collectionId: string) => {
-      if (clients.length === 0) return { percent: 0, bought: 0, total: 0, cities: 0, totalCities: 0 };
-      const collectionPurchases = purchases.filter(
-        (p) => p.collectionId === collectionId && p.purchased === 1
-      );
-      const boughtClientIds = new Set(collectionPurchases.map((p) => p.clientId));
-      const bought = clients.filter((c) => boughtClientIds.has(c.id)).length;
-      const percent = clients.length > 0 ? Math.round((bought / clients.length) * 100) : 0;
-      const cityCodes = [...new Set(clients.map((c) => c.cityCode))];
-      const completedCities = cityCodes.filter((code) => {
-        const cityClients = clients.filter((c) => c.cityCode === code);
-        return cityClients.every((c) => boughtClientIds.has(c.id));
-      }).length;
-      return { percent, bought, total: clients.length, cities: completedCities, totalCities: cityCodes.length };
+      const stats = getCollectionProgress(collectionId, clients, purchases);
+      return {
+        percent: stats.clientPercent,
+        bought: stats.bought,
+        total: stats.total,
+        cities: stats.completedCities,
+        totalCities: stats.totalCities,
+      };
     },
     [clients, purchases]
   );
 
-  const handleDelete = (col: Collection) => {
-    Alert.alert(
-      'Remover coleção',
-      `Deseja remover "${col.name}"? Todos os dados de compra serão perdidos.`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Remover', style: 'destructive', onPress: () => deleteCollection(col.id) },
-      ]
-    );
-  };
-
   const renderCollection = ({ item, index }: { item: Collection; index: number }) => {
     const progress = getProgress(item.id);
-    const fillColor = progressColor(progress.percent);
+    const soldAmount = item.mySoldAmount ?? 0;
+    const goalAmount = item.myGoalAmount ?? 0;
+    const hasGoal = goalAmount > 0;
+    const remaining = Math.max(0, goalAmount - soldAmount);
+    const salesPercent = hasGoal
+      ? Math.min(100, Math.round((soldAmount / goalAmount) * 100))
+      : 0;
     const period =
       item.startDate && item.endDate
         ? formatPeriodBR(item.startDate, item.endDate)
         : null;
+    const isVigente = item.id === vigenteCollectionId;
+    const resolveProgressColor = (percent: number) =>
+      isVigente ? progressColorOnTintedBg(percent) : progressColor(percent);
+    const salesFillColor = resolveProgressColor(salesPercent);
 
     return (
       <TouchableOpacity
-        style={[styles.row, index > 0 && styles.rowBorder]}
+        key={item.id}
+        style={[
+          styles.row,
+          index > 0 && styles.rowBorder,
+          isVigente && styles.rowVigente,
+          isVigente && styles.rowVigenteClip,
+        ]}
         onPress={() => openCollection(item)}
         activeOpacity={0.7}
       >
+        {isVigente ? <View style={styles.vigenteAccent} pointerEvents="none" /> : null}
+
         <View style={styles.rowIcon}>
-          <Ionicons name="albums-outline" size={20} color={COLORS.textSecondary} />
+          <Ionicons
+            name={isVigente ? 'albums' : 'albums-outline'}
+            size={20}
+            color={isVigente ? COLORS.success : COLORS.textSecondary}
+          />
         </View>
 
         <View style={styles.rowBody}>
           <View style={styles.rowTop}>
-            <Text style={styles.rowTitle} numberOfLines={1}>{item.name}</Text>
-            {canManageCollections && (
-              <TouchableOpacity
-                onPress={(e) => {
-                  e.stopPropagation?.();
-                  handleDelete(item);
-                }}
-                hitSlop={10}
-                style={styles.deleteBtn}
-                activeOpacity={0.6}
-              >
-                <Ionicons name="trash-outline" size={18} color={COLORS.textMuted} />
-              </TouchableOpacity>
-            )}
+            <View style={styles.rowTitleWrap}>
+              <Text style={styles.rowTitle} numberOfLines={1}>{item.name}</Text>
+              {isVigente ? (
+                <View style={styles.vigenteBadge}>
+                  <Text style={styles.vigenteBadgeText}>Vigente</Text>
+                </View>
+              ) : null}
+            </View>
           </View>
 
           {period ? <Text style={styles.rowPeriod}>{period}</Text> : null}
 
-          {!isAdmin && (
-            <Text style={styles.rowGoal}>
-              {item.myGoalAmount != null && item.myGoalAmount > 0
-                ? `Meta: ${formatBRL(item.myGoalAmount)}`
-                : 'Definir meta'}
+          {item.myGoalAmount != null && item.myGoalAmount > 0 ? (
+            <Text style={styles.rowGoal}>Meta: {formatBRL(item.myGoalAmount)}</Text>
+          ) : !isAdmin ? (
+            <Text style={styles.rowGoalMuted}>Definir meta</Text>
+          ) : null}
+
+          {hasGoal ? (
+            <Text style={styles.rowSales}>
+              Vendido: {formatBRL(soldAmount)} · Faltam: {formatBRL(remaining)}
             </Text>
-          )}
+          ) : soldAmount > 0 ? (
+            <Text style={styles.rowSales}>Vendido: {formatBRL(soldAmount)}</Text>
+          ) : null}
 
           <Text style={styles.rowMeta}>
             {progress.bought}/{progress.total} clientes · {progress.cities}/{progress.totalCities} cidades
           </Text>
 
-          <View style={styles.progressRow}>
-            <View style={styles.progressTrack}>
-              <View style={[styles.progressFill, { width: `${progress.percent}%`, backgroundColor: fillColor }]} />
+          {hasGoal ? (
+            <View style={styles.progressRow}>
+              <View style={[styles.progressTrack, isVigente && styles.progressTrackVigente]}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    { width: `${salesPercent}%`, backgroundColor: salesFillColor },
+                  ]}
+                />
+              </View>
+              <Text style={[styles.progressPct, { color: salesFillColor }]}>
+                Meta {salesPercent}%
+              </Text>
             </View>
-            <Text style={[styles.progressPct, { color: fillColor }]}>{progress.percent}%</Text>
-          </View>
+          ) : null}
         </View>
 
         <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
@@ -149,6 +186,7 @@ export default function CollectionsScreen() {
         <NotionHeader
           title="Coleções"
           showBorder
+          compact
           rightAction={
             canManageCollections ? (
               <TouchableOpacity
@@ -187,40 +225,86 @@ export default function CollectionsScreen() {
           )}
         </View>
       ) : (
-        <View style={[styles.listWrap, { paddingBottom: listBottom }]}>
-          <Text style={styles.sectionLabel}>
-            {collections.length} {collections.length === 1 ? 'coleção' : 'coleções'}
-          </Text>
-          <View style={styles.cardList}>
-            <FlatList
-              data={collections}
-              keyExtractor={(item) => item.id}
-              renderItem={renderCollection}
-              showsVerticalScrollIndicator={false}
-              style={styles.cardFlatList}
-            />
+        <ScrollView
+          style={styles.listScroll}
+          contentContainerStyle={{ paddingBottom: listBottom }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.listHeader}>
+            {availableYears.length > 1 ? (
+              <TouchableOpacity
+                style={styles.yearPill}
+                onPress={() => setShowYearPicker(true)}
+                activeOpacity={0.75}
+              >
+                <Ionicons name="calendar-outline" size={14} color={COLORS.primary} />
+                <Text style={styles.yearPillText}>{selectedYear}</Text>
+                <Ionicons name="chevron-down" size={13} color={COLORS.textMuted} />
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.yearPillStatic}>
+                <Ionicons name="calendar-outline" size={14} color={COLORS.textMuted} />
+                <Text style={styles.yearPillTextStatic}>{selectedYear}</Text>
+              </View>
+            )}
+            <Text style={styles.sectionLabel}>
+              {filteredCollections.length}{' '}
+              {filteredCollections.length === 1 ? 'coleção' : 'coleções'}
+            </Text>
           </View>
-          {canManageCollections && (
-            <TouchableOpacity
-              style={styles.addRow}
-              onPress={openCreateScreen}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="add" size={18} color={COLORS.textMuted} />
-              <Text style={styles.addRowText}>Nova coleção</Text>
-            </TouchableOpacity>
+
+          {filteredCollections.length === 0 ? (
+            <View style={styles.yearEmptyState}>
+              <Text style={styles.yearEmptyTitle}>Nenhuma coleção em {selectedYear}</Text>
+              <Text style={styles.yearEmptySubtitle}>
+                {availableYears.length > 1
+                  ? 'Selecione outro ano para ver coleções anteriores.'
+                  : 'As coleções cadastradas aparecerão aqui.'}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.cardList}>
+              {filteredCollections.map((item, index) =>
+                renderCollection({ item, index })
+              )}
+            </View>
           )}
-        </View>
+        </ScrollView>
       )}
 
-      <CollectionGoalSheet
-        visible={showGoalSheet}
-        collection={selectedCollection}
-        userId={user?.id ?? ''}
-        isRepresentative={!isAdmin}
-        onClose={() => setShowGoalSheet(false)}
-        onSaved={refresh}
-      />
+      <Modal
+        visible={showYearPicker}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowYearPicker(false)}
+      >
+        <Pressable style={styles.pickerOverlay} onPress={() => setShowYearPicker(false)}>
+          <View style={styles.pickerSheet}>
+            <View style={styles.pickerHandle} />
+            <Text style={styles.pickerTitle}>Ano</Text>
+            {availableYears.map((year, index) => {
+              const active = year === selectedYear;
+              return (
+                <TouchableOpacity
+                  key={year}
+                  style={[styles.pickerRow, index > 0 && styles.pickerRowBorder]}
+                  onPress={() => {
+                    setSelectedYear(year);
+                    setShowYearPicker(false);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.pickerRowText, active && styles.pickerRowTextActive]}>
+                    {year}
+                    {year === CURRENT_YEAR ? ' (atual)' : ''}
+                  </Text>
+                  {active && <Ionicons name="checkmark" size={18} color={COLORS.primary} />}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -245,21 +329,72 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  listWrap: {
+  listScroll: {
     flex: 1,
+  },
+  listHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: SPACING.md,
+    marginTop: SPACING.xs,
+    marginBottom: SPACING.sm,
+    marginHorizontal: SPACING.lg,
+    paddingHorizontal: SPACING.xs,
+  },
+  yearPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.full,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 6,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
+  },
+  yearPillStatic: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 6,
+  },
+  yearPillText: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '600',
+  },
+  yearPillTextStatic: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '600',
   },
   sectionLabel: {
     color: COLORS.textMuted,
     fontSize: FONTS.sizes.xs,
     fontWeight: '600',
     letterSpacing: 0.6,
-    marginTop: SPACING.xs,
-    marginBottom: SPACING.sm,
-    marginHorizontal: SPACING.lg,
-    paddingHorizontal: SPACING.xs,
+  },
+  yearEmptyState: {
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xxl,
+    paddingVertical: SPACING.xxl,
+    gap: SPACING.sm,
+  },
+  yearEmptyTitle: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.lg,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  yearEmptySubtitle: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
+    textAlign: 'center',
+    lineHeight: 20,
   },
   cardList: {
-    flex: 1,
+    alignSelf: 'stretch',
     marginHorizontal: SPACING.lg,
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
@@ -267,7 +402,6 @@ const styles = StyleSheet.create({
     borderColor: COLORS.surfaceBorder,
     overflow: 'hidden',
   },
-  cardFlatList: { flex: 1 },
   row: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -275,6 +409,22 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.lg,
     paddingHorizontal: SPACING.lg,
     backgroundColor: COLORS.surface,
+    position: 'relative',
+  },
+  rowVigente: {
+    backgroundColor: COLORS.successBg,
+  },
+  rowVigenteClip: {
+    overflow: 'hidden',
+  },
+  vigenteAccent: {
+    position: 'absolute',
+    left: 0,
+    top: SPACING.md,
+    bottom: SPACING.md,
+    width: 3,
+    borderRadius: 2,
+    backgroundColor: COLORS.success,
   },
   rowBorder: {
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -292,19 +442,49 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: SPACING.sm,
   },
-  rowTitle: {
+  rowTitleWrap: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    minWidth: 0,
+  },
+  rowTitle: {
+    flexShrink: 1,
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.md,
     fontWeight: '600',
   },
-  deleteBtn: { padding: 2 },
+  vigenteBadge: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.full,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.success,
+  },
+  vigenteBadgeText: {
+    color: COLORS.success,
+    fontSize: FONTS.sizes.xs,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
   rowPeriod: {
     color: COLORS.textSecondary,
     fontSize: FONTS.sizes.sm,
   },
   rowGoal: {
     color: COLORS.primary,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '500',
+  },
+  rowGoalMuted: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '500',
+  },
+  rowSales: {
+    color: COLORS.textSecondary,
     fontSize: FONTS.sizes.sm,
     fontWeight: '500',
   },
@@ -325,6 +505,12 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     overflow: 'hidden',
   },
+  progressTrackVigente: {
+    height: 5,
+    backgroundColor: COLORS.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(47, 107, 79, 0.35)',
+  },
   progressFill: {
     height: '100%',
     borderRadius: 2,
@@ -336,23 +522,55 @@ const styles = StyleSheet.create({
     minWidth: 32,
     textAlign: 'right',
   },
-  addRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.lg,
-    marginHorizontal: SPACING.lg,
-    marginTop: SPACING.sm,
+  pickerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    justifyContent: 'flex-end',
+  },
+  pickerSheet: {
     backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    borderWidth: StyleSheet.hairlineWidth,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    paddingTop: SPACING.sm,
+    paddingBottom: SPACING.xxl,
+    borderTopWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
   },
-  addRowText: {
+  pickerHandle: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: COLORS.surfaceBorderStrong,
+    alignSelf: 'center',
+    marginBottom: SPACING.md,
+  },
+  pickerTitle: {
     color: COLORS.textMuted,
-    fontSize: FONTS.sizes.sm,
+    fontSize: FONTS.sizes.xs,
+    fontWeight: '600',
+    letterSpacing: 0.6,
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.sm,
+  },
+  pickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+  },
+  pickerRowBorder: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: COLORS.surfaceBorder,
+  },
+  pickerRowText: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.md,
     fontWeight: '500',
+  },
+  pickerRowTextActive: {
+    color: COLORS.primary,
+    fontWeight: '600',
   },
   emptyState: {
     flex: 1,

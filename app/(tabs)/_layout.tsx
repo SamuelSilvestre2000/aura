@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { MapThemeProvider } from '../../hooks/useMapTheme';
 import { CustomTabBar, renderTabIcon } from '../../components/CustomTabBar';
+import { COLORS } from '../../constants/colors';
 
 export default function TabsLayout() {
   return (
@@ -9,10 +10,11 @@ export default function TabsLayout() {
       <Tabs
         initialRouteName="index"
         tabBar={(props) => <CustomTabBar {...props} />}
+        safeAreaInsets={{ top: 0, right: 0, bottom: 0, left: 0 }}
         screenOptions={{
           headerShown: false,
           sceneContainerStyle: styles.scene,
-          tabBarStyle: { display: 'none' },
+          tabBarStyle: styles.hiddenTabBar,
         }}
       >
         <Tabs.Screen
@@ -46,6 +48,11 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   scene: {
-    backgroundColor: 'transparent',
+    flex: 1,
+    backgroundColor: COLORS.backgroundSubtle,
+  },
+  hiddenTabBar: {
+    display: 'none',
+    height: 0,
   },
 });

@@ -1,4 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Collection } from '../types';
 import {
   listCollectionsForUser,
@@ -8,7 +15,7 @@ import {
 } from '../services/collections';
 import { useAuth } from './useAuth';
 
-type UseCollectionsReturn = {
+type CollectionsContextValue = {
   collections: Collection[];
   loading: boolean;
   activeCollection: Collection | null;
@@ -18,7 +25,9 @@ type UseCollectionsReturn = {
   refresh: () => Promise<void>;
 };
 
-export function useCollections(): UseCollectionsReturn {
+const CollectionsContext = createContext<CollectionsContextValue | null>(null);
+
+export function CollectionsProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,13 +76,36 @@ export function useCollections(): UseCollectionsReturn {
 
   const activeCollection = collections.length > 0 ? collections[0] : null;
 
-  return {
-    collections,
-    loading,
-    activeCollection,
-    createCollection,
-    deleteCollection,
-    setActiveCollection,
-    refresh: load,
-  };
+  const value = useMemo(
+    () => ({
+      collections,
+      loading,
+      activeCollection,
+      createCollection,
+      deleteCollection,
+      setActiveCollection,
+      refresh: load,
+    }),
+    [
+      collections,
+      loading,
+      activeCollection,
+      createCollection,
+      deleteCollection,
+      setActiveCollection,
+      load,
+    ]
+  );
+
+  return (
+    <CollectionsContext.Provider value={value}>{children}</CollectionsContext.Provider>
+  );
+}
+
+export function useCollections(): CollectionsContextValue {
+  const ctx = useContext(CollectionsContext);
+  if (!ctx) {
+    throw new Error('useCollections deve ser usado dentro de CollectionsProvider');
+  }
+  return ctx;
 }
