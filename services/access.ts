@@ -2,23 +2,20 @@ import { UserRole } from '../types';
 import { getDatabase } from './database';
 
 /**
- * SQL que retorna clientes visíveis para o usuário conforme escopos.
- * Admin: todos os clientes das organizações vinculadas.
- * Representante: união das regras em representative_scopes.
+ * Clientes visíveis: escopo do representante + interseção com user_categories.
+ * Coleções visíveis: organização do rep + category_id nulo (ambas) ou nas categorias do usuário.
  */
 const VISIBLE_CLIENTS_SQL = `
   SELECT DISTINCT c.*
   FROM clients c
   WHERE (
-    /* Admin: organizações do usuário */
-  ? = 'admin'
+    ? = 'admin'
     AND c.organization_id IN (
       SELECT organization_id FROM user_organizations WHERE user_id = ?
     )
   )
   OR (
-    /* Representante: regras de escopo */
-  ? = 'representative'
+    ? = 'representative'
     AND EXISTS (
       SELECT 1 FROM representative_scopes rs
       WHERE rs.user_id = ?
@@ -53,6 +50,12 @@ const VISIBLE_CLIENTS_SQL = `
           )
         )
     )
+    AND EXISTS (
+      SELECT 1 FROM client_categories cc
+      INNER JOIN user_categories uc
+        ON uc.category_id = cc.category_id AND uc.user_id = ?
+      WHERE cc.client_id = c.id
+    )
   )
   ORDER BY c.name ASC
 `;
@@ -82,6 +85,12 @@ const VISIBLE_COLLECTIONS_SQL = `
         WHERE rs.user_id = ? AND rs.brand_id IS NULL
       )
     )
+    AND (
+      col.category_id IS NULL
+      OR col.category_id IN (
+        SELECT category_id FROM user_categories WHERE user_id = ?
+      )
+    )
   )
   ORDER BY col.created_at DESC
 `;
@@ -92,6 +101,7 @@ export async function queryVisibleClients(userId: string, role: UserRole): Promi
     role,
     userId,
     role,
+    userId,
     userId,
   ]);
 }
@@ -105,6 +115,7 @@ export async function queryVisibleCollections(userId: string, role: UserRole): P
     userId,
     userId,
     userId,
+    userId,
   ]);
 }
 
@@ -115,4 +126,13 @@ export async function canUserAccessClient(
 ): Promise<boolean> {
   const rows = await queryVisibleClients(userId, role);
   return rows.some((r) => r.id === clientId);
+}
+
+export async function canUserAccessCollection(
+  userId: string,
+  role: UserRole,
+  collectionId: string
+): Promise<boolean> {
+  const rows = await queryVisibleCollections(userId, role);
+  return rows.some((r) => r.id === collectionId);
 }

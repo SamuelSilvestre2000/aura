@@ -90,14 +90,27 @@ export async function getSaleForClientCollection(
   return row ? ROW_TO_SALE(row) : null;
 }
 
-export async function getSalesTotalsMapForUser(userId: string): Promise<Map<string, number>> {
+export async function getSalesTotalsMapForUser(
+  userId: string,
+  categoryFilter: string = 'all'
+): Promise<Map<string, number>> {
   const db = await getDatabase();
-  const rows = await db.getAllAsync<{ collection_id: string; total: number }>(
-    `SELECT collection_id, COALESCE(SUM(amount), 0) as total
-     FROM sales WHERE user_id = ?
-     GROUP BY collection_id`,
-    [userId]
-  );
+  const rows =
+    categoryFilter === 'all'
+      ? await db.getAllAsync<{ collection_id: string; total: number }>(
+          `SELECT collection_id, COALESCE(SUM(amount), 0) as total
+           FROM sales WHERE user_id = ?
+           GROUP BY collection_id`,
+          [userId]
+        )
+      : await db.getAllAsync<{ collection_id: string; total: number }>(
+          `SELECT s.collection_id, COALESCE(SUM(s.amount), 0) as total
+           FROM sales s
+           INNER JOIN client_categories cc ON cc.client_id = s.client_id
+           WHERE s.user_id = ? AND cc.category_id = ?
+           GROUP BY s.collection_id`,
+          [userId, categoryFilter]
+        );
   const map = new Map<string, number>();
   for (const row of rows) {
     map.set(row.collection_id, row.total);

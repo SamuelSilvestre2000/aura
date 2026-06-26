@@ -17,14 +17,14 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useClients } from '../../hooks/useClients';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useAuth } from '../../hooks/useAuth';
-import { listCategories } from '../../services/categories';
+import { getAllowedCategoriesForUser } from '../../services/categories';
 import { CategoryMultiSelect } from '../../components/CategoryMultiSelect';
 import { Category } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 
 export default function EditClientScreen() {
   const router = useRouter();
-  const { can: canDo } = useAuth();
+  const { user, can: canDo } = useAuth();
   const params = useLocalSearchParams<{ id: string }>();
 
   const { clients, updateClient, loading: clientsLoading } = useClients();
@@ -47,8 +47,9 @@ export default function EditClientScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    listCategories().then(setCategories);
-  }, []);
+    if (!user) return;
+    getAllowedCategoriesForUser(user.id, user.role).then(setCategories);
+  }, [user]);
 
   useEffect(() => {
     if (client) {

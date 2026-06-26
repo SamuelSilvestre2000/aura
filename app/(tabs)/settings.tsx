@@ -142,9 +142,15 @@ export default function SettingsScreen() {
           <View style={styles.card}>
             <TouchableOpacity
               style={styles.accountRow}
-              onPress={() => isAdmin && user && router.push(`/user/edit?id=${user.id}`)}
-              activeOpacity={isAdmin ? 0.7 : 1}
-              disabled={!isAdmin}
+              onPress={() => {
+                if (!user) return;
+                if (isAdmin) {
+                  router.push(`/user/edit?id=${user.id}`);
+                } else {
+                  router.push('/user/profile');
+                }
+              }}
+              activeOpacity={0.7}
             >
               {user?.photoUri ? (
                 <Image source={{ uri: user.photoUri }} style={styles.accountPhoto} />
@@ -169,7 +175,7 @@ export default function SettingsScreen() {
                   </Text>
                 )}
               </View>
-              {isAdmin && (
+              {user && (
                 <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
               )}
             </TouchableOpacity>
@@ -213,7 +219,7 @@ export default function SettingsScreen() {
                       <View style={styles.userManageInfo}>
                         <Text style={styles.userManageName}>{rep.name}</Text>
                         <Text style={styles.userManageMeta}>
-                          {formatCategoryNames(rep.categories)} · PIN {rep.pin}
+                          {formatCategoryNames(rep.categories)}
                         </Text>
                         {rep.email && (
                           <Text style={styles.userManageEmail} numberOfLines={1}>

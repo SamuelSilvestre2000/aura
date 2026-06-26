@@ -24,6 +24,12 @@ import { usePurchases } from '../../hooks/usePurchases';
 import { useCityStatus } from '../../hooks/useCityStatus';
 import { useMapTheme } from '../../hooks/useMapTheme';
 import { useAuth } from '../../hooks/useAuth';
+import { useCategoryFilter } from '../../hooks/useCategoryFilter';
+import {
+  filterClientsByCategory,
+  filterCollectionsByCategory,
+} from '../../utils/categoryFilter';
+import { CategoryPickerPill } from '../../components/CategoryPickerPill';
 
 import { CityPolygon } from '../../components/MapView/CityPolygon';
 import { PiauiFocusMask } from '../../components/MapView/PiauiFocusMask';
@@ -76,9 +82,16 @@ export default function MapScreen() {
 
   const { theme: mapTheme } = useMapTheme();
   const { user, can: canDo } = useAuth();
+  const {
+    categories: userCategories,
+    filter: categoryFilter,
+    setFilter: setCategoryFilter,
+    effectiveFilter,
+    allowedCategoryIds,
+  } = useCategoryFilter();
   const canManageClients = canDo('manage_clients');
   const { cities, loading: geoLoading, refreshing: geoRefreshing, error: geoError } = useGeoJSON();
-  const { clients, getClientsByCity } = useClients();
+  const { clients } = useClients();
   const { collections, refresh: refreshCollections } = useCollections();
   const {
     purchases,
@@ -88,10 +101,33 @@ export default function MapScreen() {
     clearSale,
   } = usePurchases();
 
-  const activeCollectionId = selectedCollectionId || collections[0]?.id || null;
-  const activeCollection = collections.find((c) => c.id === activeCollectionId) || null;
+  const filteredClients = useMemo(
+    () => filterClientsByCategory(clients, effectiveFilter, allowedCategoryIds),
+    [clients, effectiveFilter, allowedCategoryIds]
+  );
 
-  const { getCityStatus } = useCityStatus(clients, purchases, activeCollectionId);
+  const visibleCollections = useMemo(
+    () => filterCollectionsByCategory(collections, effectiveFilter, allowedCategoryIds),
+    [collections, effectiveFilter, allowedCategoryIds]
+  );
+
+  useEffect(() => {
+    void refreshCollections(effectiveFilter);
+  }, [effectiveFilter, refreshCollections]);
+
+  useEffect(() => {
+    if (
+      selectedCollectionId &&
+      !visibleCollections.some((c) => c.id === selectedCollectionId)
+    ) {
+      setSelectedCollectionId(null);
+    }
+  }, [effectiveFilter, visibleCollections, selectedCollectionId]);
+
+  const activeCollectionId = selectedCollectionId || visibleCollections[0]?.id || null;
+  const activeCollection = visibleCollections.find((c) => c.id === activeCollectionId) || null;
+
+  const { getCityStatus } = useCityStatus(filteredClients, purchases, activeCollectionId);
 
   const filteredCities = useMemo(() => {
     if (!search.trim()) return cities;
@@ -107,7 +143,7 @@ export default function MapScreen() {
   const handleTogglePurchase = useCallback(
     (clientId: string) => {
       if (!activeCollectionId || !activeCollection) return;
-      const client = clients.find((c) => c.id === clientId);
+      const client = filteredClients.find((c) => c.id === clientId);
       if (!client) return;
       setSaleTarget({
         clientId,
@@ -116,7 +152,7 @@ export default function MapScreen() {
         collectionName: activeCollection.name,
       });
     },
-    [activeCollectionId, activeCollection, clients]
+    [activeCollectionId, activeCollection, filteredClients]
   );
 
   const openNewClient = useCallback(
@@ -314,7 +350,9 @@ export default function MapScreen() {
     );
   }
 
-  const selectedCityClients = selectedCity ? getClientsByCity(selectedCity.code) : [];
+  const selectedCityClients = selectedCity
+    ? filteredClients.filter((c) => c.cityCode === selectedCity.code)
+    : [];
   const selectedCityStatus = selectedCity ? getCityStatus(selectedCity.code) : 'no-clients';
   const hasCities = cities.length > 0;
   const headerTop = insets.top + 4;
@@ -395,26 +433,34 @@ export default function MapScreen() {
 
           {activeCollection && (
             <View style={styles.collectionContainer}>
-              {collections.length > 1 ? (
-                <TouchableOpacity
-                  style={styles.collectionPill}
-                  onPress={() => setShowCollectionPicker(true)}
-                  activeOpacity={0.75}
-                >
-                  <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
-                  <Text style={styles.collectionPillText} numberOfLines={1}>
-                    {activeCollection.name}
-                  </Text>
-                  <Ionicons name="chevron-down" size={13} color={COLORS.textMuted} />
-                </TouchableOpacity>
-              ) : (
-                <View style={styles.collectionPill}>
-                  <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
-                  <Text style={styles.collectionPillText} numberOfLines={1}>
-                    {activeCollection.name}
-                  </Text>
-                </View>
-              )}
+              <View style={styles.pillRow}>
+                {visibleCollections.length > 1 ? (
+                  <TouchableOpacity
+                    style={styles.collectionPill}
+                    onPress={() => setShowCollectionPicker(true)}
+                    activeOpacity={0.75}
+                  >
+                    <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
+                    <Text style={styles.collectionPillText} numberOfLines={1}>
+                      {activeCollection.name}
+                    </Text>
+                    <Ionicons name="chevron-down" size={13} color={COLORS.textMuted} />
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.collectionPill}>
+                    <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
+                    <Text style={styles.collectionPillText} numberOfLines={1}>
+                      {activeCollection.name}
+                    </Text>
+                  </View>
+                )}
+
+                <CategoryPickerPill
+                  categories={userCategories}
+                  value={categoryFilter}
+                  onChange={setCategoryFilter}
+                />
+              </View>
             </View>
           )}
         </View>
@@ -443,7 +489,7 @@ export default function MapScreen() {
             <View style={styles.pickerSheet}>
               <View style={styles.pickerHandle} />
               <Text style={styles.pickerTitle}>Coleção ativa</Text>
-              {collections.map((col, i) => {
+              {visibleCollections.map((col, i) => {
                 const active = col.id === activeCollectionId;
                 return (
                   <TouchableOpacity
@@ -506,12 +552,12 @@ export default function MapScreen() {
           onSave={async (amount) => {
             if (!saleTarget || !user) return;
             await recordSale(saleTarget.clientId, saleTarget.collectionId, user.id, amount);
-            await refreshCollections();
+            await refreshCollections(effectiveFilter);
           }}
           onClear={async () => {
             if (!saleTarget) return;
             await clearSale(saleTarget.clientId, saleTarget.collectionId);
-            await refreshCollections();
+            await refreshCollections(effectiveFilter);
           }}
         />
 
@@ -541,6 +587,11 @@ const styles = StyleSheet.create({
   collectionContainer: {
     marginTop: 6,
     marginHorizontal: 12,
+  },
+  pillRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: SPACING.sm,
   },
   collectionPill: {
     flexDirection: 'row',

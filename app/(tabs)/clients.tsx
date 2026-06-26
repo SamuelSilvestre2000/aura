@@ -12,34 +12,49 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useClients } from '../../hooks/useClients';
 import { useAuth } from '../../hooks/useAuth';
+import { useCategoryFilter } from '../../hooks/useCategoryFilter';
 import { Client } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { SearchBar } from '../../components/SearchBar';
+import { CategoryPickerPill } from '../../components/CategoryPickerPill';
 import { getTabBarBottomInset } from '../../components/CustomTabBar';
 import { CategoryPillRow } from '../../components/CategoryPill';
 import { labelsFromCategoryIds } from '../../constants/categoryPills';
 import { NotionHeader } from '../../components/NotionHeader';
+import { filterClientsByCategory } from '../../utils/categoryFilter';
 
 export default function ClientsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { can: canDo } = useAuth();
+  const {
+    categories: userCategories,
+    filter: categoryFilter,
+    setFilter: setCategoryFilter,
+    effectiveFilter,
+    allowedCategoryIds,
+  } = useCategoryFilter();
   const canManageClients = canDo('manage_clients');
   const { clients, loading } = useClients();
   const [search, setSearch] = useState('');
 
   const listBottom = getTabBarBottomInset(insets);
 
+  const categoryScopedClients = useMemo(
+    () => filterClientsByCategory(clients, effectiveFilter, allowedCategoryIds),
+    [clients, effectiveFilter, allowedCategoryIds]
+  );
+
   const filteredClients = useMemo(() => {
-    if (!search.trim()) return clients;
+    if (!search.trim()) return categoryScopedClients;
     const q = search.toLowerCase();
-    return clients.filter(
+    return categoryScopedClients.filter(
       (c) =>
         c.name.toLowerCase().includes(q) ||
         c.city.toLowerCase().includes(q) ||
         (c.phone && c.phone.includes(q))
     );
-  }, [clients, search]);
+  }, [categoryScopedClients, search]);
 
   const renderClient = ({ item, index }: { item: Client; index: number }) => {
     const { labels, slugs } = labelsFromCategoryIds(item.categoryIds);
@@ -72,7 +87,7 @@ export default function ClientsScreen() {
 
   const countLabel = search.trim()
     ? `${filteredClients.length} resultado${filteredClients.length !== 1 ? 's' : ''}`
-    : `${clients.length} cliente${clients.length !== 1 ? 's' : ''}`;
+    : `${categoryScopedClients.length} cliente${categoryScopedClients.length !== 1 ? 's' : ''}`;
 
   return (
     <View style={styles.container}>
@@ -102,6 +117,11 @@ export default function ClientsScreen() {
           onClear={() => setSearch('')}
           placeholder="Pesquisar cliente ou cidade..."
         />
+        <CategoryPickerPill
+          categories={userCategories}
+          value={categoryFilter}
+          onChange={setCategoryFilter}
+        />
       </View>
 
       {loading ? (
@@ -118,12 +138,18 @@ export default function ClientsScreen() {
             />
           </View>
           <Text style={styles.emptyTitle}>
-            {search.trim() ? 'Nenhum resultado' : 'Nenhum cliente'}
+            {search.trim()
+              ? 'Nenhum resultado'
+              : categoryScopedClients.length === 0 && clients.length > 0
+                ? 'Nenhum cliente nesta categoria'
+                : 'Nenhum cliente'}
           </Text>
           <Text style={styles.emptySubtitle}>
             {search.trim()
               ? 'Tente outro nome ou cidade'
-              : 'Cadastre clientes pelo mapa ou aqui'}
+              : categoryScopedClients.length === 0 && clients.length > 0
+                ? 'Selecione outra categoria ou Todas'
+                : 'Cadastre clientes pelo mapa ou aqui'}
           </Text>
           {canManageClients && !search.trim() && (
             <TouchableOpacity
@@ -176,6 +202,7 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.xs,
     paddingBottom: SPACING.sm,
     backgroundColor: COLORS.backgroundSubtle,
+    gap: SPACING.sm,
   },
   center: {
     flex: 1,

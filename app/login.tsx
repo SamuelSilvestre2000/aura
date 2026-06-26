@@ -10,7 +10,7 @@ import { useAuth } from '../hooks/useAuth';
 import { listUsers } from '../services/users';
 import { User } from '../types';
 import { ROLE_LABELS } from '../constants/permissions';
-import { formatCategoryNames, REP_PIN_OPTIONS } from '../constants/userCategories';
+import { formatCategoryNames } from '../constants/userCategories';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/colors';
 
 export default function LoginScreen() {
@@ -37,7 +37,6 @@ export default function LoginScreen() {
   }, []);
 
   const selectedUser = users.find((u) => u.id === selectedUserId) ?? null;
-  const isRepresentative = selectedUser?.role === 'representative';
 
   const handleLogin = async (pinValue?: string) => {
     if (!selectedUser) return;
@@ -120,60 +119,34 @@ export default function LoginScreen() {
           {/* PIN */}
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>PIN DE ACESSO</Text>
-            {isRepresentative ? (
-              <View style={styles.card}>
-                <View style={styles.pinRowWrap}>
-                  <Text style={styles.pinHint}>Toque no número do seu PIN</Text>
-                  <View style={styles.pinRow}>
-                    {REP_PIN_OPTIONS.map((option) => {
-                      const active = pin === option;
-                      return (
-                        <TouchableOpacity
-                          key={option}
-                          style={[styles.pinChip, active && styles.pinChipActive]}
-                          onPress={() => { setPin(option); handleLogin(option); }}
-                          disabled={submitting}
-                          activeOpacity={0.7}
-                        >
-                          <Text style={[styles.pinChipText, active && styles.pinChipTextActive]}>{option}</Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                </View>
-              </View>
-            ) : (
-              <TextInput
-                style={styles.pinInput}
-                placeholder="••••"
-                placeholderTextColor={COLORS.textPlaceholder}
-                value={pin}
-                onChangeText={setPin}
-                keyboardType="number-pad"
-                secureTextEntry
-                maxLength={8}
-                returnKeyType="done"
-                onSubmitEditing={() => handleLogin()}
-              />
-            )}
+            <TextInput
+              style={styles.pinInput}
+              placeholder="••••••"
+              placeholderTextColor={COLORS.textPlaceholder}
+              value={pin}
+              onChangeText={setPin}
+              keyboardType="number-pad"
+              secureTextEntry
+              maxLength={8}
+              returnKeyType="done"
+              onSubmitEditing={() => handleLogin()}
+            />
           </View>
 
-          {!isRepresentative && (
-            <TouchableOpacity
-              style={[styles.loginBtn, submitting && styles.loginBtnDisabled]}
-              onPress={() => handleLogin()}
-              disabled={submitting || !selectedUser}
-              activeOpacity={0.85}
-            >
-              {submitting
-                ? <ActivityIndicator size="small" color="#fff" />
-                : <Text style={styles.loginBtnText}>Entrar</Text>
-              }
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            style={[styles.loginBtn, submitting && styles.loginBtnDisabled]}
+            onPress={() => handleLogin()}
+            disabled={submitting || !selectedUser}
+            activeOpacity={0.85}
+          >
+            {submitting
+              ? <ActivityIndicator size="small" color="#fff" />
+              : <Text style={styles.loginBtnText}>Entrar</Text>
+            }
+          </TouchableOpacity>
 
           <Text style={styles.hint}>
-            Admin: PIN padrão 1234 · Representantes: PIN de 1 a 6
+            Representantes novos usam o PIN padrão 123456 até definirem outro.
           </Text>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -13,6 +13,7 @@ import {
   deleteCollection as deleteCollectionService,
   CreateCollectionInput,
 } from '../services/collections';
+import { CategoryFilterValue } from '../utils/categoryFilter';
 import { useAuth } from './useAuth';
 
 type CollectionsContextValue = {
@@ -22,7 +23,7 @@ type CollectionsContextValue = {
   createCollection: (input: CreateCollectionInput) => Promise<Collection>;
   deleteCollection: (id: string) => Promise<void>;
   setActiveCollection: (id: string) => Promise<void>;
-  refresh: () => Promise<void>;
+  refresh: (viewCategoryFilter?: CategoryFilterValue) => Promise<void>;
 };
 
 const CollectionsContext = createContext<CollectionsContextValue | null>(null);
@@ -32,25 +33,28 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback(async () => {
-    if (!user) {
-      setCollections([]);
-      setLoading(false);
-      return;
-    }
-    try {
-      setLoading(true);
-      const data = await listCollectionsForUser(user.id, user.role);
-      setCollections(data);
-    } catch (err) {
-      console.error('[useCollections] Erro:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
+  const load = useCallback(
+    async (viewCategoryFilter: CategoryFilterValue = 'all') => {
+      if (!user) {
+        setCollections([]);
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        const data = await listCollectionsForUser(user.id, user.role, viewCategoryFilter);
+        setCollections(data);
+      } catch (err) {
+        console.error('[useCollections] Erro:', err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [user]
+  );
 
   useEffect(() => {
-    load();
+    void load();
   }, [load]);
 
   const createCollection = useCallback(

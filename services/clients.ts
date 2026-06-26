@@ -1,6 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 import { Client, UserRole } from '../types';
 import { queryVisibleClients } from './access';
+import { validateCategoryIdsForUser } from './categories';
 import { getDatabase, generateId } from './database';
 import {
   DEFAULT_BRAND_ID,
@@ -97,7 +98,15 @@ export async function getClientById(id: string): Promise<Client | null> {
   return attachClientCategories(ROW_TO_CLIENT(row));
 }
 
-export async function createClient(data: CreateClientData): Promise<Client> {
+type ClientActor = { userId: string; role: UserRole };
+
+export async function createClient(
+  data: CreateClientData,
+  actor?: ClientActor
+): Promise<Client> {
+  if (actor && data.categoryIds?.length) {
+    await validateCategoryIdsForUser(actor.userId, actor.role, data.categoryIds);
+  }
   const db = await getDatabase();
   const now = new Date().toISOString();
   const id = generateId('cli');
@@ -139,7 +148,14 @@ export async function createClient(data: CreateClientData): Promise<Client> {
   return client;
 }
 
-export async function updateClient(id: string, data: UpdateClientData): Promise<void> {
+export async function updateClient(
+  id: string,
+  data: UpdateClientData,
+  actor?: ClientActor
+): Promise<void> {
+  if (actor && data.categoryIds?.length) {
+    await validateCategoryIdsForUser(actor.userId, actor.role, data.categoryIds);
+  }
   const db = await getDatabase();
   const fields: string[] = [];
   const values: SQLite.SQLiteBindValue[] = [];

@@ -101,3 +101,37 @@ export async function ensureDefaultRepresentativeScope(userId: string): Promise<
   if ((existing?.count ?? 0) > 0) return;
   await createRepresentativeScope({ userId, accessMode: 'all_in_org' });
 }
+
+/** Alinha escopo do representante às categorias vinculadas em user_categories. */
+export async function syncRepresentativeScopeWithUserCategories(
+  userId: string,
+  categoryIds: string[]
+): Promise<void> {
+  const db = await getDatabase();
+  const scope = await db.getFirstAsync<{ id: string }>(
+    'SELECT id FROM representative_scopes WHERE user_id = ? ORDER BY created_at ASC LIMIT 1',
+    [userId]
+  );
+
+  if (!scope) {
+    await createRepresentativeScope({
+      userId,
+      accessMode: 'by_category',
+      categoryIds,
+    });
+    return;
+  }
+
+  await db.runAsync('UPDATE representative_scopes SET access_mode = ? WHERE id = ?', [
+    'by_category',
+    scope.id,
+  ]);
+  await db.runAsync('DELETE FROM representative_scope_categories WHERE scope_id = ?', [scope.id]);
+
+  for (const categoryId of categoryIds) {
+    await db.runAsync(
+      'INSERT OR IGNORE INTO representative_scope_categories (scope_id, category_id) VALUES (?, ?)',
+      [scope.id, categoryId]
+    );
+  }
+}

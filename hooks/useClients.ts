@@ -57,19 +57,21 @@ export function useClients(): UseClientsReturn {
 
   const createClient = useCallback(
     async (data: CreateClientData): Promise<Client> => {
-      const newClient = await createClientService(data);
+      const actor = user ? { userId: user.id, role: user.role } : undefined;
+      const newClient = await createClientService(data, actor);
       await load();
       return newClient;
     },
-    [load]
+    [load, user]
   );
 
   const updateClient = useCallback(
     async (id: string, data: UpdateClientData) => {
-      await updateClientService(id, data);
+      const actor = user ? { userId: user.id, role: user.role } : undefined;
+      await updateClientService(id, data, actor);
       await load();
     },
-    [load]
+    [load, user]
   );
 
   const deleteClient = useCallback(async (id: string) => {

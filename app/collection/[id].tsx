@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -16,6 +16,10 @@ import { useCollections } from '../../hooks/useCollections';
 import { useClients } from '../../hooks/useClients';
 import { usePurchases } from '../../hooks/usePurchases';
 import { CollectionGoalSheet } from '../../components/CollectionGoalSheet';
+import { CategoryPill } from '../../components/CategoryPill';
+import { categoryLabel, filterClientsByCategory } from '../../utils/categoryFilter';
+import { getAllowedCategoriesForUser } from '../../services/categories';
+import { Category } from '../../types';
 import { NotionHeader } from '../../components/NotionHeader';
 import { HeaderBackButton } from '../../components/HeaderBackButton';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
@@ -56,8 +60,28 @@ export default function CollectionDetailScreen() {
   const { purchases, sales, refresh: refreshPurchases } = usePurchases();
   const [showGoalSheet, setShowGoalSheet] = useState(false);
   const [buyersExpanded, setBuyersExpanded] = useState(false);
+  const [goalCategories, setGoalCategories] = useState<Category[]>(user?.categories ?? []);
+
+  useEffect(() => {
+    async function load() {
+      if (!user) {
+        setGoalCategories([]);
+        return;
+      }
+      setGoalCategories(await getAllowedCategoriesForUser(user.id, user.role));
+    }
+    void load();
+  }, [user]);
 
   const collection = collections.find((c) => c.id === id);
+
+  const scopedClients = useMemo(() => {
+    const allowedIds = goalCategories.map((c) => c.id);
+    if (collection?.categoryId) {
+      return filterClientsByCategory(clients, collection.categoryId, allowedIds);
+    }
+    return filterClientsByCategory(clients, 'all', allowedIds);
+  }, [clients, collection, goalCategories]);
 
   useFocusEffect(
     useCallback(() => {
@@ -67,13 +91,13 @@ export default function CollectionDetailScreen() {
   );
 
   const progress = useMemo(
-    () => (id ? getCollectionProgress(id, clients, purchases) : null),
-    [id, clients, purchases]
+    () => (id ? getCollectionProgress(id, scopedClients, purchases) : null),
+    [id, scopedClients, purchases]
   );
 
   const boughtClients = useMemo(
-    () => (id ? getBoughtClientsForCollection(id, clients, purchases, sales) : []),
-    [id, clients, purchases, sales]
+    () => (id ? getBoughtClientsForCollection(id, scopedClients, purchases, sales) : []),
+    [id, scopedClients, purchases, sales]
   );
 
   if (loading && !collection) {
@@ -156,6 +180,11 @@ export default function CollectionDetailScreen() {
             <Ionicons name="calendar-outline" size={14} color={COLORS.textMuted} />
             <Text style={styles.periodText}>{period}</Text>
           </View>
+          <CategoryPill
+            label={categoryLabel(collection.categoryId)}
+            slug={collection.categoryId?.replace('cat_', '')}
+            compact
+          />
 
           <View style={styles.statsRow}>
             <View style={styles.stat}>
@@ -338,7 +367,9 @@ export default function CollectionDetailScreen() {
         visible={showGoalSheet}
         collection={collection}
         userId={user?.id ?? ''}
+        userRole={user?.role ?? 'representative'}
         isRepresentative={!isAdmin}
+        categories={goalCategories}
         onClose={() => setShowGoalSheet(false)}
         onSaved={refresh}
       />

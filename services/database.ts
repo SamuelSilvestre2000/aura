@@ -257,6 +257,8 @@ async function initDatabase(database: SQLite.SQLiteDatabase): Promise<void> {
   await migrateOrgModelV2(database);
   await migrateCollectionPeriodAndGoals(database);
   await migrateSalesV1(database);
+  await migrateCollectionCategoryV1(database);
+  await migrateRepScopeFromUserCategories(database);
 
   const count = await database.getFirstAsync<{ count: number }>(
     'SELECT COUNT(*) as count FROM collections'
@@ -398,6 +400,92 @@ async function migrateCollectionPeriodAndGoals(database: SQLite.SQLiteDatabase):
 
   await database.runAsync(
     "INSERT OR REPLACE INTO app_meta (key, value) VALUES ('collection_period_goals_v1', '1')"
+  );
+}
+
+async function migrateCollectionCategoryV1(database: SQLite.SQLiteDatabase): Promise<void> {
+  const migrated = await database.getFirstAsync<{ value: string }>(
+    "SELECT value FROM app_meta WHERE key = 'collection_category_v1'"
+  );
+  if (migrated?.value === '1') return;
+
+  await addColumnIfMissing(database, 'collections', 'category_id', 'TEXT');
+
+  const goalsHasCategory = await database.getAllAsync<{ name: string }>(
+    'PRAGMA table_info(collection_goals)'
+  );
+  if (!goalsHasCategory.some((c) => c.name === 'category_id')) {
+    await database.execAsync(`
+      CREATE TABLE IF NOT EXISTS collection_goals_v2 (
+        id TEXT PRIMARY KEY,
+        collection_id TEXT NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
+        user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        category_id TEXT NOT NULL DEFAULT 'all',
+        goal_amount REAL NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        UNIQUE(collection_id, user_id, category_id)
+      );
+    `);
+    await database.execAsync(`
+      INSERT OR IGNORE INTO collection_goals_v2 (
+        id, collection_id, user_id, category_id, goal_amount, created_at, updated_at
+      )
+      SELECT id, collection_id, user_id, 'all', goal_amount, created_at, updated_at
+      FROM collection_goals;
+    `);
+    await database.execAsync('DROP TABLE IF EXISTS collection_goals;');
+    await database.execAsync('ALTER TABLE collection_goals_v2 RENAME TO collection_goals;');
+  }
+
+  await database.runAsync(
+    "INSERT OR REPLACE INTO app_meta (key, value) VALUES ('collection_category_v1', '1')"
+  );
+}
+
+async function migrateRepScopeFromUserCategories(
+  database: SQLite.SQLiteDatabase
+): Promise<void> {
+  const migrated = await database.getFirstAsync<{ value: string }>(
+    "SELECT value FROM app_meta WHERE key = 'rep_scope_user_categories_v1'"
+  );
+  if (migrated?.value === '1') return;
+
+  const reps = await database.getAllAsync<{ id: string }>(
+    "SELECT id FROM users WHERE role = 'representative'"
+  );
+
+  for (const rep of reps) {
+    const cats = await database.getAllAsync<{ category_id: string }>(
+      'SELECT category_id FROM user_categories WHERE user_id = ?',
+      [rep.id]
+    );
+    const categoryIds = cats.map((c) => c.category_id);
+    if (categoryIds.length === 0) continue;
+
+    const scope = await database.getFirstAsync<{ id: string }>(
+      'SELECT id FROM representative_scopes WHERE user_id = ? ORDER BY created_at ASC LIMIT 1',
+      [rep.id]
+    );
+    if (!scope) continue;
+
+    await database.runAsync('UPDATE representative_scopes SET access_mode = ? WHERE id = ?', [
+      'by_category',
+      scope.id,
+    ]);
+    await database.runAsync('DELETE FROM representative_scope_categories WHERE scope_id = ?', [
+      scope.id,
+    ]);
+    for (const categoryId of categoryIds) {
+      await database.runAsync(
+        'INSERT OR IGNORE INTO representative_scope_categories (scope_id, category_id) VALUES (?, ?)',
+        [scope.id, categoryId]
+      );
+    }
+  }
+
+  await database.runAsync(
+    "INSERT OR REPLACE INTO app_meta (key, value) VALUES ('rep_scope_user_categories_v1', '1')"
   );
 }
 

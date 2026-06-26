@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,20 +7,27 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { Collection } from '../types';
+import { Category, Collection, UserRole } from '../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/colors';
 import { NotionHeader } from './NotionHeader';
-import { MoneyInput } from './MoneyInput';
+import { CollectionGoalsInput } from './CollectionGoalsInput';
 import { AppBottomSheet } from './AppBottomSheet';
 import { formatPeriodBR } from '../utils/dates';
 import { formatBRL } from '../utils/money';
-import { setGoalForUser } from '../services/collectionGoals';
+import {
+  getGoalsForCollectionAndUser,
+  setGoalsForUser,
+} from '../services/collectionGoals';
+import { validateCategoryIdsForUser } from '../services/categories';
+import { applicableGoalCategories } from '../utils/collectionGoalCategories';
 
 type Props = {
   visible: boolean;
   collection: Collection | null;
   userId: string;
+  userRole: UserRole;
   isRepresentative: boolean;
+  categories: Category[];
   onClose: () => void;
   onSaved: () => void;
 };
@@ -29,28 +36,67 @@ export function CollectionGoalSheet({
   visible,
   collection,
   userId,
+  userRole,
   isRepresentative,
+  categories,
   onClose,
   onSaved,
 }: Props) {
-  const [goalAmount, setGoalAmount] = useState(0);
+  const [goalsByCategory, setGoalsByCategory] = useState<Record<string, number>>({});
   const [saving, setSaving] = useState(false);
 
+  const goalCategories = useMemo(
+    () => (collection ? applicableGoalCategories(collection.categoryId, categories) : []),
+    [collection, categories]
+  );
+
   useEffect(() => {
-    if (!visible || !collection) return;
-    setGoalAmount(collection.myGoalAmount ?? 0);
-    setSaving(false);
-  }, [visible, collection]);
+    if (!visible || !collection || !userId) return;
+
+    let cancelled = false;
+    (async () => {
+      const saved = await getGoalsForCollectionAndUser(collection.id, userId);
+      if (cancelled) return;
+      const initial: Record<string, number> = {};
+      for (const cat of goalCategories) {
+        initial[cat.id] = saved.get(cat.id) ?? 0;
+      }
+      setGoalsByCategory(initial);
+      setSaving(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [visible, collection, userId, goalCategories]);
+
+  const handleGoalChange = (categoryId: string, amount: number) => {
+    setGoalsByCategory((prev) => ({ ...prev, [categoryId]: amount }));
+  };
 
   const handleSave = async () => {
     if (!collection) return;
-    if (goalAmount <= 0) {
-      Alert.alert('Meta inválida', 'Informe um valor maior que zero.');
+
+    const goals = goalCategories
+      .map((cat) => ({
+        categoryId: cat.id,
+        goalAmount: goalsByCategory[cat.id] ?? 0,
+      }))
+      .filter((g) => g.goalAmount > 0);
+
+    if (goals.length === 0) {
+      Alert.alert('Meta inválida', 'Informe ao menos uma meta maior que zero.');
       return;
     }
+
     setSaving(true);
     try {
-      await setGoalForUser(collection.id, userId, goalAmount);
+      await validateCategoryIdsForUser(
+        userId,
+        userRole,
+        goals.map((g) => g.categoryId)
+      );
+      await setGoalsForUser(collection.id, userId, goals);
       onSaved();
       onClose();
     } catch (err) {
@@ -88,7 +134,7 @@ export function CollectionGoalSheet({
           {saving ? (
             <ActivityIndicator size="small" color="#fff" />
           ) : (
-            <Text style={styles.saveText}>Salvar meta</Text>
+            <Text style={styles.saveText}>Salvar metas</Text>
           )}
         </TouchableOpacity>
       )}
@@ -100,7 +146,7 @@ export function CollectionGoalSheet({
       visible={visible}
       onClose={onClose}
       footer={footer}
-      snapPoints={['38%', '62%', '88%']}
+      snapPoints={['42%', '68%', '92%']}
     >
       <NotionHeader title={collection.name} variant="sheet" />
 
@@ -123,18 +169,18 @@ export function CollectionGoalSheet({
 
         {isRepresentative ? (
           <View style={styles.card}>
-            <MoneyInput label="SUA META" value={goalAmount} onChange={setGoalAmount} />
-            {collection.myGoalAmount != null && collection.myGoalAmount > 0 && (
-              <Text style={styles.hint}>
-                Meta atual: {formatBRL(collection.myGoalAmount)}
-              </Text>
-            )}
+            <CollectionGoalsInput
+              categories={goalCategories}
+              values={goalsByCategory}
+              onChange={handleGoalChange}
+              sectionLabel="SUAS METAS"
+            />
           </View>
         ) : (
           <View style={styles.card}>
-            <Text style={styles.cardLabel}>META</Text>
+            <Text style={styles.cardLabel}>METAS</Text>
             <Text style={styles.hint}>
-              Cada representante define a própria meta nesta coleção.
+              Cada representante define metas por categoria nesta coleção.
             </Text>
           </View>
         )}

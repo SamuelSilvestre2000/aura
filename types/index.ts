@@ -88,6 +88,8 @@ export type Collection = {
   brandId?: string | null;
   startDate?: string;
   endDate?: string;
+  /** Linha da coleção; null = ambas as categorias. */
+  categoryId?: string | null;
   /** Meta em R$ do usuário logado (quando carregada). */
   myGoalAmount?: number | null;
   /** Total vendido pelo usuário logado nesta coleção. */
@@ -98,6 +100,8 @@ export type CollectionGoal = {
   id: string;
   collectionId: string;
   userId: string;
+  /** Id da categoria (`cat_adulto`, `cat_infantil`) ou legado `all`. */
+  categoryId: string;
   goalAmount: number;
   createdAt: string;
   updatedAt: string;

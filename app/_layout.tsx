@@ -55,8 +55,9 @@ export default function RootLayout() {
               <Stack.Screen name="client/edit" options={{ headerShown: false }} />
               <Stack.Screen name="collection/new" options={NOTION_MODAL_OPTIONS} />
               <Stack.Screen name="collection/[id]" options={NOTION_MODAL_OPTIONS} />
-              <Stack.Screen name="representative/new" options={{ headerShown: false }} />
-              <Stack.Screen name="user/edit" options={{ headerShown: false }} />
+              <Stack.Screen name="representative/new" options={NOTION_MODAL_OPTIONS} />
+              <Stack.Screen name="user/edit" options={NOTION_MODAL_OPTIONS} />
+              <Stack.Screen name="user/profile" options={NOTION_MODAL_OPTIONS} />
             </Stack>
           </AuthGate>
           </PurchasesProvider>

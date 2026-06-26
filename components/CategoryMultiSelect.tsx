@@ -1,7 +1,6 @@
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Category } from '../types';
-import { FONTS, RADIUS, SPACING } from '../constants/colors';
-import { getCategoryPillStyle } from '../constants/categoryPills';
+import { COLORS, FONTS, RADIUS, SPACING } from '../constants/colors';
 
 type Props = {
   categories: Category[];
@@ -22,21 +21,15 @@ export function CategoryMultiSelect({ categories, selectedIds, onChange }: Props
     <View style={styles.row}>
       {categories.map((category) => {
         const active = selectedIds.includes(category.id);
-        const slug = category.id.replace('cat_', '');
-        const { bg, text } = getCategoryPillStyle(slug, category.name);
 
         return (
           <TouchableOpacity
             key={category.id}
-            style={[
-              styles.chip,
-              { backgroundColor: active ? bg : '#F1F1EF' },
-              active && styles.chipActive,
-            ]}
+            style={[styles.chip, active && styles.chipActive]}
             onPress={() => toggle(category.id)}
             activeOpacity={0.8}
           >
-            <Text style={[styles.chipText, { color: active ? text : '#787774' }]}>
+            <Text style={[styles.chipText, active && styles.chipTextActive]}>
               {category.name}
             </Text>
           </TouchableOpacity>
@@ -56,12 +49,20 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     borderRadius: RADIUS.sm,
     alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderWidth: 1.5,
+    borderColor: COLORS.surfaceBorder,
   },
   chipActive: {
-    opacity: 1,
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primaryBg,
   },
   chipText: {
     fontSize: FONTS.sizes.sm,
     fontWeight: '600',
+    color: COLORS.textSecondary,
+  },
+  chipTextActive: {
+    color: COLORS.primary,
   },
 });

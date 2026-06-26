@@ -16,6 +16,14 @@ import { useCollections } from '../../hooks/useCollections';
 import { useClients } from '../../hooks/useClients';
 import { usePurchases } from '../../hooks/usePurchases';
 import { useAuth } from '../../hooks/useAuth';
+import { useCategoryFilter } from '../../hooks/useCategoryFilter';
+import { CategoryPickerPill } from '../../components/CategoryPickerPill';
+import { CategoryPill } from '../../components/CategoryPill';
+import {
+  filterClientsByCategory,
+  filterCollectionsByCategory,
+  categoryLabel,
+} from '../../utils/categoryFilter';
 import { Collection } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { getTabBarBottomInset } from '../../components/CustomTabBar';
@@ -35,6 +43,13 @@ export default function CollectionsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { can: canDo, isAdmin } = useAuth();
+  const {
+    categories: userCategories,
+    filter: categoryFilter,
+    setFilter: setCategoryFilter,
+    effectiveFilter,
+    allowedCategoryIds,
+  } = useCategoryFilter();
   const canManageCollections = canDo('manage_collections');
   const { collections, loading, refresh, activeCollection } = useCollections();
   const { clients } = useClients();
@@ -48,8 +63,17 @@ export default function CollectionsScreen() {
   );
 
   const filteredCollections = useMemo(
-    () => filterCollectionsByYear(collections, selectedYear),
-    [collections, selectedYear]
+    () =>
+      filterCollectionsByYear(
+        filterCollectionsByCategory(collections, effectiveFilter, allowedCategoryIds),
+        selectedYear
+      ),
+    [collections, effectiveFilter, allowedCategoryIds, selectedYear]
+  );
+
+  const scopedClients = useMemo(
+    () => filterClientsByCategory(clients, effectiveFilter, allowedCategoryIds),
+    [clients, effectiveFilter, allowedCategoryIds]
   );
 
   const vigenteCollectionId = useMemo(
@@ -61,9 +85,9 @@ export default function CollectionsScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      refresh();
+      refresh(effectiveFilter);
       refreshPurchases();
-    }, [refresh, refreshPurchases])
+    }, [refresh, refreshPurchases, effectiveFilter])
   );
 
   const openCreateScreen = () => router.push('/collection/new');
@@ -74,7 +98,7 @@ export default function CollectionsScreen() {
 
   const getProgress = useCallback(
     (collectionId: string) => {
-      const stats = getCollectionProgress(collectionId, clients, purchases);
+      const stats = getCollectionProgress(collectionId, scopedClients, purchases);
       return {
         percent: stats.clientPercent,
         bought: stats.bought,
@@ -83,7 +107,7 @@ export default function CollectionsScreen() {
         totalCities: stats.totalCities,
       };
     },
-    [clients, purchases]
+    [scopedClients, purchases]
   );
 
   const renderCollection = ({ item, index }: { item: Collection; index: number }) => {
@@ -139,6 +163,12 @@ export default function CollectionsScreen() {
           </View>
 
           {period ? <Text style={styles.rowPeriod}>{period}</Text> : null}
+
+          <CategoryPill
+            label={categoryLabel(item.categoryId)}
+            slug={item.categoryId?.replace('cat_', '')}
+            compact
+          />
 
           {item.myGoalAmount != null && item.myGoalAmount > 0 ? (
             <Text style={styles.rowGoal}>Meta: {formatBRL(item.myGoalAmount)}</Text>
@@ -231,22 +261,29 @@ export default function CollectionsScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.listHeader}>
-            {availableYears.length > 1 ? (
-              <TouchableOpacity
-                style={styles.yearPill}
-                onPress={() => setShowYearPicker(true)}
-                activeOpacity={0.75}
-              >
-                <Ionicons name="calendar-outline" size={14} color={COLORS.primary} />
-                <Text style={styles.yearPillText}>{selectedYear}</Text>
-                <Ionicons name="chevron-down" size={13} color={COLORS.textMuted} />
-              </TouchableOpacity>
-            ) : (
-              <View style={styles.yearPillStatic}>
-                <Ionicons name="calendar-outline" size={14} color={COLORS.textMuted} />
-                <Text style={styles.yearPillTextStatic}>{selectedYear}</Text>
-              </View>
-            )}
+            <View style={styles.pillRow}>
+              {availableYears.length > 1 ? (
+                <TouchableOpacity
+                  style={styles.yearPill}
+                  onPress={() => setShowYearPicker(true)}
+                  activeOpacity={0.75}
+                >
+                  <Ionicons name="calendar-outline" size={14} color={COLORS.primary} />
+                  <Text style={styles.yearPillText}>{selectedYear}</Text>
+                  <Ionicons name="chevron-down" size={13} color={COLORS.textMuted} />
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.yearPillStatic}>
+                  <Ionicons name="calendar-outline" size={14} color={COLORS.textMuted} />
+                  <Text style={styles.yearPillTextStatic}>{selectedYear}</Text>
+                </View>
+              )}
+              <CategoryPickerPill
+                categories={userCategories}
+                value={categoryFilter}
+                onChange={setCategoryFilter}
+              />
+            </View>
             <Text style={styles.sectionLabel}>
               {filteredCollections.length}{' '}
               {filteredCollections.length === 1 ? 'coleção' : 'coleções'}
@@ -333,14 +370,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   listHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: SPACING.md,
+    gap: SPACING.sm,
     marginTop: SPACING.xs,
     marginBottom: SPACING.sm,
     marginHorizontal: SPACING.lg,
     paddingHorizontal: SPACING.xs,
+  },
+  pillRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: SPACING.sm,
   },
   yearPill: {
     flexDirection: 'row',

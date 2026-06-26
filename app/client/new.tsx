@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useClients } from '../../hooks/useClients';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useAuth } from '../../hooks/useAuth';
-import { listCategories } from '../../services/categories';
+import { getAllowedCategoriesForUser } from '../../services/categories';
 import { Category } from '../../types';
 import { CategoryMultiSelect } from '../../components/CategoryMultiSelect';
 import { FormScreen } from '../../components/FormScreen';
@@ -29,7 +29,7 @@ export type InitialCity = {
 
 export default function NewClientScreen() {
   const router = useRouter();
-  const { can: canDo } = useAuth();
+  const { user, can: canDo } = useAuth();
   const params = useLocalSearchParams<{
     city?: string;
     cityCode?: string;
@@ -68,10 +68,11 @@ export default function NewClientScreen() {
   useEffect(() => {
     setCitySearch(initialCity?.name ?? '');
     setSelectedCity(initialCity);
-    listCategories()
+    if (!user) return;
+    getAllowedCategoriesForUser(user.id, user.role)
       .then(setCategories)
       .finally(() => setLoadingCategories(false));
-  }, [initialCity]);
+  }, [initialCity, user]);
 
   const filteredCities = useMemo(() => {
     if (!citySearch.trim() || citySearch === selectedCity?.name) return [];

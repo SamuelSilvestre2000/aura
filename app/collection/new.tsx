@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View, Text, TextInput, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useCollections } from '../../hooks/useCollections';
@@ -6,10 +6,12 @@ import { useAuth } from '../../hooks/useAuth';
 import { FormScreen } from '../../components/FormScreen';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
 import { DateField } from '../../components/DateField';
-import { MoneyInput } from '../../components/MoneyInput';
+import { CategorySelect } from '../../components/CategorySelect';
+import { CollectionGoalsInput } from '../../components/CollectionGoalsInput';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { addMonths, toISODate } from '../../utils/dates';
-import { setGoalForUser } from '../../services/collectionGoals';
+import { getAllowedCategoriesForUser } from '../../services/categories';
+import { applicableGoalCategories } from '../../utils/collectionGoalCategories';
 
 export default function NewCollectionScreen() {
   const router = useRouter();
@@ -19,28 +21,74 @@ export default function NewCollectionScreen() {
   const [name, setName] = useState('');
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(addMonths(new Date(), 3));
-  const [goalAmount, setGoalAmount] = useState(0);
+  const [goalsByCategory, setGoalsByCategory] = useState<Record<string, number>>({});
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [categories, setCategories] = useState(user?.categories ?? []);
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     if (!canDo('manage_collections')) router.replace('/(tabs)/collections');
   }, [canDo, router]);
 
+  useEffect(() => {
+    async function loadCategories() {
+      if (!user) {
+        setCategories([]);
+        return;
+      }
+      setCategories(await getAllowedCategoriesForUser(user.id, user.role));
+    }
+    void loadCategories();
+  }, [user]);
+
+  useEffect(() => {
+    if (categories.length === 1) {
+      setCategoryId(categories[0].id);
+    }
+  }, [categories]);
+
+  const goalCategories = useMemo(
+    () => applicableGoalCategories(categoryId, categories),
+    [categoryId, categories]
+  );
+
+  useEffect(() => {
+    setGoalsByCategory((prev) => {
+      const next: Record<string, number> = {};
+      for (const cat of goalCategories) {
+        next[cat.id] = prev[cat.id] ?? 0;
+      }
+      return next;
+    });
+  }, [goalCategories]);
+
   const canCreate =
     name.trim().length > 0 && toISODate(endDate) >= toISODate(startDate);
+
+  const handleGoalChange = (catId: string, amount: number) => {
+    setGoalsByCategory((prev) => ({ ...prev, [catId]: amount }));
+  };
 
   const handleCreate = async () => {
     if (!canCreate || creating) return;
     setCreating(true);
     try {
-      const collection = await createCollection({
+      const goals = goalCategories
+        .map((cat) => ({
+          categoryId: cat.id,
+          goalAmount: goalsByCategory[cat.id] ?? 0,
+        }))
+        .filter((g) => g.goalAmount > 0);
+
+      await createCollection({
         name: name.trim(),
         startDate: toISODate(startDate),
         endDate: toISODate(endDate),
+        categoryId,
+        goals,
+        userId: user?.id,
+        userRole: user?.role,
       });
-      if (goalAmount > 0 && user?.id) {
-        await setGoalForUser(collection.id, user.id, goalAmount);
-      }
       await refresh();
       router.back();
     } catch (err) {
@@ -75,6 +123,16 @@ export default function NewCollectionScreen() {
           autoFocus
         />
       </View>
+
+      {categories.length > 0 && (
+        <CategorySelect
+          categories={categories}
+          value={categoryId}
+          onChange={setCategoryId}
+          includeAll={categories.length > 1}
+        />
+      )}
+
       <DateField label="DATA INICIAL" value={startDate} onChange={setStartDate} />
       <DateField
         label="DATA FINAL"
@@ -82,8 +140,12 @@ export default function NewCollectionScreen() {
         onChange={setEndDate}
         minimumDate={startDate}
       />
-      <MoneyInput label="META" value={goalAmount} onChange={setGoalAmount} />
-      <Text style={styles.hint}>Valor em reais da sua meta para esta coleção.</Text>
+
+      <CollectionGoalsInput
+        categories={goalCategories}
+        values={goalsByCategory}
+        onChange={handleGoalChange}
+      />
     </FormScreen>
   );
 }
@@ -105,10 +167,5 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sizes.md,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
-  },
-  hint: {
-    color: COLORS.textPlaceholder,
-    fontSize: FONTS.sizes.xs,
-    marginTop: -SPACING.sm,
   },
 });

@@ -1,5 +1,5 @@
 import { User, UserRole } from '../types';
-import { REP_PIN_OPTIONS } from '../constants/userCategories';
+import { DEFAULT_REP_PIN, isValidAccessPin } from '../constants/userCategories';
 import {
   attachCategoriesToUsers,
   getCategoriesByUserId,
@@ -8,7 +8,7 @@ import {
 import { deleteUserPhoto, persistUserPhoto } from './userPhotos';
 import { getDatabase, generateId } from './database';
 import { ensureUserOrganization } from './organizations';
-import { createRepresentativeScope } from './scopes';
+import { createRepresentativeScope, syncRepresentativeScopeWithUserCategories } from './scopes';
 
 const ROW_TO_USER = (row: any): Omit<User, 'categories'> => ({
   id: row.id,
@@ -57,10 +57,6 @@ export type CreateRepresentativeData = {
   photoUri?: string | null;
 };
 
-function isValidRepPin(pin: string): boolean {
-  return (REP_PIN_OPTIONS as readonly string[]).includes(pin);
-}
-
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
@@ -72,7 +68,7 @@ export async function createRepresentative(data: CreateRepresentativeData): Prom
 
   if (!name) throw new Error('Nome obrigatório');
   if (!isValidEmail(email)) throw new Error('E-mail inválido');
-  if (!isValidRepPin(pin)) throw new Error('PIN inválido');
+  if (!isValidAccessPin(pin)) throw new Error('PIN inválido. Use 4 a 8 dígitos numéricos.');
   if (data.categoryIds.length === 0) throw new Error('Selecione ao menos uma categoria');
 
   const db = await getDatabase();
@@ -94,7 +90,8 @@ export async function createRepresentative(data: CreateRepresentativeData): Prom
     await ensureUserOrganization(id, 'representative');
     await createRepresentativeScope({
       userId: id,
-      accessMode: 'all_in_org',
+      accessMode: 'by_category',
+      categoryIds: data.categoryIds,
     });
   } catch (error) {
     if (photoUri) await deleteUserPhoto(photoUri);
@@ -108,9 +105,16 @@ export async function createRepresentative(data: CreateRepresentativeData): Prom
 
 export type UpdateUserData = {
   name: string;
-  pin: string;
+  pin?: string;
+  /** Admin redefine o PIN do representante para o padrão. */
+  resetPinToDefault?: boolean;
   email?: string;
   categoryIds?: string[];
+  photoUri?: string | null;
+};
+
+export type UpdateOwnProfileData = {
+  pin?: string;
   photoUri?: string | null;
 };
 
@@ -118,24 +122,61 @@ function isTempPhotoUri(uri: string): boolean {
   return !uri.includes('/users/');
 }
 
+export async function updateOwnProfile(userId: string, data: UpdateOwnProfileData): Promise<User> {
+  const existing = await getUserById(userId);
+  if (!existing) throw new Error('Usuário não encontrado');
+
+  let pin = existing.pin;
+  if (data.pin !== undefined) {
+    const newPin = data.pin.trim();
+    if (!isValidAccessPin(newPin)) {
+      throw new Error('PIN inválido. Use 4 a 8 dígitos numéricos.');
+    }
+    pin = newPin;
+  }
+
+  let photoUri: string | null = existing.photoUri ?? null;
+
+  if (data.photoUri === null) {
+    await deleteUserPhoto(existing.photoUri);
+    photoUri = null;
+  } else if (data.photoUri && isTempPhotoUri(data.photoUri)) {
+    await deleteUserPhoto(existing.photoUri);
+    photoUri = await persistUserPhoto(data.photoUri, userId);
+  }
+
+  const db = await getDatabase();
+  await db.runAsync('UPDATE users SET pin = ?, photo_uri = ? WHERE id = ?', [pin, photoUri, userId]);
+
+  const updated = await getUserById(userId);
+  if (!updated) throw new Error('Falha ao atualizar perfil');
+  return updated;
+}
+
 export async function updateUser(id: string, data: UpdateUserData): Promise<User> {
   const existing = await getUserById(id);
   if (!existing) throw new Error('Usuário não encontrado');
 
   const name = data.name.trim();
-  const pin = data.pin.trim();
 
   if (!name) throw new Error('Nome obrigatório');
-  if (!pin) throw new Error('PIN obrigatório');
+
+  let pin: string;
 
   if (existing.role === 'representative') {
     if (!data.email || !isValidEmail(data.email)) throw new Error('E-mail inválido');
     if (!data.categoryIds || data.categoryIds.length === 0) {
       throw new Error('Selecione ao menos uma categoria');
     }
-    if (!isValidRepPin(pin)) throw new Error('PIN deve ser de 1 a 6');
-  } else if (data.email && !isValidEmail(data.email)) {
-    throw new Error('E-mail inválido');
+    if (data.resetPinToDefault) {
+      pin = DEFAULT_REP_PIN;
+    } else {
+      pin = existing.pin;
+    }
+  } else {
+    pin = (data.pin ?? '').trim();
+    if (!pin) throw new Error('PIN obrigatório');
+    if (data.email && !isValidEmail(data.email)) throw new Error('E-mail inválido');
   }
 
   const db = await getDatabase();
@@ -167,6 +208,7 @@ export async function updateUser(id: string, data: UpdateUserData): Promise<User
 
   if (existing.role === 'representative' && data.categoryIds) {
     await setUserCategories(id, data.categoryIds);
+    await syncRepresentativeScopeWithUserCategories(id, data.categoryIds);
   }
 
   const updated = await getUserById(id);

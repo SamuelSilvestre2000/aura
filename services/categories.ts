@@ -1,4 +1,4 @@
-import { Category } from '../types';
+import { Category, UserRole } from '../types';
 import { DEFAULT_ORG_ID } from '../constants/organizations';
 import { getDatabase } from './database';
 
@@ -31,6 +31,40 @@ export async function getCategoriesByUserId(userId: string): Promise<Category[]>
     [userId]
   );
   return rows.map(ROW_TO_CATEGORY);
+}
+
+export async function getAllowedCategoriesForUser(
+  userId: string,
+  role: UserRole
+): Promise<Category[]> {
+  if (role === 'admin') return listCategories();
+  return getCategoriesByUserId(userId);
+}
+
+export async function validateCategoryIdsForUser(
+  userId: string,
+  role: UserRole,
+  categoryIds: string[]
+): Promise<void> {
+  if (role === 'admin' || categoryIds.length === 0) return;
+
+  const allowed = await getCategoriesByUserId(userId);
+  const allowedSet = new Set(allowed.map((c) => c.id));
+
+  for (const categoryId of categoryIds) {
+    if (!allowedSet.has(categoryId)) {
+      throw new Error('Você não tem permissão para usar esta categoria');
+    }
+  }
+}
+
+export async function validateOptionalCategoryForUser(
+  userId: string,
+  role: UserRole,
+  categoryId: string | null | undefined
+): Promise<void> {
+  if (role === 'admin' || categoryId == null) return;
+  await validateCategoryIdsForUser(userId, role, [categoryId]);
 }
 
 export async function setUserCategories(userId: string, categoryIds: string[]): Promise<void> {
