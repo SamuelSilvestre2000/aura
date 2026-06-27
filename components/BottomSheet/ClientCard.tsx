@@ -15,6 +15,7 @@ type Props = {
   collectionId: string | null;
   purchased: boolean;
   onToggle: () => void;
+  showCategoryBadges?: boolean;
 };
 
 export function ClientCard({
@@ -24,6 +25,7 @@ export function ClientCard({
   collectionId,
   purchased,
   onToggle,
+  showCategoryBadges = true,
 }: Props) {
   const router = useRouter();
   const { labels, slugs } = labelsFromCategoryIds(client.categoryIds);
@@ -45,7 +47,7 @@ export function ClientCard({
 
       <View style={styles.body}>
         <Text style={styles.name} numberOfLines={1}>{client.name}</Text>
-        {labels.length > 0 ? (
+        {showCategoryBadges && labels.length > 0 ? (
           <CategoryPillRow labels={labels} slugs={slugs} />
         ) : null}
         {client.phone ? (

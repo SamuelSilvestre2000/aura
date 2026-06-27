@@ -63,7 +63,16 @@ export async function validateOptionalCategoryForUser(
   role: UserRole,
   categoryId: string | null | undefined
 ): Promise<void> {
-  if (role === 'admin' || categoryId == null) return;
+  if (role === 'admin') return;
+
+  if (categoryId == null) {
+    const allowed = await getCategoriesByUserId(userId);
+    if (allowed.length < 2) {
+      throw new Error('Selecione a categoria da coleção');
+    }
+    return;
+  }
+
   await validateCategoryIdsForUser(userId, role, [categoryId]);
 }
 

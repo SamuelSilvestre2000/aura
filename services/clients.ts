@@ -9,6 +9,7 @@ import {
   getDefaultBrandId,
   getDefaultOrganizationId,
 } from './organizations';
+import { stripCnpj } from '../utils/cnpj';
 
 type CreateClientData = Omit<Client, 'id' | 'createdAt' | 'state' | 'organizationId' | 'categoryIds'> & {
   categoryIds?: string[];
@@ -54,6 +55,7 @@ async function attachClientCategories(client: Client): Promise<Client> {
 const ROW_TO_CLIENT = (row: any): Client => ({
   id: row.id,
   externalCode: row.external_code || undefined,
+  cnpj: row.cnpj || undefined,
   name: row.name,
   tradeName: row.trade_name || undefined,
   legalName: row.legal_name || undefined,
@@ -115,14 +117,15 @@ export async function createClient(
 
   await db.runAsync(
     `INSERT INTO clients (
-      id, organization_id, brand_id, name, city, city_code, state,
+      id, organization_id, brand_id, name, cnpj, city, city_code, state,
       lat, lng, phone, notes, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       organizationId,
       brandId,
       data.name,
+      data.cnpj ? stripCnpj(data.cnpj) : null,
       data.city,
       data.cityCode,
       'PI',
@@ -161,6 +164,10 @@ export async function updateClient(
   const values: SQLite.SQLiteBindValue[] = [];
 
   if (data.name !== undefined) { fields.push('name = ?'); values.push(data.name); }
+  if (data.cnpj !== undefined) {
+    fields.push('cnpj = ?');
+    values.push(data.cnpj ? stripCnpj(data.cnpj) : null);
+  }
   if (data.city !== undefined) { fields.push('city = ?'); values.push(data.city); }
   if (data.cityCode !== undefined) { fields.push('city_code = ?'); values.push(data.cityCode); }
   if (data.lat !== undefined) { fields.push('lat = ?'); values.push(data.lat); }

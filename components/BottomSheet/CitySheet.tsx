@@ -18,6 +18,7 @@ type Props = {
   onAddClient: () => void;
   onClose: () => void;
   canManageClients?: boolean;
+  showCategoryBadges?: boolean;
 };
 
 const STATUS_LABELS: Record<CityStatus, string> = {
@@ -38,6 +39,7 @@ export function CitySheet({
   onAddClient,
   onClose,
   canManageClients = true,
+  showCategoryBadges = true,
 }: Props) {
   const snapPoints = useMemo(() => ['40%', '70%', '92%'], []);
   const statusColor = STATUS_COLORS[cityStatus];
@@ -133,9 +135,10 @@ export function CitySheet({
         collectionId={activeCollection?.id ?? null}
         purchased={activeCollection ? getPurchaseStatus(item.id, activeCollection.id) : false}
         onToggle={() => onTogglePurchase(item.id)}
+        showCategoryBadges={showCategoryBadges}
       />
     ),
-    [activeCollection, clients.length, getPurchaseStatus, onTogglePurchase]
+    [activeCollection, clients.length, getPurchaseStatus, onTogglePurchase, showCategoryBadges]
   );
 
   return (

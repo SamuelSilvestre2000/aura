@@ -1,26 +1,32 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   StyleSheet,
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
-  StatusBar,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useClients } from '../../hooks/useClients';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useAuth } from '../../hooks/useAuth';
 import { getAllowedCategoriesForUser } from '../../services/categories';
-import { CategoryMultiSelect } from '../../components/CategoryMultiSelect';
 import { Category } from '../../types';
+import { CategoryMultiSelect } from '../../components/CategoryMultiSelect';
+import { FormScreen } from '../../components/FormScreen';
+import { HeaderLinkButton } from '../../components/HeaderLinkButton';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { formatCnpj, isValidCnpj, maskCnpjInput } from '../../utils/cnpj';
+
+type SelectedCity = {
+  code: string;
+  name: string;
+  lat: number;
+  lng: number;
+};
 
 export default function EditClientScreen() {
   const router = useRouter();
@@ -32,45 +38,57 @@ export default function EditClientScreen() {
 
   const client = useMemo(() => clients.find((c) => c.id === params.id), [clients, params.id]);
 
+  const [name, setName] = useState('');
+  const [cnpj, setCnpj] = useState('');
+  const [phone, setPhone] = useState('');
+  const [notes, setNotes] = useState('');
+  const [citySearch, setCitySearch] = useState('');
+  const [selectedCity, setSelectedCity] = useState<SelectedCity | null>(null);
+  const [showCityList, setShowCityList] = useState(false);
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+
   useEffect(() => {
     if (!canDo('manage_clients')) router.replace('/(tabs)');
   }, [canDo, router]);
 
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [notes, setNotes] = useState('');
-  const [citySearch, setCitySearch] = useState('');
-  const [selectedCity, setSelectedCity] = useState<{ code: string; name: string; lat: number; lng: number } | null>(null);
-  const [showCityDropdown, setShowCityDropdown] = useState(false);
-  const [categoryIds, setCategoryIds] = useState<string[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [submitting, setSubmitting] = useState(false);
-
   useEffect(() => {
     if (!user) return;
-    getAllowedCategoriesForUser(user.id, user.role).then(setCategories);
+    getAllowedCategoriesForUser(user.id, user.role)
+      .then(setCategories)
+      .finally(() => setLoadingCategories(false));
   }, [user]);
 
   useEffect(() => {
-    if (client) {
-      setName(client.name);
-      setPhone(client.phone || '');
-      setNotes(client.notes || '');
-      setCategoryIds(client.categoryIds ?? []);
-      setCitySearch(client.city);
-      setSelectedCity({
-        code: client.cityCode,
-        name: client.city,
-        lat: client.lat ?? 0,
-        lng: client.lng ?? 0,
-      });
+    if (!client || initialized) return;
+    setName(client.name);
+    setCnpj(client.cnpj ? formatCnpj(client.cnpj) : '');
+    setPhone(client.phone || '');
+    setNotes(client.notes || '');
+    setCategoryIds(client.categoryIds ?? []);
+    setCitySearch(client.city);
+    setSelectedCity({
+      code: client.cityCode,
+      name: client.city,
+      lat: client.lat ?? 0,
+      lng: client.lng ?? 0,
+    });
+    setInitialized(true);
+  }, [client, initialized]);
+
+  useEffect(() => {
+    if (categories.length === 1 && categoryIds.length === 0) {
+      setCategoryIds([categories[0].id]);
     }
-  }, [client]);
+  }, [categories, categoryIds.length]);
 
   const filteredCities = useMemo(() => {
     if (!citySearch.trim() || citySearch === selectedCity?.name) return [];
     const q = citySearch.toLowerCase();
-    return cities.filter((c) => c.name.toLowerCase().includes(q)).slice(0, 8);
+    return cities.filter((c) => c.name.toLowerCase().includes(q)).slice(0, 6);
   }, [cities, citySearch, selectedCity]);
 
   const handleSelectCity = (city: (typeof cities)[0]) => {
@@ -81,29 +99,24 @@ export default function EditClientScreen() {
       lng: city.centroid[0],
     });
     setCitySearch(city.name);
-    setShowCityDropdown(false);
+    setShowCityList(false);
   };
 
-  const handleSubmit = async () => {
-    if (!name.trim()) {
-      Alert.alert('Atenção', 'Informe o nome da loja/cliente.');
-      return;
-    }
-    if (!selectedCity) {
-      Alert.alert('Atenção', 'Selecione a cidade do cliente para exibir no mapa.');
-      return;
-    }
-    if (categoryIds.length === 0) {
-      Alert.alert('Atenção', 'Selecione ao menos uma categoria.');
-      return;
-    }
+  const isValid =
+    name.trim().length > 0 && !!selectedCity && categoryIds.length > 0;
 
-    if (!client) return;
+  const handleSubmit = async () => {
+    if (!isValid || !client || !selectedCity) return;
+    if (!isValidCnpj(cnpj)) {
+      Alert.alert('CNPJ inválido', 'Informe um CNPJ válido ou deixe o campo em branco.');
+      return;
+    }
 
     setSubmitting(true);
     try {
       await updateClient(client.id, {
         name: name.trim(),
+        cnpj: cnpj.trim(),
         city: selectedCity.name,
         cityCode: selectedCity.code,
         lat: selectedCity.lat,
@@ -113,14 +126,14 @@ export default function EditClientScreen() {
         categoryIds,
       });
       router.back();
-    } catch (err) {
+    } catch {
       Alert.alert('Erro', 'Não foi possível atualizar o cliente.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (clientsLoading) {
+  if (clientsLoading || (client && !initialized)) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" color={COLORS.primary} />
@@ -131,213 +144,185 @@ export default function EditClientScreen() {
   if (!client) {
     return (
       <View style={styles.center}>
+        <Ionicons name="person-outline" size={40} color={COLORS.textMuted} />
         <Text style={styles.notFoundText}>Cliente não encontrado</Text>
-        <TouchableOpacity onPress={() => router.back()} style={[styles.submitButton, { marginTop: SPACING.md }]}>
-          <Text style={styles.submitButtonText}>Voltar</Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.outlineButton}>
+          <Ionicons name="arrow-back" size={16} color={COLORS.primary} />
+          <Text style={styles.outlineButtonText}>Voltar</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  const isValid = name.trim().length > 0 && !!selectedCity && categoryIds.length > 0;
+  const showCategoryField = categories.length > 1;
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Text style={styles.backBtnText}>←</Text>
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Editar Cliente</Text>
-          <TouchableOpacity
-            onPress={handleSubmit}
-            style={[styles.saveBtn, !isValid && styles.saveBtnDisabled]}
-            disabled={!isValid || submitting}
-          >
-            {submitting ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.saveBtnText}>Salvar</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+    <FormScreen
+      title="Editar cliente"
+      onBack={() => router.back()}
+      headerRight={
+        <HeaderLinkButton
+          label="Salvar"
+          onPress={handleSubmit}
+          disabled={!isValid}
+          loading={submitting}
+        />
+      }
+    >
+      <View style={styles.field}>
+        <Text style={styles.label}>NOME DA LOJA</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ex: Boutique Moda Piauí"
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={name}
+          onChangeText={setName}
+          returnKeyType="next"
+          autoFocus
+        />
+      </View>
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          {/* Nome */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Nome da loja *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ex: Boutique Moda Piauí"
-              placeholderTextColor={COLORS.textMuted}
-              value={name}
-              onChangeText={setName}
-              returnKeyType="next"
-            />
+      <View style={styles.field}>
+        <Text style={styles.label}>CNPJ</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="00.000.000/0000-00"
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={cnpj}
+          onChangeText={(text) => setCnpj(maskCnpjInput(text))}
+          keyboardType="number-pad"
+          returnKeyType="next"
+        />
+      </View>
+
+      <View style={styles.field}>
+        <Text style={styles.label}>CIDADE NO PIAUÍ</Text>
+        <Text style={styles.hint}>O cliente aparece no mapa na cidade selecionada.</Text>
+        <TextInput
+          style={[styles.input, selectedCity && styles.inputSelected]}
+          placeholder={geoLoading ? 'Carregando cidades...' : 'Buscar cidade...'}
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={citySearch}
+          onChangeText={(text) => {
+            setCitySearch(text);
+            if (text !== selectedCity?.name) setSelectedCity(null);
+            setShowCityList(true);
+          }}
+          onFocus={() => setShowCityList(true)}
+          editable={!geoLoading}
+          returnKeyType="search"
+        />
+        {selectedCity ? (
+          <View style={styles.cityBadge}>
+            <Ionicons name="checkmark-circle" size={14} color={COLORS.success} />
+            <Text style={styles.cityBadgeText}>{selectedCity.name} — PI</Text>
           </View>
-
-          {/* Cidade */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Cidade no Piauí *</Text>
-            <Text style={styles.fieldHint}>Necessário para exibir o cliente no mapa.</Text>
-            <View>
-              <TextInput
-                style={[styles.input, selectedCity && styles.inputSelected]}
-                placeholder={geoLoading ? 'Carregando cidades...' : 'Buscar cidade...'}
-                placeholderTextColor={COLORS.textMuted}
-                value={citySearch}
-                onChangeText={(t) => {
-                  setCitySearch(t);
-                  if (t !== selectedCity?.name) setSelectedCity(null);
-                  setShowCityDropdown(true);
-                }}
-                editable={!geoLoading}
-                returnKeyType="search"
-              />
-              {selectedCity && (
-                <View style={styles.selectedBadge}>
-                  <Text style={styles.selectedBadgeText}>✓ {selectedCity.name}</Text>
-                </View>
-              )}
-
-              {/* Dropdown */}
-              {showCityDropdown && filteredCities.length > 0 && !selectedCity && (
-                <View style={styles.dropdown}>
-                  {filteredCities.map((city) => (
-                    <TouchableOpacity
-                      key={city.code}
-                      style={styles.dropdownItem}
-                      onPress={() => handleSelectCity(city)}
-                    >
-                      <Text style={styles.dropdownItemText}>📍 {city.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-            </View>
+        ) : null}
+        {showCityList && filteredCities.length > 0 && !selectedCity ? (
+          <View style={styles.cityList}>
+            {filteredCities.map((city, index) => (
+              <TouchableOpacity
+                key={city.code}
+                style={[styles.cityRow, index > 0 && styles.cityRowBorder]}
+                onPress={() => handleSelectCity(city)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="location-outline" size={16} color={COLORS.textMuted} />
+                <Text style={styles.cityRowText}>{city.name}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
+        ) : null}
+      </View>
 
-          <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Categoria *</Text>
+      {showCategoryField ? (
+        <View style={styles.field}>
+          <Text style={styles.label}>CATEGORIAS</Text>
+          <Text style={styles.hint}>Linhas de produto atendidas nesta loja.</Text>
+          {loadingCategories ? (
+            <ActivityIndicator size="small" color={COLORS.primary} style={styles.catLoading} />
+          ) : (
             <CategoryMultiSelect
               categories={categories}
               selectedIds={categoryIds}
               onChange={setCategoryIds}
             />
-          </View>
+          )}
+        </View>
+      ) : null}
 
-          {/* Telefone */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Telefone/WhatsApp</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="(86) 99999-9999"
-              placeholderTextColor={COLORS.textMuted}
-              value={phone}
-              onChangeText={setPhone}
-              keyboardType="phone-pad"
-              returnKeyType="next"
-            />
-          </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>TELEFONE</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="(86) 99999-9999"
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={phone}
+          onChangeText={setPhone}
+          keyboardType="phone-pad"
+          returnKeyType="next"
+        />
+      </View>
 
-          {/* Notas */}
-          <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Observações</Text>
-            <TextInput
-              style={[styles.input, styles.inputMultiline]}
-              placeholder="Notas sobre o cliente, horário de atendimento, etc."
-              placeholderTextColor={COLORS.textMuted}
-              value={notes}
-              onChangeText={setNotes}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-            />
-          </View>
-
-          {/* Botão salvar */}
-          <TouchableOpacity
-            style={[styles.submitButton, !isValid && styles.submitButtonDisabled]}
-            onPress={handleSubmit}
-            disabled={!isValid || submitting}
-          >
-            {submitting ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.submitButtonText}>✓ Salvar Alterações</Text>
-            )}
-          </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>OBSERVAÇÕES</Text>
+        <TextInput
+          style={[styles.input, styles.inputMultiline]}
+          placeholder="Horário, contato na loja, referências..."
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+          numberOfLines={3}
+          textAlignVertical="top"
+          returnKeyType="done"
+        />
+      </View>
+    </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
-  },
   center: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.backgroundSubtle,
     justifyContent: 'center',
     alignItems: 'center',
+    gap: SPACING.md,
+    paddingHorizontal: SPACING.xl,
   },
-  header: {
+  notFoundText: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.md,
+    textAlign: 'center',
+  },
+  outlineButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
+    gap: SPACING.sm,
     paddingVertical: SPACING.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.surfaceBorder,
-    gap: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: RADIUS.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
+    backgroundColor: COLORS.surface,
   },
-  backBtn: {
-    width: 36,
-    height: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
+  outlineButtonText: {
+    color: COLORS.primary,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '600',
   },
-  backBtnText: { color: COLORS.primary, fontSize: 24 },
-  headerTitle: {
-    flex: 1,
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.lg,
-    fontWeight: '700',
+  field: { gap: SPACING.sm },
+  label: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.xs,
+    fontWeight: '600',
+    letterSpacing: 0.6,
   },
-  saveBtn: {
-    backgroundColor: COLORS.primary,
-    borderRadius: RADIUS.full,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 8,
-    minWidth: 70,
-    alignItems: 'center',
-  },
-  saveBtnDisabled: { opacity: 0.5 },
-  saveBtnText: { color: '#fff', fontWeight: '700', fontSize: FONTS.sizes.sm },
-  content: {
-    padding: SPACING.lg,
-    gap: SPACING.xl,
-    paddingBottom: 60,
-  },
-  fieldGroup: { gap: SPACING.sm },
-  fieldHint: {
+  hint: {
     color: COLORS.textPlaceholder,
     fontSize: FONTS.sizes.xs,
     marginBottom: 2,
-  },
-  label: {
-    color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.sm,
-    fontWeight: '600',
-    letterSpacing: 0.5,
   },
   input: {
     backgroundColor: COLORS.surface,
@@ -346,75 +331,52 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.md,
-    borderWidth: 1.5,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
   },
   inputSelected: {
     borderColor: COLORS.primary,
   },
   inputMultiline: {
-    minHeight: 100,
+    minHeight: 80,
     paddingTop: SPACING.md,
   },
-  selectedBadge: {
+  cityBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: SPACING.xs,
-    paddingHorizontal: SPACING.sm,
+    gap: 4,
+    marginTop: 2,
   },
-  selectedBadgeText: {
+  cityBadgeText: {
     color: COLORS.success,
     fontSize: FONTS.sizes.sm,
-    fontWeight: '600',
+    fontWeight: '500',
   },
-  dropdown: {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    right: 0,
-    zIndex: 100,
-    backgroundColor: COLORS.surfaceElevated,
+  cityList: {
+    backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
-    borderWidth: 1,
+    borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
     overflow: 'hidden',
     marginTop: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
   },
-  dropdownItem: {
+  cityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.surfaceBorder,
   },
-  dropdownItemText: {
+  cityRowBorder: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: COLORS.surfaceBorder,
+  },
+  cityRowText: {
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.md,
   },
-  submitButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: RADIUS.lg,
-    paddingVertical: SPACING.lg,
-    alignItems: 'center',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
-    elevation: 6,
-    marginTop: SPACING.md,
-  },
-  submitButtonDisabled: { opacity: 0.5, shadowOpacity: 0 },
-  submitButtonText: {
-    color: '#fff',
-    fontSize: FONTS.sizes.md,
-    fontWeight: '700',
-  },
-  notFoundText: {
-    color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.lg,
+  catLoading: {
+    alignSelf: 'flex-start',
+    marginVertical: SPACING.sm,
   },
 });

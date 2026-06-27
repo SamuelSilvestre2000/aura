@@ -8,22 +8,26 @@ import {
   Alert,
   ActivityIndicator,
   Linking,
-  Platform,
-  StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useClients } from '../../hooks/useClients';
 import { useAuth } from '../../hooks/useAuth';
+import { useCategoryFilter } from '../../hooks/useCategoryFilter';
 import { useCollections } from '../../hooks/useCollections';
 import { usePurchases } from '../../hooks/usePurchases';
-import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { NotionHeader } from '../../components/NotionHeader';
+import { HeaderBackButton } from '../../components/HeaderBackButton';
+import { HeaderLinkButton } from '../../components/HeaderLinkButton';
 import { CategoryPillRow } from '../../components/CategoryPill';
 import { labelsFromCategoryIds } from '../../constants/categoryPills';
 import { PurchaseChip } from '../../components/PurchaseChip';
 import { SaleSheet } from '../../components/SaleSheet';
+import { isCollectionClosed } from '../../utils/collectionStatus';
+import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { formatBRL } from '../../utils/money';
+import { formatCnpj } from '../../utils/cnpj';
 
 type SaleTarget = {
   collectionId: string;
@@ -36,7 +40,9 @@ export default function ClientDetailScreen() {
 
   const { clients, deleteClient, loading: clientsLoading } = useClients();
   const { can: canDo, user } = useAuth();
+  const { categories: userCategories } = useCategoryFilter();
   const canManageClients = canDo('manage_clients');
+  const showCategoryBadges = userCategories.length > 1;
   const { collections, refresh: refreshCollections } = useCollections();
   const {
     getPurchaseStatus,
@@ -105,38 +111,36 @@ export default function ClientDetailScreen() {
   const boughtCount = collections.filter((col) =>
     getPurchaseStatus(client.id, col.id)
   ).length;
+  const openCollections = collections.filter((col) => !isCollectionClosed(col));
 
   return (
     <View style={styles.container}>
-      <SafeAreaView edges={['top']}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn} hitSlop={8}>
-            <Ionicons name="chevron-back" size={22} color={COLORS.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>{client.name}</Text>
-          {canManageClients ? (
-            <TouchableOpacity
-              onPress={() => router.push(`/client/edit?id=${client.id}`)}
-              style={styles.headerBtn}
-              hitSlop={8}
-            >
-              <Ionicons name="create-outline" size={20} color={COLORS.textSecondary} />
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.headerBtn} />
-          )}
-        </View>
+      <SafeAreaView edges={['top']} style={styles.headerSafe}>
+        <NotionHeader
+          title={client.name}
+          showBorder
+          compact
+          leftAction={<HeaderBackButton onPress={() => router.back()} />}
+          rightAction={
+            canManageClients ? (
+              <HeaderLinkButton
+                label="Editar"
+                onPress={() => router.push(`/client/edit?id=${client.id}`)}
+              />
+            ) : undefined
+          }
+        />
       </SafeAreaView>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.profileCard}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{client.name.charAt(0).toUpperCase()}</Text>
           </View>
           <Text style={styles.clientName}>{client.name}</Text>
-          {labels.length > 0 && (
+          {showCategoryBadges && labels.length > 0 ? (
             <CategoryPillRow labels={labels} slugs={slugs} />
-          )}
+          ) : null}
           <View style={styles.locationRow}>
             <Ionicons name="location-outline" size={14} color={COLORS.textMuted} />
             <Text style={styles.locationText}>{client.city}, PI</Text>
@@ -162,26 +166,52 @@ export default function ClientDetailScreen() {
           </View>
         </View>
 
-        {client.phone && (
-          <View style={styles.actionsRow}>
-            <TouchableOpacity style={styles.outlineButton} onPress={handleCall} activeOpacity={0.7}>
-              <Ionicons name="call-outline" size={18} color={COLORS.primary} />
-              <Text style={styles.outlineButtonText}>Ligar</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.outlineButton, styles.whatsappButton]}
-              onPress={handleWhatsApp}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="logo-whatsapp" size={18} color="#25D366" />
-              <Text style={[styles.outlineButtonText, { color: '#25D366' }]}>WhatsApp</Text>
-            </TouchableOpacity>
+        {client.phone || client.cnpj ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabelOutside}>CONTATO</Text>
+            <View style={styles.card}>
+              {client.cnpj ? (
+                <>
+                  <View style={styles.infoRow}>
+                    <View style={styles.infoIconWrap}>
+                      <Ionicons name="document-text-outline" size={18} color={COLORS.textSecondary} />
+                    </View>
+                    <View style={styles.infoBody}>
+                      <Text style={styles.infoLabel}>CNPJ</Text>
+                      <Text style={styles.infoValue}>{formatCnpj(client.cnpj)}</Text>
+                    </View>
+                  </View>
+                  {client.phone ? <View style={styles.rowDivider} /> : null}
+                </>
+              ) : null}
+              {client.phone ? (
+                <>
+                  <View style={styles.infoRow}>
+                    <View style={styles.infoIconWrap}>
+                      <Ionicons name="call-outline" size={18} color={COLORS.textSecondary} />
+                    </View>
+                    <View style={styles.infoBody}>
+                      <Text style={styles.infoLabel}>Telefone</Text>
+                      <Text style={styles.infoValue}>{client.phone}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.rowDivider} />
+                  <TouchableOpacity style={styles.actionRow} onPress={handleCall} activeOpacity={0.7}>
+                    <Text style={styles.actionLink}>Ligar</Text>
+                  </TouchableOpacity>
+                  <View style={styles.rowDivider} />
+                  <TouchableOpacity style={styles.actionRow} onPress={handleWhatsApp} activeOpacity={0.7}>
+                    <Text style={[styles.actionLink, styles.whatsappLink]}>WhatsApp</Text>
+                  </TouchableOpacity>
+                </>
+              ) : null}
+            </View>
           </View>
-        )}
+        ) : null}
 
         {client.notes ? (
           <View style={styles.section}>
-            <Text style={styles.sectionLabel}>OBSERVAÇÕES</Text>
+            <Text style={styles.sectionLabelOutside}>OBSERVAÇÕES</Text>
             <View style={styles.card}>
               <Text style={styles.notesText}>{client.notes}</Text>
             </View>
@@ -189,7 +219,7 @@ export default function ClientDetailScreen() {
         ) : null}
 
         <View style={styles.section}>
-          <Text style={styles.sectionLabel}>COLEÇÕES</Text>
+          <Text style={styles.sectionLabelOutside}>COLEÇÕES</Text>
           {collections.length === 0 ? (
             <View style={styles.card}>
               <Text style={styles.emptyText}>Nenhuma coleção cadastrada</Text>
@@ -199,36 +229,68 @@ export default function ClientDetailScreen() {
               {collections.map((col, index) => {
                 const purchased = getPurchaseStatus(client.id, col.id);
                 const sale = getSaleForClientCollection(client.id, col.id);
+                const closed = isCollectionClosed(col);
                 return (
                   <React.Fragment key={col.id}>
                     {index > 0 && <View style={styles.rowDivider} />}
                     <TouchableOpacity
-                      style={styles.collectionRow}
-                      onPress={() =>
-                        setSaleTarget({ collectionId: col.id, collectionName: col.name })
-                      }
-                      activeOpacity={0.7}
+                      style={[styles.collectionRow, closed && styles.collectionRowClosed]}
+                      onPress={() => {
+                        if (closed) return;
+                        setSaleTarget({ collectionId: col.id, collectionName: col.name });
+                      }}
+                      activeOpacity={closed ? 1 : 0.7}
+                      disabled={closed}
                     >
+                      <View style={styles.collectionIcon}>
+                        <Ionicons
+                          name={closed ? 'lock-closed-outline' : 'albums-outline'}
+                          size={18}
+                          color={closed ? COLORS.textMuted : COLORS.textSecondary}
+                        />
+                      </View>
                       <View style={styles.collectionInfo}>
-                        <Text style={styles.collectionName}>{col.name}</Text>
-                        {sale ? (
+                        <Text style={[styles.collectionName, closed && styles.collectionNameClosed]}>
+                          {col.name}
+                        </Text>
+                        {closed ? (
+                          <Text style={styles.collectionMeta}>Coleção fechada</Text>
+                        ) : sale ? (
                           <Text style={styles.collectionAmount}>{formatBRL(sale.amount)}</Text>
                         ) : null}
                       </View>
-                      <PurchaseChip purchased={purchased} />
+                      {!closed ? <PurchaseChip purchased={purchased} /> : null}
                     </TouchableOpacity>
                   </React.Fragment>
                 );
               })}
             </View>
           )}
+          {openCollections.length === 0 && collections.length > 0 ? (
+            <Text style={styles.sectionHint}>
+              Todas as coleções estão fechadas — vendas não podem ser alteradas.
+            </Text>
+          ) : null}
         </View>
 
         {canManageClients && (
-          <TouchableOpacity style={styles.deleteButton} onPress={handleDelete} activeOpacity={0.7}>
-            <Ionicons name="trash-outline" size={16} color={COLORS.error} />
-            <Text style={styles.deleteButtonText}>Remover cliente</Text>
-          </TouchableOpacity>
+          <View style={styles.section}>
+            <Text style={styles.sectionLabelOutside}>ADMINISTRAÇÃO</Text>
+            <View style={styles.dangerCard}>
+              <TouchableOpacity style={styles.dangerRow} onPress={handleDelete} activeOpacity={0.7}>
+                <View style={styles.dangerIconWrap}>
+                  <Ionicons name="trash-outline" size={20} color={COLORS.error} />
+                </View>
+                <View style={styles.dangerInfo}>
+                  <Text style={styles.dangerTitle}>Remover cliente</Text>
+                  <Text style={styles.dangerSubtitle}>
+                    Apaga o cliente e todas as compras registradas
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
       </ScrollView>
 
@@ -264,7 +326,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+  },
+  headerSafe: {
+    backgroundColor: COLORS.backgroundSubtle,
   },
   center: {
     flex: 1,
@@ -273,29 +337,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING.md,
     paddingHorizontal: SPACING.xl,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    backgroundColor: COLORS.background,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: COLORS.surfaceBorder,
-    gap: SPACING.sm,
-  },
-  headerBtn: {
-    width: 36,
-    height: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    flex: 1,
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.lg,
-    fontWeight: '600',
-    letterSpacing: -0.3,
   },
   content: {
     padding: SPACING.lg,
@@ -312,9 +353,9 @@ const styles = StyleSheet.create({
     borderColor: COLORS.surfaceBorder,
   },
   avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: COLORS.primaryBg,
     justifyContent: 'center',
     alignItems: 'center',
@@ -322,15 +363,15 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: COLORS.primary,
-    fontSize: FONTS.sizes.xxl,
+    fontSize: FONTS.sizes.xl,
     fontWeight: '700',
   },
   clientName: {
     color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.xl,
-    fontWeight: '700',
+    fontSize: FONTS.sizes.lg,
+    fontWeight: '600',
     textAlign: 'center',
-    letterSpacing: -0.3,
+    letterSpacing: -0.2,
   },
   locationRow: {
     flexDirection: 'row',
@@ -370,38 +411,19 @@ const styles = StyleSheet.create({
     height: 28,
     backgroundColor: COLORS.surfaceBorder,
   },
-  actionsRow: {
-    flexDirection: 'row',
-    gap: SPACING.sm,
-  },
-  outlineButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.sm,
-    paddingVertical: SPACING.md,
-    borderRadius: RADIUS.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
-    backgroundColor: COLORS.surface,
-  },
-  whatsappButton: {
-    borderColor: '#25D36644',
-    backgroundColor: '#25D36608',
-  },
-  outlineButtonText: {
-    color: COLORS.primary,
-    fontSize: FONTS.sizes.sm,
-    fontWeight: '600',
-  },
   section: { gap: SPACING.sm },
-  sectionLabel: {
+  sectionLabelOutside: {
     color: COLORS.textMuted,
     fontSize: FONTS.sizes.xs,
     fontWeight: '600',
     letterSpacing: 0.6,
     paddingHorizontal: SPACING.xs,
+  },
+  sectionHint: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.xs,
+    paddingHorizontal: SPACING.xs,
+    lineHeight: 18,
   },
   card: {
     backgroundColor: COLORS.surface,
@@ -409,6 +431,40 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.lg,
+    gap: SPACING.md,
+  },
+  infoIconWrap: {
+    width: 28,
+    alignItems: 'center',
+  },
+  infoBody: { flex: 1, gap: 2 },
+  infoLabel: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.xs,
+    fontWeight: '600',
+    letterSpacing: 0.4,
+  },
+  infoValue: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.md,
+    fontWeight: '500',
+  },
+  actionRow: {
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+  },
+  actionLink: {
+    color: COLORS.primary,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '600',
+  },
+  whatsappLink: {
+    color: '#25D366',
   },
   notesText: {
     color: COLORS.textSecondary,
@@ -425,10 +481,16 @@ const styles = StyleSheet.create({
   collectionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     gap: SPACING.md,
+  },
+  collectionRowClosed: {
+    opacity: 0.65,
+  },
+  collectionIcon: {
+    width: 28,
+    alignItems: 'center',
   },
   collectionInfo: {
     flex: 1,
@@ -438,6 +500,13 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.md,
     fontWeight: '500',
+  },
+  collectionNameClosed: {
+    color: COLORS.textSecondary,
+  },
+  collectionMeta: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.sm,
   },
   collectionAmount: {
     color: COLORS.primary,
@@ -449,21 +518,49 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surfaceBorder,
     marginHorizontal: SPACING.lg,
   },
-  deleteButton: {
+  dangerCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
+  },
+  dangerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    padding: SPACING.lg,
+    gap: SPACING.md,
+  },
+  dangerIconWrap: {
+    width: 28,
+    alignItems: 'center',
+  },
+  dangerInfo: { flex: 1 },
+  dangerTitle: {
+    color: COLORS.error,
+    fontSize: FONTS.sizes.md,
+    fontWeight: '500',
+  },
+  dangerSubtitle: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
+    marginTop: 2,
+  },
+  outlineButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: SPACING.sm,
     paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
     borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.errorBg,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: `${COLORS.error}33`,
+    borderColor: COLORS.surfaceBorder,
+    backgroundColor: COLORS.surface,
   },
-  deleteButtonText: {
-    color: COLORS.error,
-    fontWeight: '600',
+  outlineButtonText: {
+    color: COLORS.primary,
     fontSize: FONTS.sizes.sm,
+    fontWeight: '600',
   },
   notFoundText: {
     color: COLORS.textSecondary,

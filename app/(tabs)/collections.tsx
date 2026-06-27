@@ -36,6 +36,7 @@ import {
   getAvailableCollectionYears,
 } from '../../utils/collectionYears';
 import { getVigenteCollectionId } from '../../utils/collectionVigente';
+import { isCollectionClosed } from '../../utils/collectionStatus';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -110,6 +111,8 @@ export default function CollectionsScreen() {
     [scopedClients, purchases]
   );
 
+  const showCategoryBadges = userCategories.length > 1;
+
   const renderCollection = ({ item, index }: { item: Collection; index: number }) => {
     const progress = getProgress(item.id);
     const soldAmount = item.mySoldAmount ?? 0;
@@ -123,7 +126,8 @@ export default function CollectionsScreen() {
       item.startDate && item.endDate
         ? formatPeriodBR(item.startDate, item.endDate)
         : null;
-    const isVigente = item.id === vigenteCollectionId;
+    const isClosed = isCollectionClosed(item);
+    const isVigente = !isClosed && item.id === vigenteCollectionId;
     const resolveProgressColor = (percent: number) =>
       isVigente ? progressColorOnTintedBg(percent) : progressColor(percent);
     const salesFillColor = resolveProgressColor(salesPercent);
@@ -136,6 +140,7 @@ export default function CollectionsScreen() {
           index > 0 && styles.rowBorder,
           isVigente && styles.rowVigente,
           isVigente && styles.rowVigenteClip,
+          isClosed && styles.rowClosed,
         ]}
         onPress={() => openCollection(item)}
         activeOpacity={0.7}
@@ -144,9 +149,9 @@ export default function CollectionsScreen() {
 
         <View style={styles.rowIcon}>
           <Ionicons
-            name={isVigente ? 'albums' : 'albums-outline'}
+            name={isVigente ? 'albums' : isClosed ? 'lock-closed-outline' : 'albums-outline'}
             size={20}
-            color={isVigente ? COLORS.success : COLORS.textSecondary}
+            color={isVigente ? COLORS.success : isClosed ? COLORS.textMuted : COLORS.textSecondary}
           />
         </View>
 
@@ -158,17 +163,23 @@ export default function CollectionsScreen() {
                 <View style={styles.vigenteBadge}>
                   <Text style={styles.vigenteBadgeText}>Vigente</Text>
                 </View>
+              ) : isClosed ? (
+                <View style={styles.closedBadge}>
+                  <Text style={styles.closedBadgeText}>Fechada</Text>
+                </View>
               ) : null}
             </View>
           </View>
 
           {period ? <Text style={styles.rowPeriod}>{period}</Text> : null}
 
-          <CategoryPill
-            label={categoryLabel(item.categoryId)}
-            slug={item.categoryId?.replace('cat_', '')}
-            compact
-          />
+          {showCategoryBadges ? (
+            <CategoryPill
+              label={categoryLabel(item.categoryId)}
+              slug={item.categoryId?.replace('cat_', '')}
+              compact
+            />
+          ) : null}
 
           {item.myGoalAmount != null && item.myGoalAmount > 0 ? (
             <Text style={styles.rowGoal}>Meta: {formatBRL(item.myGoalAmount)}</Text>
@@ -457,6 +468,9 @@ const styles = StyleSheet.create({
   rowVigenteClip: {
     overflow: 'hidden',
   },
+  rowClosed: {
+    opacity: 0.72,
+  },
   vigenteAccent: {
     position: 'absolute',
     left: 0,
@@ -505,6 +519,20 @@ const styles = StyleSheet.create({
   },
   vigenteBadgeText: {
     color: COLORS.success,
+    fontSize: FONTS.sizes.xs,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+  closedBadge: {
+    backgroundColor: COLORS.backgroundSubtle,
+    borderRadius: RADIUS.full,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorderStrong,
+  },
+  closedBadgeText: {
+    color: COLORS.textMuted,
     fontSize: FONTS.sizes.xs,
     fontWeight: '700',
     letterSpacing: 0.2,

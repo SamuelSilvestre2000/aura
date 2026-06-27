@@ -83,6 +83,7 @@ export type Collection = {
   id: string;
   name: string;
   createdAt: string;
+  /** 1 = aberta, 0 = fechada. */
   isActive: number;
   organizationId?: string;
   brandId?: string | null;
@@ -110,6 +111,7 @@ export type CollectionGoal = {
 export type Client = {
   id: string;
   externalCode?: string;
+  cnpj?: string;
   name: string;
   tradeName?: string;
   legalName?: string;

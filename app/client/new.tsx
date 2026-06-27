@@ -19,6 +19,7 @@ import { CategoryMultiSelect } from '../../components/CategoryMultiSelect';
 import { FormScreen } from '../../components/FormScreen';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { formatCnpj, isValidCnpj, maskCnpjInput } from '../../utils/cnpj';
 
 export type InitialCity = {
   code: string;
@@ -51,6 +52,7 @@ export default function NewClientScreen() {
   }, [params.city, params.cityCode, params.lat, params.lng]);
 
   const [name, setName] = useState('');
+  const [cnpj, setCnpj] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [citySearch, setCitySearch] = useState(initialCity?.name ?? '');
@@ -98,10 +100,15 @@ export default function NewClientScreen() {
 
   const handleSubmit = async () => {
     if (!isValid || !selectedCity) return;
+    if (!isValidCnpj(cnpj)) {
+      Alert.alert('CNPJ inválido', 'Informe um CNPJ válido ou deixe o campo em branco.');
+      return;
+    }
     setSubmitting(true);
     try {
       await createClient({
         name: name.trim(),
+        cnpj: cnpj.trim() || undefined,
         city: selectedCity.name,
         cityCode: selectedCity.code,
         lat: selectedCity.lat,
@@ -141,6 +148,19 @@ export default function NewClientScreen() {
           onChangeText={setName}
           returnKeyType="next"
           autoFocus
+        />
+      </View>
+
+      <View style={styles.field}>
+        <Text style={styles.label}>CNPJ</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="00.000.000/0000-00"
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={cnpj}
+          onChangeText={(text) => setCnpj(maskCnpjInput(text))}
+          keyboardType="number-pad"
+          returnKeyType="next"
         />
       </View>
 

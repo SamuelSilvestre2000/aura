@@ -50,9 +50,9 @@ export default function RootLayout() {
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="login" options={{ headerShown: false }} />
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="client/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="client/[id]" options={NOTION_MODAL_OPTIONS} />
               <Stack.Screen name="client/new" options={NOTION_MODAL_OPTIONS} />
-              <Stack.Screen name="client/edit" options={{ headerShown: false }} />
+              <Stack.Screen name="client/edit" options={NOTION_MODAL_OPTIONS} />
               <Stack.Screen name="collection/new" options={NOTION_MODAL_OPTIONS} />
               <Stack.Screen name="collection/[id]" options={NOTION_MODAL_OPTIONS} />
               <Stack.Screen name="representative/new" options={NOTION_MODAL_OPTIONS} />

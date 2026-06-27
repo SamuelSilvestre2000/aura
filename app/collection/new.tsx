@@ -63,7 +63,10 @@ export default function NewCollectionScreen() {
   }, [goalCategories]);
 
   const canCreate =
-    name.trim().length > 0 && toISODate(endDate) >= toISODate(startDate);
+    name.trim().length > 0 &&
+    toISODate(endDate) >= toISODate(startDate) &&
+    categories.length > 0 &&
+    (categories.length > 1 || categoryId != null);
 
   const handleGoalChange = (catId: string, amount: number) => {
     setGoalsByCategory((prev) => ({ ...prev, [catId]: amount }));
@@ -124,12 +127,12 @@ export default function NewCollectionScreen() {
         />
       </View>
 
-      {categories.length > 0 && (
+      {categories.length > 1 && (
         <CategorySelect
           categories={categories}
           value={categoryId}
           onChange={setCategoryId}
-          includeAll={categories.length > 1}
+          includeAll
         />
       )}
 

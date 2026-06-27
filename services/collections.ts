@@ -112,6 +112,17 @@ export async function createCollection(input: CreateCollectionInput): Promise<Co
   };
 }
 
+export async function closeCollection(id: string): Promise<void> {
+  const db = await getDatabase();
+  const row = await db.getFirstAsync<{ is_active: number }>(
+    'SELECT is_active FROM collections WHERE id = ?',
+    [id]
+  );
+  if (!row) throw new Error('Coleção não encontrada');
+  if (row.is_active === 0) throw new Error('Coleção já está fechada');
+  await db.runAsync('UPDATE collections SET is_active = 0 WHERE id = ?', [id]);
+}
+
 export async function deleteCollection(id: string): Promise<void> {
   const db = await getDatabase();
   await db.runAsync('DELETE FROM collections WHERE id = ?', [id]);

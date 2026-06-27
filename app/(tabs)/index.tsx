@@ -29,6 +29,7 @@ import {
   filterClientsByCategory,
   filterCollectionsByCategory,
 } from '../../utils/categoryFilter';
+import { filterOpenCollections } from '../../utils/collectionStatus';
 import { CategoryPickerPill } from '../../components/CategoryPickerPill';
 
 import { CityPolygon } from '../../components/MapView/CityPolygon';
@@ -107,7 +108,10 @@ export default function MapScreen() {
   );
 
   const visibleCollections = useMemo(
-    () => filterCollectionsByCategory(collections, effectiveFilter, allowedCategoryIds),
+    () =>
+      filterOpenCollections(
+        filterCollectionsByCategory(collections, effectiveFilter, allowedCategoryIds)
+      ),
     [collections, effectiveFilter, allowedCategoryIds]
   );
 
@@ -532,6 +536,7 @@ export default function MapScreen() {
           onAddClient={handleAddClient}
           onClose={handleCloseSheet}
           canManageClients={canManageClients}
+          showCategoryBadges={userCategories.length > 1}
         />
 
         <SaleSheet

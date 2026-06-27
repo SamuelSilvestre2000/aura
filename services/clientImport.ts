@@ -1,5 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import { DEFAULT_BRAND_ID, DEFAULT_ORG_ID } from '../constants/organizations';
+import { stripCnpj } from '../utils/cnpj';
 import clientsBundle from '../data/clients-import.json';
 import clientsInfantilBundle from '../data/clients-import-infantil.json';
 
@@ -8,6 +9,7 @@ const CAT_INFANTIL = 'cat_infantil';
 type ImportClient = {
   id: string;
   externalCode: string;
+  cnpj?: string | null;
   name: string;
   tradeName: string | null;
   legalName: string | null;
@@ -58,16 +60,17 @@ async function insertClient(
 ): Promise<void> {
   await database.runAsync(
     `INSERT INTO clients (
-      id, external_code, organization_id, brand_id, name, trade_name, legal_name,
+      id, external_code, organization_id, brand_id, name, cnpj, trade_name, legal_name,
       street, neighborhood, city, city_code, state, zip_code,
       lat, lng, phone, mobile, email, client_group, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       client.id,
       client.externalCode,
       DEFAULT_ORG_ID,
       DEFAULT_BRAND_ID,
       client.name,
+      client.cnpj ? stripCnpj(client.cnpj) : null,
       client.tradeName,
       client.legalName,
       client.street,

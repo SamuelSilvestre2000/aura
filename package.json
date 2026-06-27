@@ -8,7 +8,12 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "import:clients": "node scripts/generate-clients-import.mjs",
-    "import:clients:infantil": "node scripts/generate-clients-import-infantil.mjs"
+    "import:clients:infantil": "node scripts/generate-clients-import-infantil.mjs",
+    "db:init": "node scripts/local-db.mjs init",
+    "db:pull": "node scripts/local-db.mjs pull",
+    "db:path": "node scripts/local-db.mjs path",
+    "db:tables": "node scripts/local-db.mjs tables",
+    "db:query": "node scripts/local-db.mjs query"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",

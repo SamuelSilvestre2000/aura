@@ -32,6 +32,7 @@ import {
   getCollectionProgress,
   progressColor,
 } from '../../utils/collectionStats';
+import { isCollectionClosed } from '../../utils/collectionStatus';
 
 function ProgressRow({ percent, meta }: { percent: number; meta: string }) {
   const color = progressColor(percent);
@@ -55,7 +56,7 @@ export default function CollectionDetailScreen() {
   const router = useRouter();
   const { user, isAdmin, can: canDo } = useAuth();
   const canManageCollections = canDo('manage_collections');
-  const { collections, loading, refresh, deleteCollection } = useCollections();
+  const { collections, loading, refresh, closeCollection, deleteCollection } = useCollections();
   const { clients } = useClients();
   const { purchases, sales, refresh: refreshPurchases } = usePurchases();
   const [showGoalSheet, setShowGoalSheet] = useState(false);
@@ -100,6 +101,8 @@ export default function CollectionDetailScreen() {
     [id, scopedClients, purchases, sales]
   );
 
+  const showCategoryBadge = goalCategories.length > 1;
+
   if (loading && !collection) {
     return (
       <View style={styles.center}>
@@ -133,6 +136,32 @@ export default function CollectionDetailScreen() {
       : 'Período não definido';
 
   const showFinancial = hasGoal || soldAmount > 0;
+  const isClosed = isCollectionClosed(collection);
+
+  const handleCloseCollection = () => {
+    Alert.alert(
+      'Fechar coleção',
+      `Deseja fechar "${collection.name}"? Não será mais possível registrar novas vendas nesta coleção.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Fechar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await closeCollection(collection.id);
+              await refresh();
+            } catch (err) {
+              Alert.alert(
+                'Erro',
+                err instanceof Error ? err.message : 'Não foi possível fechar a coleção.'
+              );
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const handleDeleteCollection = () => {
     Alert.alert(
@@ -161,7 +190,7 @@ export default function CollectionDetailScreen() {
           compact
           leftAction={<HeaderBackButton onPress={() => router.back()} />}
           rightAction={
-            !isAdmin ? (
+            !isAdmin && !isClosed ? (
               <HeaderLinkButton
                 label={hasGoal ? 'Editar meta' : 'Definir meta'}
                 onPress={() => setShowGoalSheet(true)}
@@ -172,19 +201,30 @@ export default function CollectionDetailScreen() {
       </SafeAreaView>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.profileCard}>
-          <View style={styles.profileIcon}>
-            <Ionicons name="albums-outline" size={28} color={COLORS.primary} />
+        <View style={[styles.profileCard, isClosed && styles.profileCardClosed]}>
+          <View style={[styles.profileIcon, isClosed && styles.profileIconClosed]}>
+            <Ionicons
+              name={isClosed ? 'lock-closed-outline' : 'albums-outline'}
+              size={28}
+              color={isClosed ? COLORS.textMuted : COLORS.primary}
+            />
           </View>
+          {isClosed ? (
+            <View style={styles.closedStatusBadge}>
+              <Text style={styles.closedStatusText}>Coleção fechada</Text>
+            </View>
+          ) : null}
           <View style={styles.periodRow}>
             <Ionicons name="calendar-outline" size={14} color={COLORS.textMuted} />
             <Text style={styles.periodText}>{period}</Text>
           </View>
-          <CategoryPill
-            label={categoryLabel(collection.categoryId)}
-            slug={collection.categoryId?.replace('cat_', '')}
-            compact
-          />
+          {showCategoryBadge ? (
+            <CategoryPill
+              label={categoryLabel(collection.categoryId)}
+              slug={collection.categoryId?.replace('cat_', '')}
+              compact
+            />
+          ) : null}
 
           <View style={styles.statsRow}>
             <View style={styles.stat}>
@@ -338,7 +378,31 @@ export default function CollectionDetailScreen() {
             ))}
         </View>
 
-        {canManageCollections && (
+        {canManageCollections && !isClosed && (
+          <View style={styles.section}>
+            <Text style={styles.sectionLabelOutside}>GERENCIAR</Text>
+            <View style={styles.manageCard}>
+              <TouchableOpacity
+                style={styles.manageRow}
+                onPress={handleCloseCollection}
+                activeOpacity={0.7}
+              >
+                <View style={styles.manageIconWrap}>
+                  <Ionicons name="lock-closed-outline" size={20} color={COLORS.textSecondary} />
+                </View>
+                <View style={styles.manageInfo}>
+                  <Text style={styles.manageTitle}>Fechar coleção</Text>
+                  <Text style={styles.manageSubtitle}>
+                    Encerra vendas nesta coleção; o histórico permanece disponível
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {isAdmin && (
           <View style={styles.section}>
             <Text style={styles.sectionLabelOutside}>ADMINISTRAÇÃO</Text>
             <View style={styles.dangerCard}>
@@ -415,6 +479,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.xs,
+  },
+  profileCardClosed: {
+    backgroundColor: COLORS.backgroundSubtle,
+  },
+  profileIconClosed: {
+    backgroundColor: COLORS.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
+  },
+  closedStatusBadge: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.full,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 4,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorderStrong,
+  },
+  closedStatusText: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.xs,
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   periodRow: {
     flexDirection: 'row',
@@ -628,6 +714,34 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   dangerSubtitle: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
+    marginTop: 2,
+  },
+  manageCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
+  },
+  manageRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.lg,
+    gap: SPACING.md,
+  },
+  manageIconWrap: {
+    width: 28,
+    alignItems: 'center',
+  },
+  manageInfo: { flex: 1 },
+  manageTitle: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.md,
+    fontWeight: '500',
+  },
+  manageSubtitle: {
     color: COLORS.textSecondary,
     fontSize: FONTS.sizes.sm,
     marginTop: 2,

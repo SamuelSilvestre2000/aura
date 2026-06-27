@@ -15,7 +15,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'reset_database',
     'clear_geo_cache',
   ],
-  representative: ['manage_clients'],
+  representative: ['manage_clients', 'manage_collections'],
 };
 
 export function can(role: UserRole, permission: Permission): boolean {

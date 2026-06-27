@@ -107,6 +107,7 @@ async function initDatabase(database: SQLite.SQLiteDatabase): Promise<void> {
     CREATE TABLE IF NOT EXISTS clients (
       id TEXT PRIMARY KEY,
       external_code TEXT,
+      cnpj TEXT,
       name TEXT NOT NULL,
       trade_name TEXT,
       legal_name TEXT,
@@ -523,6 +524,7 @@ async function migrateClientExtendedColumns(database: SQLite.SQLiteDatabase): Pr
   await addColumnIfMissing(database, 'clients', 'client_group', 'TEXT');
   await addColumnIfMissing(database, 'clients', 'mobile', 'TEXT');
   await addColumnIfMissing(database, 'clients', 'email', 'TEXT');
+  await addColumnIfMissing(database, 'clients', 'cnpj', 'TEXT');
 
   const migrated = await database.getFirstAsync<{ value: string }>(
     "SELECT value FROM app_meta WHERE key = 'client_extended_columns_v1'"

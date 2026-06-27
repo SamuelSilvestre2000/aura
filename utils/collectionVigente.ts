@@ -1,4 +1,5 @@
 import { Collection } from '../types';
+import { isCollectionOpen } from './collectionStatus';
 import { toISODate } from './dates';
 
 /** Colecao cujo periodo inclui a data de referencia. */
@@ -6,6 +7,7 @@ export function isCollectionVigente(
   collection: Collection,
   referenceDate = new Date()
 ): boolean {
+  if (!isCollectionOpen(collection)) return false;
   if (!collection.startDate || !collection.endDate) return false;
   const today = toISODate(referenceDate);
   return collection.startDate <= today && today <= collection.endDate;

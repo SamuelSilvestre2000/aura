@@ -39,6 +39,7 @@ function parseCsvLine(line) {
     mobile: hasExtended ? parts[9]?.trim() : null,
     email: hasExtended ? parts[10]?.trim() : null,
     clientGroup: (hasExtended ? parts[11] : parts[9])?.trim(),
+    cnpj: hasExtended && parts.length >= 13 ? parts[12]?.trim() : null,
   };
 }
 
@@ -106,6 +107,7 @@ async function main() {
     clients.push({
       id: `cli_imp_${row.externalCode}`,
       externalCode: row.externalCode,
+      cnpj: row.cnpj || null,
       name: displayName,
       tradeName: row.tradeName || null,
       legalName: row.legalName || null,

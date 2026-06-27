@@ -56,6 +56,8 @@ export default function ClientsScreen() {
     );
   }, [categoryScopedClients, search]);
 
+  const showCategoryBadges = userCategories.length > 1;
+
   const renderClient = ({ item, index }: { item: Client; index: number }) => {
     const { labels, slugs } = labelsFromCategoryIds(item.categoryIds);
     return (
@@ -69,7 +71,7 @@ export default function ClientsScreen() {
         </View>
         <View style={styles.rowBody}>
           <Text style={styles.rowTitle} numberOfLines={1}>{item.name}</Text>
-          {labels.length > 0 ? (
+          {showCategoryBadges && labels.length > 0 ? (
             <CategoryPillRow labels={labels} slugs={slugs} />
           ) : null}
           <View style={styles.rowMeta}>

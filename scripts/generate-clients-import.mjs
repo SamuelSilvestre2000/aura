@@ -24,6 +24,24 @@ function normalize(value) {
 
 function parseCsvLine(line) {
   const parts = line.split(';');
+  const hasExtended = parts.length >= 12;
+  if (hasExtended) {
+    return {
+      externalCode: parts[0]?.trim(),
+      tradeName: parts[1]?.trim(),
+      legalName: parts[2]?.trim(),
+      street: parts[3]?.trim(),
+      neighborhood: parts[4]?.trim(),
+      city: parts[5]?.trim(),
+      state: parts[6]?.trim(),
+      zipCode: parts[7]?.trim(),
+      phone: parts[8]?.trim(),
+      mobile: parts[9]?.trim() || null,
+      email: parts[10]?.trim() || null,
+      clientGroup: parts[11]?.trim() || null,
+      cnpj: parts.length >= 13 ? parts[12]?.trim() || null : null,
+    };
+  }
   return {
     externalCode: parts[0]?.trim(),
     tradeName: parts[1]?.trim(),
@@ -34,7 +52,10 @@ function parseCsvLine(line) {
     state: parts[6]?.trim(),
     zipCode: parts[7]?.trim(),
     phone: parts[8]?.trim(),
-    clientGroup: parts[9]?.trim(),
+    mobile: null,
+    email: null,
+    clientGroup: parts[9]?.trim() || null,
+    cnpj: parts.length >= 11 ? parts[10]?.trim() || null : null,
   };
 }
 
@@ -113,6 +134,7 @@ async function main() {
     clients.push({
       id: `cli_imp_${row.externalCode}`,
       externalCode: row.externalCode,
+      cnpj: row.cnpj || null,
       name: displayName,
       tradeName: row.tradeName || null,
       legalName: row.legalName || null,
