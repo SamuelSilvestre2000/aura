@@ -1,9 +1,12 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Modal, Pressable } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MapContainer, TileLayer, Polygon, CircleMarker, useMap } from 'react-leaflet';
+import type { Map as LeafletMapInstance } from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useClients } from '../../hooks/useClients';
@@ -23,28 +26,45 @@ import { SearchBar } from '../SearchBar';
 import { CitySheet } from '../BottomSheet/CitySheet';
 import { Ionicons } from '@expo/vector-icons';
 
-import { CityGeoData, CityStatus } from '../../types';
-import { COLORS, FONTS, RADIUS, SPACING, STATUS_COLORS } from '../../constants/colors';
+import { getTabBarBottomInset } from '../CustomTabBar';
+import { CityGeoData } from '../../types';
+import { COLORS, FONTS, RADIUS, SPACING, STATUS_COLORS, STATUS_FILL_OPACITY, PIAUI_REGION } from '../../constants/colors';
+import { OUTER_BOUNDS } from '../../constants/mapBounds';
 
-const STATUS_LABELS: Record<CityStatus, string> = {
-  all: 'Todos compraram',
-  partial: 'Compras parciais',
-  none: 'Nenhum comprou',
-  'no-clients': 'Sem clientes',
-};
+const MAP_CENTER: [number, number] = [PIAUI_REGION.latitude, PIAUI_REGION.longitude];
+const MAP_BOUNDS: [[number, number], [number, number]] = [
+  [OUTER_BOUNDS.south, OUTER_BOUNDS.west],
+  [OUTER_BOUNDS.north, OUTER_BOUNDS.east],
+];
+
+function hexAlpha(color: string, opacity: number): string {
+  return `${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`;
+}
+
+function FlyToUser({ target }: { target: [number, number] | null }) {
+  const map = useMap();
+  useEffect(() => {
+    if (target) map.flyTo(target, 9);
+  }, [map, target]);
+  return null;
+}
 
 /**
- * O mapa nativo (react-native-maps) não roda no navegador — na web mostramos
- * a mesma navegação por cidade em formato de lista.
+ * O mapa nativo (react-native-maps) não roda no navegador — na web usamos
+ * Leaflet + OpenStreetMap (gratuito, sem chave de API) com os mesmos
+ * polígonos de cidade (IBGE) do app nativo.
  */
 export default function MapScreenWeb() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const mapRef = useRef<LeafletMapInstance | null>(null);
   const [search, setSearch] = useState('');
   const [selectedCity, setSelectedCity] = useState<CityGeoData | null>(null);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [locating, setLocating] = useState(false);
 
   const { user, can: canDo } = useAuth();
   const {
@@ -55,9 +75,9 @@ export default function MapScreenWeb() {
     allowedCategoryIds,
   } = useCategoryFilter();
   const canManageClients = canDo('manage_clients');
-  const { cities, loading: geoLoading, error: geoError } = useGeoJSON();
+  const { cities, loading: geoLoading, refreshing: geoRefreshing, error: geoError } = useGeoJSON();
   const { clients } = useClients();
-  const { collections } = useCollections();
+  const { collections, refresh: refreshCollections } = useCollections();
   const { purchases, getPurchaseStatus } = usePurchases();
 
   const filteredClients = useMemo(
@@ -73,20 +93,20 @@ export default function MapScreenWeb() {
     [collections, effectiveFilter, allowedCategoryIds]
   );
 
+  useEffect(() => {
+    void refreshCollections(effectiveFilter);
+  }, [effectiveFilter, refreshCollections]);
+
   const activeCollectionId = selectedCollectionId || visibleCollections[0]?.id || null;
   const activeCollection = visibleCollections.find((c) => c.id === activeCollectionId) || null;
 
   const { getCityStatus } = useCityStatus(filteredClients, purchases, activeCollectionId);
 
   const filteredCities = useMemo(() => {
-    const withClients = cities.filter(
-      (c) => filteredClients.some((cl) => cl.cityCode === c.code)
-    );
-    const base = withClients.length > 0 ? withClients : cities;
-    if (!search.trim()) return base;
+    if (!search.trim()) return cities;
     const q = search.toLowerCase();
-    return base.filter((c) => c.name.toLowerCase().includes(q));
-  }, [cities, filteredClients, search]);
+    return cities.filter((c) => c.name.toLowerCase().includes(q));
+  }, [cities, search]);
 
   const handleCityPress = useCallback((city: CityGeoData) => {
     setSelectedCity(city);
@@ -133,17 +153,40 @@ export default function MapScreenWeb() {
     setSelectedCity(null);
   }, []);
 
+  const handleLocateMe = useCallback(() => {
+    if (!navigator.geolocation) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        if (
+          latitude >= OUTER_BOUNDS.south &&
+          latitude <= OUTER_BOUNDS.north &&
+          longitude >= OUTER_BOUNDS.west &&
+          longitude <= OUTER_BOUNDS.east
+        ) {
+          setUserLocation([latitude, longitude]);
+        }
+        setLocating(false);
+      },
+      () => setLocating(false),
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }, []);
+
   const headerTop = insets.top + 4;
+  const tabBarOffset = getTabBarBottomInset(insets, SPACING.sm);
   const selectedCityClients = selectedCity
     ? filteredClients.filter((c) => c.cityCode === selectedCity.code)
     : [];
   const selectedCityStatus = selectedCity ? getCityStatus(selectedCity.code) : 'no-clients';
+  const hasCities = cities.length > 0;
 
   if (geoError && cities.length === 0) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorIcon}>🌐</Text>
-        <Text style={styles.errorTitle}>Erro ao carregar cidades</Text>
+        <Text style={styles.errorTitle}>Erro ao carregar mapa</Text>
         <Text style={styles.errorText}>{geoError}</Text>
       </View>
     );
@@ -152,7 +195,67 @@ export default function MapScreenWeb() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <View style={styles.container}>
-        <View style={[styles.topUI, { paddingTop: headerTop }]}>
+        <View style={StyleSheet.absoluteFillObject}>
+          <MapContainer
+            ref={mapRef}
+            center={MAP_CENTER}
+            zoom={7}
+            minZoom={6}
+            maxZoom={14}
+            maxBounds={MAP_BOUNDS}
+            maxBoundsViscosity={1.0}
+            style={{ width: '100%', height: '100%' }}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            {hasCities &&
+              filteredCities.map((city) => {
+                const status = getCityStatus(city.code);
+                const ring = city.coordinates[0];
+                if (!ring || ring.length < 3) return null;
+                const positions: [number, number][] = ring.map(([lng, lat]) => [lat, lng]);
+                return (
+                  <Polygon
+                    key={city.code}
+                    positions={positions}
+                    pathOptions={{
+                      color: `${STATUS_COLORS[status]}CC`,
+                      weight: status === 'no-clients' ? 1 : 1.5,
+                      fillColor: hexAlpha(STATUS_COLORS[status], STATUS_FILL_OPACITY[status]),
+                      fillOpacity: 1,
+                    }}
+                    eventHandlers={{ click: () => handleCityPress(city) }}
+                  />
+                );
+              })}
+            {userLocation && (
+              <CircleMarker
+                center={userLocation}
+                radius={7}
+                pathOptions={{ color: '#ffffff', weight: 2, fillColor: COLORS.primary, fillOpacity: 1 }}
+              />
+            )}
+            <FlyToUser target={userLocation} />
+          </MapContainer>
+        </View>
+
+        {geoLoading && !hasCities && (
+          <View style={[styles.initialLoadingBanner, { top: headerTop + 56 }]}>
+            <ActivityIndicator size="small" color={COLORS.primary} />
+            <Text style={styles.initialLoadingText}>Baixando mapa do Piauí...</Text>
+          </View>
+        )}
+
+        {geoRefreshing && hasCities && (
+          <View style={[styles.refreshBanner, { top: headerTop + 56 }]}>
+            <ActivityIndicator size="small" color={COLORS.primary} />
+            <Text style={styles.refreshBannerText}>Atualizando dados...</Text>
+          </View>
+        )}
+
+        <View style={[styles.topUI, { paddingTop: headerTop }]} pointerEvents="box-none">
           <View style={styles.searchContainer}>
             <SearchBar
               variant="map"
@@ -200,40 +303,17 @@ export default function MapScreenWeb() {
           )}
         </View>
 
-        <View style={[styles.listWrap, { paddingTop: headerTop + 96 }]}>
-          {geoLoading && cities.length === 0 ? (
-            <View style={styles.loadingBox}>
-              <ActivityIndicator size="small" color={COLORS.primary} />
-              <Text style={styles.loadingText}>Carregando cidades...</Text>
-            </View>
-          ) : (
-            filteredCities.map((city) => {
-              const status = getCityStatus(city.code);
-              const clientCount = filteredClients.filter((c) => c.cityCode === city.code).length;
-              return (
-                <TouchableOpacity
-                  key={city.code}
-                  style={styles.cityRow}
-                  activeOpacity={0.7}
-                  onPress={() => handleCityPress(city)}
-                >
-                  <View style={styles.cityRowLeft}>
-                    <View style={[styles.statusDot, { backgroundColor: STATUS_COLORS[status] }]} />
-                    <View>
-                      <Text style={styles.cityName}>{city.name}</Text>
-                      <Text style={styles.cityMeta}>
-                        {clientCount === 0
-                          ? 'Sem clientes'
-                          : `${clientCount} cliente${clientCount !== 1 ? 's' : ''} · ${STATUS_LABELS[status]}`}
-                      </Text>
-                    </View>
-                  </View>
-                  <Ionicons name="chevron-forward" size={18} color={COLORS.textMuted} />
-                </TouchableOpacity>
-              );
-            })
-          )}
-        </View>
+        {!selectedCity && (
+          <View style={[styles.bottomControls, { paddingBottom: tabBarOffset + 8 }]} pointerEvents="box-none">
+            <TouchableOpacity style={styles.mapActionBtn} onPress={handleLocateMe} activeOpacity={0.7}>
+              {locating ? (
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              ) : (
+                <Ionicons name="locate-outline" size={22} color={COLORS.primary} />
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Modal seleção de coleção */}
         <Modal
@@ -295,12 +375,14 @@ export default function MapScreenWeb() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: COLORS.backgroundSubtle },
+  root: { flex: 1, backgroundColor: '#E8EFF7' },
   container: { flex: 1 },
   topUI: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
     zIndex: 10,
-    backgroundColor: COLORS.backgroundSubtle,
-    paddingBottom: SPACING.sm,
   },
   searchContainer: { marginHorizontal: 12 },
   collectionContainer: { marginTop: 6, marginHorizontal: 12 },
@@ -323,33 +405,58 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     maxWidth: 180,
   },
-  listWrap: {
-    flex: 1,
-    paddingHorizontal: SPACING.lg,
-  },
-  loadingBox: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: SPACING.sm,
-    paddingVertical: SPACING.xxl,
-  },
-  loadingText: { color: COLORS.textSecondary, fontSize: FONTS.sizes.sm },
-  cityRow: {
+  initialLoadingBanner: {
+    position: 'absolute',
+    alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: SPACING.sm,
+    backgroundColor: 'rgba(255,255,255,0.97)',
+    borderRadius: RADIUS.full,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceBorder,
+    zIndex: 20,
+  },
+  initialLoadingText: { color: COLORS.textSecondary, fontSize: FONTS.sizes.sm },
+  refreshBanner: {
+    position: 'absolute',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    backgroundColor: 'rgba(255,255,255,0.97)',
+    borderRadius: RADIUS.full,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: COLORS.surfaceBorder,
+    zIndex: 20,
+  },
+  refreshBannerText: { color: COLORS.textMuted, fontSize: FONTS.sizes.xs },
+  bottomControls: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    left: 0,
+    paddingHorizontal: SPACING.lg,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+    zIndex: 5,
+    pointerEvents: 'box-none',
+  },
+  mapActionBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: RADIUS.full,
     backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    marginBottom: SPACING.sm,
   },
-  cityRowLeft: { flexDirection: 'row', alignItems: 'center', gap: SPACING.md },
-  statusDot: { width: 8, height: 8, borderRadius: 4 },
-  cityName: { color: COLORS.textPrimary, fontSize: FONTS.sizes.md, fontWeight: '600' },
-  cityMeta: { color: COLORS.textMuted, fontSize: FONTS.sizes.xs, marginTop: 2 },
   pickerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.25)', justifyContent: 'flex-end' },
   pickerSheet: {
     backgroundColor: COLORS.surface,
