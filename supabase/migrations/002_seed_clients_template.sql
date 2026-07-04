@@ -1,0 +1,13 @@
+-- Aura — template para carga dos clientes (Fase 5)
+-- NÃO execute manualmente: será gerado por script a partir do SQLite/JSON local.
+--
+-- Estrutura esperada por lote:
+--
+-- INSERT INTO public.clients (
+--   id, external_code, cnpj, name, trade_name, legal_name,
+--   street, neighborhood, city, city_code, state, zip_code,
+--   lat, lng, phone, mobile, email, client_group,
+--   organization_id, brand_id, created_at
+-- ) VALUES (...);
+--
+-- INSERT INTO public.client_categories (client_id, category_id) VALUES (...);

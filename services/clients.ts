@@ -3,6 +3,15 @@ import { Client, UserRole } from '../types';
 import { queryVisibleClients } from './access';
 import { validateCategoryIdsForUser } from './categories';
 import { getDatabase, generateId } from './database';
+import { isSupabaseConfigured } from './supabase/client';
+import {
+  createClientRemote,
+  deleteClientRemote,
+  getClientByIdRemote,
+  listClientsForUserRemote,
+  setClientCategoriesRemote,
+  updateClientRemote,
+} from './supabase/clients';
 import {
   DEFAULT_BRAND_ID,
   DEFAULT_ORG_ID,
@@ -78,6 +87,8 @@ const ROW_TO_CLIENT = (row: any): Client => ({
 });
 
 export async function listClientsForUser(userId: string, role: UserRole): Promise<Client[]> {
+  if (isSupabaseConfigured()) return listClientsForUserRemote(userId, role);
+
   const rows = await queryVisibleClients(userId, role);
   const clients = rows.map(ROW_TO_CLIENT);
   if (clients.length === 0) return [];
@@ -94,6 +105,8 @@ export async function listClientsForUser(userId: string, role: UserRole): Promis
 }
 
 export async function getClientById(id: string): Promise<Client | null> {
+  if (isSupabaseConfigured()) return getClientByIdRemote(id);
+
   const db = await getDatabase();
   const row = await db.getFirstAsync<any>('SELECT * FROM clients WHERE id = ?', [id]);
   if (!row) return null;
@@ -106,6 +119,8 @@ export async function createClient(
   data: CreateClientData,
   actor?: ClientActor
 ): Promise<Client> {
+  if (isSupabaseConfigured()) return createClientRemote(data, actor);
+
   if (actor && data.categoryIds?.length) {
     await validateCategoryIdsForUser(actor.userId, actor.role, data.categoryIds);
   }
@@ -156,6 +171,8 @@ export async function updateClient(
   data: UpdateClientData,
   actor?: ClientActor
 ): Promise<void> {
+  if (isSupabaseConfigured()) return updateClientRemote(id, data, actor);
+
   if (actor && data.categoryIds?.length) {
     await validateCategoryIdsForUser(actor.userId, actor.role, data.categoryIds);
   }
@@ -194,11 +211,15 @@ export async function updateClient(
 }
 
 export async function deleteClient(id: string): Promise<void> {
+  if (isSupabaseConfigured()) return deleteClientRemote(id);
+
   const db = await getDatabase();
   await db.runAsync('DELETE FROM clients WHERE id = ?', [id]);
 }
 
 export async function setClientCategories(clientId: string, categoryIds: string[]): Promise<void> {
+  if (isSupabaseConfigured()) return setClientCategoriesRemote(clientId, categoryIds);
+
   const db = await getDatabase();
   await db.runAsync('DELETE FROM client_categories WHERE client_id = ?', [clientId]);
   for (const categoryId of categoryIds) {

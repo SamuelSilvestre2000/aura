@@ -1,5 +1,14 @@
 import { Sale } from '../types';
 import { getDatabase, generateId } from './database';
+import { isSupabaseConfigured } from './supabase/client';
+import {
+  clearSaleRemote,
+  getSaleForClientCollectionRemote,
+  getSalesTotalForUserAndCollectionRemote,
+  getSalesTotalsMapForUserRemote,
+  listSalesRemote,
+  recordSaleRemote,
+} from './supabase/sales';
 
 export type RecordSaleInput = {
   clientId: string;
@@ -57,6 +66,8 @@ async function syncPurchaseFlag(
 }
 
 export async function listSales(): Promise<Sale[]> {
+  if (isSupabaseConfigured()) return listSalesRemote();
+
   const db = await getDatabase();
   const rows = await db.getAllAsync<{
     id: string;
@@ -74,6 +85,8 @@ export async function getSaleForClientCollection(
   clientId: string,
   collectionId: string
 ): Promise<Sale | null> {
+  if (isSupabaseConfigured()) return getSaleForClientCollectionRemote(clientId, collectionId);
+
   const db = await getDatabase();
   const row = await db.getFirstAsync<{
     id: string;
@@ -94,6 +107,8 @@ export async function getSalesTotalsMapForUser(
   userId: string,
   categoryFilter: string = 'all'
 ): Promise<Map<string, number>> {
+  if (isSupabaseConfigured()) return getSalesTotalsMapForUserRemote(userId, categoryFilter);
+
   const db = await getDatabase();
   const rows =
     categoryFilter === 'all'
@@ -122,6 +137,8 @@ export async function getSalesTotalForUserAndCollection(
   userId: string,
   collectionId: string
 ): Promise<number> {
+  if (isSupabaseConfigured()) return getSalesTotalForUserAndCollectionRemote(userId, collectionId);
+
   const db = await getDatabase();
   const row = await db.getFirstAsync<{ total: number }>(
     `SELECT COALESCE(SUM(amount), 0) as total
@@ -135,6 +152,8 @@ export async function recordSale(input: RecordSaleInput): Promise<Sale> {
   if (input.amount <= 0) {
     throw new Error('Informe um valor de compra maior que zero');
   }
+
+  if (isSupabaseConfigured()) return recordSaleRemote(input);
 
   const db = await getDatabase();
   const now = new Date().toISOString();
@@ -168,6 +187,8 @@ export async function recordSale(input: RecordSaleInput): Promise<Sale> {
 }
 
 export async function clearSale(clientId: string, collectionId: string): Promise<void> {
+  if (isSupabaseConfigured()) return clearSaleRemote(clientId, collectionId);
+
   const db = await getDatabase();
   await db.runAsync(
     'DELETE FROM sales WHERE client_id = ? AND collection_id = ?',

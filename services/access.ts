@@ -1,5 +1,12 @@
 import { UserRole } from '../types';
 import { getDatabase } from './database';
+import { isSupabaseConfigured } from './supabase/client';
+import {
+  canUserAccessClientRemote,
+  canUserAccessCollectionRemote,
+  queryVisibleClientsRemote,
+  queryVisibleCollectionsRemote,
+} from './supabase/access';
 
 /**
  * Clientes visíveis: escopo do representante + interseção com user_categories.
@@ -96,6 +103,8 @@ const VISIBLE_COLLECTIONS_SQL = `
 `;
 
 export async function queryVisibleClients(userId: string, role: UserRole): Promise<any[]> {
+  if (isSupabaseConfigured()) return queryVisibleClientsRemote(userId, role);
+
   const db = await getDatabase();
   return db.getAllAsync<any>(VISIBLE_CLIENTS_SQL, [
     role,
@@ -107,6 +116,8 @@ export async function queryVisibleClients(userId: string, role: UserRole): Promi
 }
 
 export async function queryVisibleCollections(userId: string, role: UserRole): Promise<any[]> {
+  if (isSupabaseConfigured()) return queryVisibleCollectionsRemote(userId, role);
+
   const db = await getDatabase();
   return db.getAllAsync<any>(VISIBLE_COLLECTIONS_SQL, [
     role,
@@ -124,6 +135,8 @@ export async function canUserAccessClient(
   role: UserRole,
   clientId: string
 ): Promise<boolean> {
+  if (isSupabaseConfigured()) return canUserAccessClientRemote(userId, role, clientId);
+
   const rows = await queryVisibleClients(userId, role);
   return rows.some((r) => r.id === clientId);
 }
@@ -133,6 +146,8 @@ export async function canUserAccessCollection(
   role: UserRole,
   collectionId: string
 ): Promise<boolean> {
+  if (isSupabaseConfigured()) return canUserAccessCollectionRemote(userId, role, collectionId);
+
   const rows = await queryVisibleCollections(userId, role);
   return rows.some((r) => r.id === collectionId);
 }

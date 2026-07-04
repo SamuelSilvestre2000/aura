@@ -1,4 +1,11 @@
 import { getDatabase } from './database';
+import { isSupabaseConfigured } from './supabase/client';
+import {
+  ensureUserOrganizationRemote,
+  getDefaultBrandIdRemote,
+  getDefaultOrganizationIdRemote,
+  getUserOrganizationIdsRemote,
+} from './supabase/organizations';
 import {
   DEFAULT_BRAND_ID,
   DEFAULT_ORG_ID,
@@ -12,6 +19,8 @@ export {
 } from '../constants/organizations';
 
 export async function getDefaultOrganizationId(): Promise<string> {
+  if (isSupabaseConfigured()) return getDefaultOrganizationIdRemote();
+
   const db = await getDatabase();
   const row = await db.getFirstAsync<{ id: string }>(
     'SELECT id FROM organizations WHERE id = ?',
@@ -21,6 +30,8 @@ export async function getDefaultOrganizationId(): Promise<string> {
 }
 
 export async function getDefaultBrandId(): Promise<string | null> {
+  if (isSupabaseConfigured()) return getDefaultBrandIdRemote();
+
   const db = await getDatabase();
   const row = await db.getFirstAsync<{ id: string }>(
     'SELECT id FROM brands WHERE id = ?',
@@ -30,6 +41,8 @@ export async function getDefaultBrandId(): Promise<string | null> {
 }
 
 export async function getUserOrganizationIds(userId: string): Promise<string[]> {
+  if (isSupabaseConfigured()) return getUserOrganizationIdsRemote(userId);
+
   const db = await getDatabase();
   const rows = await db.getAllAsync<{ organization_id: string }>(
     'SELECT organization_id FROM user_organizations WHERE user_id = ?',
@@ -43,6 +56,10 @@ export async function ensureUserOrganization(
   role: 'admin' | 'representative',
   organizationId: string = DEFAULT_ORG_ID
 ): Promise<void> {
+  if (isSupabaseConfigured()) {
+    return ensureUserOrganizationRemote(userId, role, organizationId);
+  }
+
   const db = await getDatabase();
   await db.runAsync(
     `INSERT OR IGNORE INTO user_organizations (user_id, organization_id, role)

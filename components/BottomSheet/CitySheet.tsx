@@ -19,6 +19,8 @@ type Props = {
   onClose: () => void;
   canManageClients?: boolean;
   showCategoryBadges?: boolean;
+  /** Espaço (em px) reservado no topo que o sheet nunca deve cobrir. */
+  topInset?: number;
 };
 
 const STATUS_LABELS: Record<CityStatus, string> = {
@@ -40,8 +42,9 @@ export function CitySheet({
   onClose,
   canManageClients = true,
   showCategoryBadges = true,
+  topInset = 0,
 }: Props) {
-  const snapPoints = useMemo(() => ['40%', '70%', '92%'], []);
+  const snapPoints = useMemo(() => ['40%', '70%', '100%'], []);
   const statusColor = STATUS_COLORS[cityStatus];
 
   const countLabel =
@@ -145,11 +148,14 @@ export function CitySheet({
     <BottomSheet
       ref={bottomSheetRef}
       index={-1}
+      topInset={topInset}
       snapPoints={snapPoints}
       enablePanDownToClose
+      enableOverDrag={false}
       onClose={onClose}
       backgroundStyle={styles.sheetBg}
       handleIndicatorStyle={styles.handle}
+      containerStyle={styles.sheetContainer}
       style={styles.sheet}
     >
       <BottomSheetFlatList
@@ -166,6 +172,7 @@ export function CitySheet({
 }
 
 const styles = StyleSheet.create({
+  sheetContainer: { zIndex: 50, elevation: 50 },
   sheet: { zIndex: 50, elevation: 50 },
   sheetBg: {
     backgroundColor: COLORS.backgroundSubtle,

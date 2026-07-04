@@ -1,5 +1,12 @@
 import { AccessMode, RepresentativeScope } from '../types';
 import { getDatabase, generateId } from './database';
+import { isSupabaseConfigured } from './supabase/client';
+import {
+  createRepresentativeScopeRemote,
+  ensureDefaultRepresentativeScopeRemote,
+  getRepresentativeScopesRemote,
+  syncRepresentativeScopeWithUserCategoriesRemote,
+} from './supabase/scopes';
 import { DEFAULT_ORG_ID } from '../constants/organizations';
 
 const ROW_TO_SCOPE = (row: {
@@ -19,6 +26,8 @@ const ROW_TO_SCOPE = (row: {
 });
 
 export async function getRepresentativeScopes(userId: string): Promise<RepresentativeScope[]> {
+  if (isSupabaseConfigured()) return getRepresentativeScopesRemote(userId);
+
   const db = await getDatabase();
   const rows = await db.getAllAsync<any>(
     'SELECT * FROM representative_scopes WHERE user_id = ? ORDER BY created_at ASC',
@@ -56,6 +65,8 @@ export type CreateScopeData = {
 
 /** Cria escopo padrão: acesso a todos os clientes da organização. */
 export async function createRepresentativeScope(data: CreateScopeData): Promise<RepresentativeScope> {
+  if (isSupabaseConfigured()) return createRepresentativeScopeRemote(data);
+
   const db = await getDatabase();
   const now = new Date().toISOString();
   const id = generateId('scope');
@@ -93,6 +104,8 @@ export async function createRepresentativeScope(data: CreateScopeData): Promise<
 }
 
 export async function ensureDefaultRepresentativeScope(userId: string): Promise<void> {
+  if (isSupabaseConfigured()) return ensureDefaultRepresentativeScopeRemote(userId);
+
   const db = await getDatabase();
   const existing = await db.getFirstAsync<{ count: number }>(
     'SELECT COUNT(*) as count FROM representative_scopes WHERE user_id = ?',
@@ -107,6 +120,10 @@ export async function syncRepresentativeScopeWithUserCategories(
   userId: string,
   categoryIds: string[]
 ): Promise<void> {
+  if (isSupabaseConfigured()) {
+    return syncRepresentativeScopeWithUserCategoriesRemote(userId, categoryIds);
+  }
+
   const db = await getDatabase();
   const scope = await db.getFirstAsync<{ id: string }>(
     'SELECT id FROM representative_scopes WHERE user_id = ? ORDER BY created_at ASC LIMIT 1',

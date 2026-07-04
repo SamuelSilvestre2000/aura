@@ -15,6 +15,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { updateOwnProfile } from '../../services/users';
 import { pickUserPhoto } from '../../services/userPhotos';
 import { formatCategoryNames, isValidAccessPin, MAX_ACCESS_PIN_LENGTH } from '../../constants/userCategories';
+import { isValidAuthPassword } from '../../services/users';
 import { ROLE_LABELS } from '../../constants/permissions';
 import { FormScreen } from '../../components/FormScreen';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
@@ -22,7 +23,7 @@ import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { user, isAdmin, refresh: refreshSession } = useAuth();
+  const { user, isAdmin, refresh: refreshSession, usesSupabase } = useAuth();
 
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
@@ -74,7 +75,8 @@ export default function ProfileScreen() {
   const pinTouched = changePin && (newPin.length > 0 || confirmPin.length > 0);
   const pinValid =
     !pinTouched ||
-    (isValidAccessPin(newPin) && newPin === confirmPin);
+    ((usesSupabase ? isValidAuthPassword(newPin) : isValidAccessPin(newPin)) &&
+      newPin === confirmPin);
   const photoTouched = photoRemoved || photoChanged;
   const canSave = (pinTouched || photoTouched) && pinValid;
 
@@ -82,12 +84,23 @@ export default function ProfileScreen() {
     if (!user || !canSave || submitting) return;
 
     if (pinTouched) {
-      if (!isValidAccessPin(newPin)) {
-        Alert.alert('PIN inválido', 'Use um PIN numérico de 4 a 8 dígitos.');
+      const validSecret = usesSupabase ? isValidAuthPassword(newPin) : isValidAccessPin(newPin);
+      if (!validSecret) {
+        Alert.alert(
+          usesSupabase ? 'Senha inválida' : 'PIN inválido',
+          usesSupabase
+            ? 'Use uma senha com ao menos 6 caracteres.'
+            : 'Use um PIN numérico de 4 a 8 dígitos.'
+        );
         return;
       }
       if (newPin !== confirmPin) {
-        Alert.alert('PINs diferentes', 'O PIN e a confirmação precisam ser iguais.');
+        Alert.alert(
+          usesSupabase ? 'Senhas diferentes' : 'PINs diferentes',
+          usesSupabase
+            ? 'A senha e a confirmação precisam ser iguais.'
+            : 'O PIN e a confirmação precisam ser iguais.'
+        );
         return;
       }
     }
@@ -172,32 +185,40 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.field}>
-        <Text style={styles.label}>PIN DE ACESSO</Text>
+        <Text style={styles.label}>{usesSupabase ? 'SENHA' : 'PIN DE ACESSO'}</Text>
         {!changePin ? (
           <View style={styles.pinCard}>
             <Text style={styles.pinHint}>
-              Seu PIN é pessoal e usado para entrar no app.
+              {usesSupabase
+                ? 'Sua senha é pessoal e usada para entrar no app.'
+                : 'Seu PIN é pessoal e usado para entrar no app.'}
             </Text>
             <TouchableOpacity
               style={styles.pinAction}
               onPress={() => setChangePin(true)}
               activeOpacity={0.75}
             >
-              <Text style={styles.pinActionText}>Alterar PIN</Text>
+              <Text style={styles.pinActionText}>
+                {usesSupabase ? 'Alterar senha' : 'Alterar PIN'}
+              </Text>
             </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.pinCard}>
-            <Text style={styles.pinHint}>Informe um PIN numérico de 4 a 8 dígitos</Text>
+            <Text style={styles.pinHint}>
+              {usesSupabase
+                ? 'Informe uma senha com ao menos 6 caracteres'
+                : 'Informe um PIN numérico de 4 a 8 dígitos'}
+            </Text>
             <TextInput
               style={styles.input}
-              placeholder="Novo PIN"
+              placeholder={usesSupabase ? 'Nova senha' : 'Novo PIN'}
               placeholderTextColor={COLORS.textPlaceholder}
               value={newPin}
               onChangeText={setNewPin}
-              keyboardType="number-pad"
+              keyboardType={usesSupabase ? 'default' : 'number-pad'}
               secureTextEntry
-              maxLength={MAX_ACCESS_PIN_LENGTH}
+              maxLength={usesSupabase ? 64 : MAX_ACCESS_PIN_LENGTH}
               autoFocus
             />
             <TextInput
@@ -205,16 +226,18 @@ export default function ProfileScreen() {
                 styles.input,
                 confirmPin.length > 0 && newPin !== confirmPin && styles.inputInvalid,
               ]}
-              placeholder="Confirmar PIN"
+              placeholder={usesSupabase ? 'Confirmar senha' : 'Confirmar PIN'}
               placeholderTextColor={COLORS.textPlaceholder}
               value={confirmPin}
               onChangeText={setConfirmPin}
-              keyboardType="number-pad"
+              keyboardType={usesSupabase ? 'default' : 'number-pad'}
               secureTextEntry
-              maxLength={MAX_ACCESS_PIN_LENGTH}
+              maxLength={usesSupabase ? 64 : MAX_ACCESS_PIN_LENGTH}
             />
             {confirmPin.length > 0 && newPin !== confirmPin ? (
-              <Text style={styles.errorText}>Os PINs não coincidem.</Text>
+              <Text style={styles.errorText}>
+                {usesSupabase ? 'As senhas não coincidem.' : 'Os PINs não coincidem.'}
+              </Text>
             ) : null}
             <TouchableOpacity
               style={styles.pinCancel}

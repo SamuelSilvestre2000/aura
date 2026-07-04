@@ -1,5 +1,13 @@
 import { CollectionGoal, Category } from '../types';
 import { getDatabase, generateId } from './database';
+import { isSupabaseConfigured } from './supabase/client';
+import {
+  getGoalForUserRemote,
+  getGoalsForCollectionAndUserRemote,
+  getGoalsMapForUserRemote,
+  setGoalForUserRemote,
+  setGoalsForUserRemote,
+} from './supabase/collectionGoals';
 import { categoryIdsForGoals } from '../utils/collectionGoalCategories';
 
 /** Legado: meta única antes da separação por categoria. */
@@ -41,6 +49,8 @@ export async function getGoalForUser(
   userId: string,
   categoryId: string
 ): Promise<number | null> {
+  if (isSupabaseConfigured()) return getGoalForUserRemote(collectionId, userId, categoryId);
+
   const db = await getDatabase();
   const row = await db.getFirstAsync<{ goal_amount: number }>(
     'SELECT goal_amount FROM collection_goals WHERE collection_id = ? AND user_id = ? AND category_id = ?',
@@ -53,6 +63,8 @@ export async function getGoalsForCollectionAndUser(
   collectionId: string,
   userId: string
 ): Promise<Map<string, number>> {
+  if (isSupabaseConfigured()) return getGoalsForCollectionAndUserRemote(collectionId, userId);
+
   const db = await getDatabase();
   const rows = await db.getAllAsync<{ category_id: string; goal_amount: number }>(
     'SELECT category_id, goal_amount FROM collection_goals WHERE collection_id = ? AND user_id = ?',
@@ -66,6 +78,8 @@ export async function getGoalsForCollectionAndUser(
 }
 
 export async function getGoalsMapForUser(userId: string): Promise<Map<string, number>> {
+  if (isSupabaseConfigured()) return getGoalsMapForUserRemote(userId);
+
   const db = await getDatabase();
   const rows = await db.getAllAsync<{
     collection_id: string;
@@ -125,6 +139,10 @@ export async function setGoalForUser(
     throw new Error('Informe um valor de meta maior que zero');
   }
 
+  if (isSupabaseConfigured()) {
+    return setGoalForUserRemote(collectionId, userId, goalAmount, categoryId);
+  }
+
   const db = await getDatabase();
   const now = new Date().toISOString();
   const existing = await db.getFirstAsync<{ id: string }>(
@@ -160,6 +178,8 @@ export async function setGoalsForUser(
   userId: string,
   goals: GoalInput[]
 ): Promise<void> {
+  if (isSupabaseConfigured()) return setGoalsForUserRemote(collectionId, userId, goals);
+
   for (const goal of goals) {
     if (goal.goalAmount > 0) {
       await setGoalForUser(collectionId, userId, goal.goalAmount, goal.categoryId);

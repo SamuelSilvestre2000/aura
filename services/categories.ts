@@ -1,6 +1,15 @@
 import { Category, UserRole } from '../types';
 import { DEFAULT_ORG_ID } from '../constants/organizations';
 import { getDatabase } from './database';
+import { isSupabaseConfigured } from './supabase/client';
+import {
+  getAllowedCategoriesForUserRemote,
+  getCategoriesByUserIdRemote,
+  listCategoriesRemote,
+  setUserCategoriesRemote,
+  validateCategoryIdsForUserRemote,
+  validateOptionalCategoryForUserRemote,
+} from './supabase/categories';
 
 const ROW_TO_CATEGORY = (row: any): Category => ({
   id: row.id,
@@ -11,6 +20,8 @@ const ROW_TO_CATEGORY = (row: any): Category => ({
 });
 
 export async function listCategories(organizationId: string = DEFAULT_ORG_ID): Promise<Category[]> {
+  if (isSupabaseConfigured()) return listCategoriesRemote(organizationId);
+
   const db = await getDatabase();
   const rows = await db.getAllAsync<any>(
     `SELECT * FROM categories
@@ -22,6 +33,8 @@ export async function listCategories(organizationId: string = DEFAULT_ORG_ID): P
 }
 
 export async function getCategoriesByUserId(userId: string): Promise<Category[]> {
+  if (isSupabaseConfigured()) return getCategoriesByUserIdRemote(userId);
+
   const db = await getDatabase();
   const rows = await db.getAllAsync<any>(
     `SELECT c.* FROM categories c
@@ -37,6 +50,8 @@ export async function getAllowedCategoriesForUser(
   userId: string,
   role: UserRole
 ): Promise<Category[]> {
+  if (isSupabaseConfigured()) return getAllowedCategoriesForUserRemote(userId, role);
+
   if (role === 'admin') return listCategories();
   return getCategoriesByUserId(userId);
 }
@@ -46,6 +61,8 @@ export async function validateCategoryIdsForUser(
   role: UserRole,
   categoryIds: string[]
 ): Promise<void> {
+  if (isSupabaseConfigured()) return validateCategoryIdsForUserRemote(userId, role, categoryIds);
+
   if (role === 'admin' || categoryIds.length === 0) return;
 
   const allowed = await getCategoriesByUserId(userId);
@@ -63,6 +80,10 @@ export async function validateOptionalCategoryForUser(
   role: UserRole,
   categoryId: string | null | undefined
 ): Promise<void> {
+  if (isSupabaseConfigured()) {
+    return validateOptionalCategoryForUserRemote(userId, role, categoryId);
+  }
+
   if (role === 'admin') return;
 
   if (categoryId == null) {
@@ -77,6 +98,8 @@ export async function validateOptionalCategoryForUser(
 }
 
 export async function setUserCategories(userId: string, categoryIds: string[]): Promise<void> {
+  if (isSupabaseConfigured()) return setUserCategoriesRemote(userId, categoryIds);
+
   const db = await getDatabase();
   const uniqueIds = [...new Set(categoryIds)];
 

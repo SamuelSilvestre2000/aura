@@ -9,6 +9,8 @@ import React, {
 import { Purchase, Sale } from '../types';
 import { getDatabase } from '../services/database';
 import { clearSale, listSales, recordSale as recordSaleService } from '../services/sales';
+import { isSupabaseConfigured } from '../services/supabase/client';
+import { listPurchasesRemote } from '../services/supabase/sales';
 
 type PurchasesContextValue = {
   purchases: Purchase[];
@@ -32,17 +34,21 @@ export function PurchasesProvider({ children }: { children: React.ReactNode }) {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const db = await getDatabase();
-      const purchaseRows = await db.getAllAsync<any>('SELECT * FROM purchases');
-      setPurchases(
-        purchaseRows.map((r) => ({
-          id: r.id,
-          clientId: r.client_id,
-          collectionId: r.collection_id,
-          purchased: r.purchased,
-          purchasedAt: r.purchased_at || undefined,
-        }))
-      );
+      if (isSupabaseConfigured()) {
+        setPurchases(await listPurchasesRemote());
+      } else {
+        const db = await getDatabase();
+        const purchaseRows = await db.getAllAsync<any>('SELECT * FROM purchases');
+        setPurchases(
+          purchaseRows.map((r) => ({
+            id: r.id,
+            clientId: r.client_id,
+            collectionId: r.collection_id,
+            purchased: r.purchased,
+            purchasedAt: r.purchased_at || undefined,
+          }))
+        );
+      }
       setSales(await listSales());
     } catch (err) {
       console.error('[usePurchases] Erro:', err);

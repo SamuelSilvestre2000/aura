@@ -10,6 +10,13 @@ import {
 import { listCategories, getAllowedCategoriesForUser, validateCategoryIdsForUser, validateOptionalCategoryForUser } from './categories';
 import { getSalesTotalsMapForUser } from './sales';
 import { getDatabase, generateId } from './database';
+import { isSupabaseConfigured } from './supabase/client';
+import {
+  closeCollectionRemote,
+  createCollectionRemote,
+  deleteCollectionRemote,
+  listCollectionsForUserRemote,
+} from './supabase/collections';
 import { DEFAULT_BRAND_ID, getDefaultBrandId, getDefaultOrganizationId } from './organizations';
 import { CategoryFilterValue } from '../utils/categoryFilter';
 
@@ -41,6 +48,10 @@ export async function listCollectionsForUser(
   role: UserRole,
   viewCategoryFilter: CategoryFilterValue = 'all'
 ): Promise<Collection[]> {
+  if (isSupabaseConfigured()) {
+    return listCollectionsForUserRemote(userId, role, viewCategoryFilter);
+  }
+
   const rows = await queryVisibleCollections(userId, role);
   const collections = rows.map(ROW_TO_COLLECTION);
   const goals = await getGoalsMapForUser(userId);
@@ -60,6 +71,8 @@ export async function listCollectionsForUser(
 }
 
 export async function createCollection(input: CreateCollectionInput): Promise<Collection> {
+  if (isSupabaseConfigured()) return createCollectionRemote(input);
+
   const name = input.name.trim();
   if (!name) throw new Error('Informe o nome da coleção');
   if (!input.startDate || !input.endDate) throw new Error('Informe o período da coleção');
@@ -113,6 +126,8 @@ export async function createCollection(input: CreateCollectionInput): Promise<Co
 }
 
 export async function closeCollection(id: string): Promise<void> {
+  if (isSupabaseConfigured()) return closeCollectionRemote(id);
+
   const db = await getDatabase();
   const row = await db.getFirstAsync<{ is_active: number }>(
     'SELECT is_active FROM collections WHERE id = ?',
@@ -124,6 +139,8 @@ export async function closeCollection(id: string): Promise<void> {
 }
 
 export async function deleteCollection(id: string): Promise<void> {
+  if (isSupabaseConfigured()) return deleteCollectionRemote(id);
+
   const db = await getDatabase();
   await db.runAsync('DELETE FROM collections WHERE id = ?', [id]);
 }
