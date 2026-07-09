@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import {
   StyleSheet, View, Text, TextInput, TouchableOpacity,
   ActivityIndicator, KeyboardAvoidingView, Platform,
-  ScrollView, Alert,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../hooks/useAuth';
+import { Alert } from '../utils/alert';
 import { requestPasswordReset } from '../services/auth';
 import { isSupabaseConfigured } from '../services/supabase/client';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/colors';

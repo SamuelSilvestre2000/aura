@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View, Text, TextInput, Alert } from 'react-native';
+import { StyleSheet, View, Text, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Alert } from '../../utils/alert';
 import { useCollections } from '../../hooks/useCollections';
 import { useAuth } from '../../hooks/useAuth';
 import { FormScreen } from '../../components/FormScreen';

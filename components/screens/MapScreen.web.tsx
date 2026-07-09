@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Modal, Pressable } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapContainer, TileLayer, Polygon, CircleMarker, useMap } from 'react-leaflet';
 import type { Map as LeafletMapInstance } from 'leaflet';
@@ -76,9 +76,9 @@ export default function MapScreenWeb() {
   } = useCategoryFilter();
   const canManageClients = canDo('manage_clients');
   const { cities, loading: geoLoading, refreshing: geoRefreshing, error: geoError } = useGeoJSON();
-  const { clients } = useClients();
+  const { clients, refresh: refreshClients } = useClients();
   const { collections, refresh: refreshCollections } = useCollections();
-  const { purchases, getPurchaseStatus } = usePurchases();
+  const { purchases, refresh: refreshPurchases, getPurchaseStatus } = usePurchases();
 
   const filteredClients = useMemo(
     () => filterClientsByCategory(clients, effectiveFilter, allowedCategoryIds),
@@ -96,6 +96,22 @@ export default function MapScreenWeb() {
   useEffect(() => {
     void refreshCollections(effectiveFilter);
   }, [effectiveFilter, refreshCollections]);
+
+  /**
+   * Ao voltar para o mapa (ex: depois de criar um cliente ou sair de outra tela),
+   * os hooks de dados desta tela não recarregam sozinhos — cada tela tem seu
+   * próprio estado local. Sem isso o mapa fica com dados desatualizados e o
+   * Leaflet, cujo container ficou fora de tela, precisa recalcular o tamanho
+   * (senão os tiles somem/o mapa parece travado).
+   */
+  useFocusEffect(
+    useCallback(() => {
+      void refreshClients();
+      void refreshCollections(effectiveFilter);
+      void refreshPurchases();
+      requestAnimationFrame(() => mapRef.current?.invalidateSize());
+    }, [refreshClients, refreshCollections, refreshPurchases, effectiveFilter])
+  );
 
   const activeCollectionId = selectedCollectionId || visibleCollections[0]?.id || null;
   const activeCollection = visibleCollections.find((c) => c.id === activeCollectionId) || null;

@@ -5,13 +5,13 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  Alert,
   ActivityIndicator,
   Image,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Alert } from '../../utils/alert';
 import { clearGeoCache } from '../../services/ibge';
 import { getDatabase } from '../../services/database';
 import { deleteUser, listUsers } from '../../services/users';

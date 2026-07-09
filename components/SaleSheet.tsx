@@ -5,8 +5,8 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
+import { Alert } from '../utils/alert';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/colors';
 import { NotionHeader } from './NotionHeader';
 import { MoneyInput } from './MoneyInput';

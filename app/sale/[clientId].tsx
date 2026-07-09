@@ -5,13 +5,13 @@ import {
   Text,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Alert } from '../../utils/alert';
 import { useClients } from '../../hooks/useClients';
 import { useCollections } from '../../hooks/useCollections';
 import { usePurchases } from '../../hooks/usePurchases';

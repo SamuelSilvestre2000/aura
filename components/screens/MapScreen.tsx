@@ -13,7 +13,7 @@ import {
 import MapView, { PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
 
@@ -84,9 +84,9 @@ export default function MapScreen() {
   } = useCategoryFilter();
   const canManageClients = canDo('manage_clients');
   const { cities, loading: geoLoading, refreshing: geoRefreshing, error: geoError } = useGeoJSON();
-  const { clients } = useClients();
+  const { clients, refresh: refreshClients } = useClients();
   const { collections, refresh: refreshCollections } = useCollections();
-  const { purchases, getPurchaseStatus } = usePurchases();
+  const { purchases, refresh: refreshPurchases, getPurchaseStatus } = usePurchases();
 
   const filteredClients = useMemo(
     () => filterClientsByCategory(clients, effectiveFilter, allowedCategoryIds),
@@ -104,6 +104,19 @@ export default function MapScreen() {
   useEffect(() => {
     void refreshCollections(effectiveFilter);
   }, [effectiveFilter, refreshCollections]);
+
+  /**
+   * Cada tela usa sua própria instância dos hooks de dados — ao voltar para
+   * o mapa (ex: depois de criar um cliente em outra tela) é preciso recarregar
+   * explicitamente, já que o mapa não some/remonta ao navegar de volta.
+   */
+  useFocusEffect(
+    useCallback(() => {
+      void refreshClients();
+      void refreshCollections(effectiveFilter);
+      void refreshPurchases();
+    }, [refreshClients, refreshCollections, refreshPurchases, effectiveFilter])
+  );
 
   useEffect(() => {
     if (

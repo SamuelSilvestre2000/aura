@@ -6,11 +6,11 @@ import {
   TextInput,
   TouchableOpacity,
   Image,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Alert } from '../../utils/alert';
 import { useAuth } from '../../hooks/useAuth';
 import { updateOwnProfile } from '../../services/users';
 import { pickUserPhoto } from '../../services/userPhotos';

@@ -5,9 +5,9 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { Category, Collection, UserRole } from '../types';
+import { Alert } from '../utils/alert';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/colors';
 import { NotionHeader } from './NotionHeader';
 import { CollectionGoalsInput } from './CollectionGoalsInput';
