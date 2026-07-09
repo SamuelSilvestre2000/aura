@@ -10,6 +10,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
+import { goBack } from '../../utils/navigation';
 import { useClients } from '../../hooks/useClients';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useAuth } from '../../hooks/useAuth';
@@ -117,7 +118,7 @@ export default function NewClientScreen() {
         notes: notes.trim() || undefined,
         categoryIds,
       });
-      router.back();
+      goBack(router);
     } catch {
       Alert.alert('Erro', 'Não foi possível cadastrar o cliente.');
     } finally {
@@ -128,7 +129,7 @@ export default function NewClientScreen() {
   return (
     <FormScreen
       title="Novo cliente"
-      onBack={() => router.back()}
+      onBack={() => goBack(router)}
       headerRight={
         <HeaderLinkButton
           label="Criar"

@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Alert } from '../../utils/alert';
+import { goBack } from '../../utils/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { useCollections } from '../../hooks/useCollections';
 import { useClients } from '../../hooks/useClients';
@@ -116,7 +117,7 @@ export default function CollectionDetailScreen() {
       <View style={styles.center}>
         <Ionicons name="albums-outline" size={40} color={COLORS.textMuted} />
         <Text style={styles.notFoundText}>Coleção não encontrada</Text>
-        <TouchableOpacity onPress={() => router.back()} style={styles.outlineButton}>
+        <TouchableOpacity onPress={() => goBack(router)} style={styles.outlineButton}>
           <Ionicons name="arrow-back" size={16} color={COLORS.primary} />
           <Text style={styles.outlineButtonText}>Voltar</Text>
         </TouchableOpacity>
@@ -174,7 +175,7 @@ export default function CollectionDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             await deleteCollection(collection.id);
-            router.back();
+            goBack(router);
           },
         },
       ]
@@ -188,7 +189,7 @@ export default function CollectionDetailScreen() {
           title={collection.name}
           showBorder
           compact
-          leftAction={<HeaderBackButton onPress={() => router.back()} />}
+          leftAction={<HeaderBackButton onPress={() => goBack(router)} />}
           rightAction={
             !isAdmin && !isClosed ? (
               <HeaderLinkButton

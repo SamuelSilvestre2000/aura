@@ -10,6 +10,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
+import { goBack } from '../../utils/navigation';
 import { useClients } from '../../hooks/useClients';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useAuth } from '../../hooks/useAuth';
@@ -125,7 +126,7 @@ export default function EditClientScreen() {
         notes: notes.trim() || undefined,
         categoryIds,
       });
-      router.back();
+      goBack(router);
     } catch {
       Alert.alert('Erro', 'Não foi possível atualizar o cliente.');
     } finally {
@@ -146,7 +147,7 @@ export default function EditClientScreen() {
       <View style={styles.center}>
         <Ionicons name="person-outline" size={40} color={COLORS.textMuted} />
         <Text style={styles.notFoundText}>Cliente não encontrado</Text>
-        <TouchableOpacity onPress={() => router.back()} style={styles.outlineButton}>
+        <TouchableOpacity onPress={() => goBack(router)} style={styles.outlineButton}>
           <Ionicons name="arrow-back" size={16} color={COLORS.primary} />
           <Text style={styles.outlineButtonText}>Voltar</Text>
         </TouchableOpacity>
@@ -159,7 +160,7 @@ export default function EditClientScreen() {
   return (
     <FormScreen
       title="Editar cliente"
-      onBack={() => router.back()}
+      onBack={() => goBack(router)}
       headerRight={
         <HeaderLinkButton
           label="Salvar"

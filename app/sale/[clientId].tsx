@@ -12,6 +12,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert } from '../../utils/alert';
+import { goBack } from '../../utils/navigation';
 import { useClients } from '../../hooks/useClients';
 import { useCollections } from '../../hooks/useCollections';
 import { usePurchases } from '../../hooks/usePurchases';
@@ -66,7 +67,7 @@ export default function SaleScreen() {
     try {
       await recordSale(clientId, collectionId, user.id, amount);
       await refreshCollections();
-      router.back();
+      goBack(router);
     } catch (err) {
       Alert.alert(
         'Erro',
@@ -92,7 +93,7 @@ export default function SaleScreen() {
             try {
               await clearSale(clientId, collectionId);
               await refreshCollections();
-              router.back();
+              goBack(router);
             } catch (err) {
               Alert.alert(
                 'Erro',
@@ -121,7 +122,7 @@ export default function SaleScreen() {
         <NotionHeader
           title={purchased ? 'Venda registrada' : 'Registrar venda'}
           showBorder
-          leftAction={<HeaderBackButton onPress={() => router.back()} />}
+          leftAction={<HeaderBackButton onPress={() => goBack(router)} />}
         />
       </SafeAreaView>
 
@@ -171,7 +172,7 @@ export default function SaleScreen() {
           ) : (
             <TouchableOpacity
               style={styles.cancelBtn}
-              onPress={() => router.back()}
+              onPress={() => goBack(router)}
               activeOpacity={0.7}
             >
               <Text style={styles.cancelText}>Cancelar</Text>

@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
+import { goBack } from '../../utils/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { createRepresentative } from '../../services/users';
 import { listCategories } from '../../services/categories';
@@ -76,7 +77,7 @@ export default function NewRepresentativeScreen() {
         pin,
         photoUri,
       });
-      router.back();
+      goBack(router);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Não foi possível cadastrar.';
       Alert.alert('Erro', msg.includes('UNIQUE') ? 'Já existe um usuário com este nome.' : msg);
@@ -88,7 +89,7 @@ export default function NewRepresentativeScreen() {
   return (
     <FormScreen
       title="Novo representante"
-      onBack={() => router.back()}
+      onBack={() => goBack(router)}
       headerRight={
         <HeaderLinkButton
           label="Salvar"

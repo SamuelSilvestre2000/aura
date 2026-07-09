@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View, Text, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Alert } from '../../utils/alert';
+import { goBack } from '../../utils/navigation';
 import { useCollections } from '../../hooks/useCollections';
 import { useAuth } from '../../hooks/useAuth';
 import { FormScreen } from '../../components/FormScreen';
@@ -94,7 +95,7 @@ export default function NewCollectionScreen() {
         userRole: user?.role,
       });
       await refresh();
-      router.back();
+      goBack(router);
     } catch (err) {
       Alert.alert('Erro', err instanceof Error ? err.message : 'Não foi possível criar a coleção.');
     } finally {
@@ -105,7 +106,7 @@ export default function NewCollectionScreen() {
   return (
     <FormScreen
       title="Nova coleção"
-      onBack={() => router.back()}
+      onBack={() => goBack(router)}
       headerRight={
         <HeaderLinkButton
           label="Criar"

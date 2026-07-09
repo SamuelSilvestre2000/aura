@@ -11,6 +11,7 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
+import { goBack } from '../../utils/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { updateOwnProfile } from '../../services/users';
 import { pickUserPhoto } from '../../services/userPhotos';
@@ -112,7 +113,7 @@ export default function ProfileScreen() {
         photoUri: resolvePhotoPayload(),
       });
       await refreshSession();
-      router.back();
+      goBack(router);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Não foi possível salvar.';
       Alert.alert('Erro', msg);
@@ -132,7 +133,7 @@ export default function ProfileScreen() {
   return (
     <FormScreen
       title="Minha conta"
-      onBack={() => router.back()}
+      onBack={() => goBack(router)}
       headerRight={
         <HeaderLinkButton
           label="Salvar"

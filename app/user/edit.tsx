@@ -11,6 +11,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
+import { goBack } from '../../utils/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserById, updateUser } from '../../services/users';
 import { listCategories } from '../../services/categories';
@@ -52,14 +53,14 @@ export default function EditUserScreen() {
 
     async function load() {
       if (!params.id) {
-        router.back();
+        goBack(router);
         return;
       }
       try {
         const data = await getUserById(params.id);
         if (!data) {
           Alert.alert('Erro', 'Usuário não encontrado.');
-          router.back();
+          goBack(router);
           return;
         }
         setTargetUser(data);
@@ -126,7 +127,7 @@ export default function EditUserScreen() {
         await refreshSession();
       }
 
-      router.back();
+      goBack(router);
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Não foi possível salvar.';
       Alert.alert('Erro', msg);
@@ -148,7 +149,7 @@ export default function EditUserScreen() {
   return (
     <FormScreen
       title={screenTitle}
-      onBack={() => router.back()}
+      onBack={() => goBack(router)}
       headerRight={
         <HeaderLinkButton
           label="Salvar"

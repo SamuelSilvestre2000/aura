@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
+import { goBack } from '../../utils/navigation';
 import { useClients } from '../../hooks/useClients';
 import { useAuth } from '../../hooks/useAuth';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
@@ -67,7 +68,7 @@ export default function ClientDetailScreen() {
           onPress: async () => {
             if (id) {
               await deleteClient(id);
-              router.back();
+              goBack(router);
             }
           },
         },
@@ -99,7 +100,7 @@ export default function ClientDetailScreen() {
       <View style={styles.center}>
         <Ionicons name="person-outline" size={40} color={COLORS.textMuted} />
         <Text style={styles.notFoundText}>Cliente não encontrado</Text>
-        <TouchableOpacity onPress={() => router.back()} style={styles.outlineButton}>
+        <TouchableOpacity onPress={() => goBack(router)} style={styles.outlineButton}>
           <Ionicons name="arrow-back" size={16} color={COLORS.primary} />
           <Text style={styles.outlineButtonText}>Voltar</Text>
         </TouchableOpacity>
@@ -120,7 +121,7 @@ export default function ClientDetailScreen() {
           title={client.name}
           showBorder
           compact
-          leftAction={<HeaderBackButton onPress={() => router.back()} />}
+          leftAction={<HeaderBackButton onPress={() => goBack(router)} />}
           rightAction={
             canManageClients ? (
               <HeaderLinkButton
