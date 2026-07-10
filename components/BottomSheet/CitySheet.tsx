@@ -21,6 +21,8 @@ type Props = {
   showCategoryBadges?: boolean;
   /** Espaço (em px) reservado no topo que o sheet nunca deve cobrir. */
   topInset?: number;
+  /** Cliente encontrado pela busca — recebe destaque visual na lista. */
+  highlightedClientId?: string | null;
 };
 
 const STATUS_LABELS: Record<CityStatus, string> = {
@@ -43,6 +45,7 @@ export function CitySheet({
   canManageClients = true,
   showCategoryBadges = true,
   topInset = 0,
+  highlightedClientId = null,
 }: Props) {
   const snapPoints = useMemo(() => ['40%', '70%', '100%'], []);
   const statusColor = STATUS_COLORS[cityStatus];
@@ -139,9 +142,17 @@ export function CitySheet({
         purchased={activeCollection ? getPurchaseStatus(item.id, activeCollection.id) : false}
         onToggle={() => onTogglePurchase(item.id)}
         showCategoryBadges={showCategoryBadges}
+        highlighted={item.id === highlightedClientId}
       />
     ),
-    [activeCollection, clients.length, getPurchaseStatus, onTogglePurchase, showCategoryBadges]
+    [
+      activeCollection,
+      clients.length,
+      getPurchaseStatus,
+      onTogglePurchase,
+      showCategoryBadges,
+      highlightedClientId,
+    ]
   );
 
   return (

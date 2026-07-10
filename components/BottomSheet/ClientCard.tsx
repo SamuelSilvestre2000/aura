@@ -16,6 +16,7 @@ type Props = {
   purchased: boolean;
   onToggle: () => void;
   showCategoryBadges?: boolean;
+  highlighted?: boolean;
 };
 
 export function ClientCard({
@@ -26,6 +27,7 @@ export function ClientCard({
   purchased,
   onToggle,
   showCategoryBadges = true,
+  highlighted = false,
 }: Props) {
   const router = useRouter();
   const { labels, slugs } = labelsFromCategoryIds(client.categoryIds);
@@ -37,6 +39,7 @@ export function ClientCard({
         index === 0 && styles.containerFirst,
         isLast && styles.containerLast,
         index > 0 && styles.containerBorder,
+        highlighted && styles.containerHighlighted,
       ]}
       onPress={() => router.push(`/client/${client.id}`)}
       activeOpacity={0.7}
@@ -96,6 +99,9 @@ const styles = StyleSheet.create({
   containerBorder: {
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: COLORS.surfaceBorder,
+  },
+  containerHighlighted: {
+    backgroundColor: COLORS.primaryBg,
   },
   avatar: {
     width: 40,

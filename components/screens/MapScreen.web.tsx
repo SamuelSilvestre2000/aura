@@ -62,6 +62,7 @@ export default function MapScreenWeb() {
   const mapRef = useRef<LeafletMapInstance | null>(null);
   const [search, setSearch] = useState('');
   const [selectedCity, setSelectedCity] = useState<CityGeoData | null>(null);
+  const [highlightedClientId, setHighlightedClientId] = useState<string | null>(null);
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
@@ -76,7 +77,7 @@ export default function MapScreenWeb() {
     allowedCategoryIds,
   } = useCategoryFilter();
   const canManageClients = canDo('manage_clients');
-  const { cities, loading: geoLoading, refreshing: geoRefreshing, error: geoError } = useGeoJSON();
+  const { cities, cityByCode, loading: geoLoading, refreshing: geoRefreshing, error: geoError } = useGeoJSON();
   const { clients, refresh: refreshClients } = useClients();
   const { collections, refresh: refreshCollections } = useCollections();
   const { purchases, refresh: refreshPurchases, getPurchaseStatus } = usePurchases();
@@ -119,16 +120,48 @@ export default function MapScreenWeb() {
 
   const { getCityStatus } = useCityStatus(filteredClients, purchases, activeCollectionId);
 
+  const searchQuery = search.trim().toLowerCase();
+
   const filteredCities = useMemo(() => {
-    if (!search.trim()) return cities;
-    const q = search.toLowerCase();
-    return cities.filter((c) => c.name.toLowerCase().includes(q));
-  }, [cities, search]);
+    if (!searchQuery) return cities;
+    return cities.filter((c) => c.name.toLowerCase().includes(searchQuery));
+  }, [cities, searchQuery]);
+
+  const citySearchResults = useMemo(() => filteredCities.slice(0, 5), [filteredCities]);
+
+  const clientSearchResults = useMemo(() => {
+    if (!searchQuery) return [];
+    return filteredClients
+      .filter((c) => `${c.name} ${c.tradeName ?? ''}`.toLowerCase().includes(searchQuery))
+      .slice(0, 5);
+  }, [filteredClients, searchQuery]);
+
+  const showSearchResults = searchQuery.length > 0;
 
   const handleCityPress = useCallback((city: CityGeoData) => {
     setSelectedCity(city);
+    setHighlightedClientId(null);
     bottomSheetRef.current?.snapToIndex(0);
   }, []);
+
+  const handleSelectSearchCity = useCallback(
+    (city: CityGeoData) => {
+      handleCityPress(city);
+      setSearch('');
+    },
+    [handleCityPress]
+  );
+
+  const handleSelectSearchClient = useCallback(
+    (client: (typeof filteredClients)[number]) => {
+      const city = cityByCode.get(client.cityCode);
+      if (!city) return;
+      handleCityPress(city);
+      setHighlightedClientId(client.id);
+      setSearch('');
+    },
+    [cityByCode, handleCityPress]
+  );
 
   const handleTogglePurchase = useCallback(
     (clientId: string) => {
@@ -168,6 +201,7 @@ export default function MapScreenWeb() {
 
   const handleCloseSheet = useCallback(() => {
     setSelectedCity(null);
+    setHighlightedClientId(null);
   }, []);
 
   const handleLocateMe = useCallback(() => {
@@ -279,11 +313,63 @@ export default function MapScreenWeb() {
               value={search}
               onChangeText={setSearch}
               onClear={() => setSearch('')}
-              placeholder="Pesquisar cidade..."
+              placeholder="Pesquisar cidade ou cliente..."
               onProfilePress={() => router.push('/(tabs)/settings')}
               profileInitial={user?.name.charAt(0).toUpperCase()}
               profileImageUri={user?.photoUri}
             />
+
+            {showSearchResults && (
+              <View style={styles.searchResults} pointerEvents="auto">
+                {citySearchResults.length === 0 && clientSearchResults.length === 0 ? (
+                  <Text style={styles.searchResultsEmpty}>Nenhum resultado encontrado</Text>
+                ) : (
+                  <>
+                    {citySearchResults.length > 0 && (
+                      <>
+                        <Text style={styles.searchResultsLabel}>Cidades</Text>
+                        {citySearchResults.map((city) => (
+                          <TouchableOpacity
+                            key={city.code}
+                            style={styles.searchResultRow}
+                            onPress={() => handleSelectSearchCity(city)}
+                            activeOpacity={0.7}
+                          >
+                            <Ionicons name="location-outline" size={16} color={COLORS.textMuted} />
+                            <Text style={styles.searchResultText} numberOfLines={1}>
+                              {city.name}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </>
+                    )}
+                    {clientSearchResults.length > 0 && (
+                      <>
+                        <Text style={styles.searchResultsLabel}>Clientes</Text>
+                        {clientSearchResults.map((client) => (
+                          <TouchableOpacity
+                            key={client.id}
+                            style={styles.searchResultRow}
+                            onPress={() => handleSelectSearchClient(client)}
+                            activeOpacity={0.7}
+                          >
+                            <Ionicons name="storefront-outline" size={16} color={COLORS.textMuted} />
+                            <View style={styles.searchResultBody}>
+                              <Text style={styles.searchResultText} numberOfLines={1}>
+                                {client.name}
+                              </Text>
+                              <Text style={styles.searchResultSubtext} numberOfLines={1}>
+                                {client.city}
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        ))}
+                      </>
+                    )}
+                  </>
+                )}
+              </View>
+            )}
           </View>
 
           {activeCollection && (
@@ -385,6 +471,7 @@ export default function MapScreenWeb() {
           onClose={handleCloseSheet}
           canManageClients={canManageClients}
           showCategoryBadges={userCategories.length > 1}
+          highlightedClientId={highlightedClientId}
         />
       </View>
     </GestureHandlerRootView>
@@ -402,6 +489,54 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   searchContainer: { marginHorizontal: 12 },
+  searchResults: {
+    marginTop: 6,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
+    paddingVertical: SPACING.xs,
+    maxHeight: 320,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  searchResultsEmpty: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.sm,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+  },
+  searchResultsLabel: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.xs,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.sm,
+    paddingBottom: 4,
+  },
+  searchResultRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+  },
+  searchResultBody: { flex: 1 },
+  searchResultText: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.md,
+  },
+  searchResultSubtext: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.xs,
+    marginTop: 1,
+  },
   collectionContainer: { marginTop: 6, marginHorizontal: 12 },
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
   collectionPill: {
