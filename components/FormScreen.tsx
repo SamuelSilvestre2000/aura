@@ -7,8 +7,9 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SPACING } from '../constants/colors';
+import { getScreenTopInset } from '../utils/safeArea';
 import { NotionHeader } from './NotionHeader';
 import { HeaderBackButton } from './HeaderBackButton';
 
@@ -21,16 +22,18 @@ type Props = {
 };
 
 export function FormScreen({ title, onBack, headerRight, children, contentStyle }: Props) {
+  const insets = useSafeAreaInsets();
+
   return (
     <View style={styles.container}>
-      <SafeAreaView edges={['top']}>
+      <View style={{ paddingTop: getScreenTopInset(insets) }}>
         <NotionHeader
           title={title}
           showBorder
           leftAction={<HeaderBackButton onPress={onBack} />}
           rightAction={headerRight}
         />
-      </SafeAreaView>
+      </View>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}

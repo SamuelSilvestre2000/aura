@@ -8,10 +8,11 @@ import {
   ActivityIndicator,
   Image,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
+import { getScreenTopInset } from '../../utils/safeArea';
 import { clearGeoCache } from '../../services/ibge';
 import { getDatabase } from '../../services/database';
 import { deleteUser, listUsers } from '../../services/users';
@@ -128,9 +129,9 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView edges={['top']}>
+      <View style={{ paddingTop: getScreenTopInset(insets) }}>
         <NotionHeader title="Configurações" showBorder />
-      </SafeAreaView>
+      </View>
 
       <ScrollView
         style={styles.scroll}

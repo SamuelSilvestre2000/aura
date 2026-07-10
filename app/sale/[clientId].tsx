@@ -9,10 +9,11 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert } from '../../utils/alert';
 import { goBack } from '../../utils/navigation';
+import { getScreenTopInset } from '../../utils/safeArea';
 import { useClients } from '../../hooks/useClients';
 import { useCollections } from '../../hooks/useCollections';
 import { usePurchases } from '../../hooks/usePurchases';
@@ -118,13 +119,13 @@ export default function SaleScreen() {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView edges={['top']} style={styles.headerSafe}>
+      <View style={[styles.headerSafe, { paddingTop: getScreenTopInset(insets) }]}>
         <NotionHeader
           title={purchased ? 'Venda registrada' : 'Registrar venda'}
           showBorder
           leftAction={<HeaderBackButton onPress={() => goBack(router)} />}
         />
-      </SafeAreaView>
+      </View>
 
       <KeyboardAvoidingView
         style={styles.flex}

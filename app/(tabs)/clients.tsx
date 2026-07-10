@@ -7,9 +7,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { getScreenTopInset } from '../../utils/safeArea';
 import { useClients } from '../../hooks/useClients';
 import { useAuth } from '../../hooks/useAuth';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
@@ -93,7 +94,7 @@ export default function ClientsScreen() {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView edges={['top']}>
+      <View style={{ paddingTop: getScreenTopInset(insets) }}>
         <NotionHeader
           title="Clientes"
           showBorder
@@ -110,7 +111,7 @@ export default function ClientsScreen() {
             ) : undefined
           }
         />
-      </SafeAreaView>
+      </View>
 
       <View style={styles.searchWrap}>
         <SearchBar

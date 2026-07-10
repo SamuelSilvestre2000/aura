@@ -9,9 +9,10 @@ import {
   Modal,
   Pressable,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { getScreenTopInset } from '../../utils/safeArea';
 import { useCollections } from '../../hooks/useCollections';
 import { useClients } from '../../hooks/useClients';
 import { usePurchases } from '../../hooks/usePurchases';
@@ -223,7 +224,7 @@ export default function CollectionsScreen() {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView edges={['top']}>
+      <View style={{ paddingTop: getScreenTopInset(insets) }}>
         <NotionHeader
           title="Coleções"
           showBorder
@@ -241,7 +242,7 @@ export default function CollectionsScreen() {
             ) : undefined
           }
         />
-      </SafeAreaView>
+      </View>
 
       {loading ? (
         <View style={styles.center}>

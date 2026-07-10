@@ -7,11 +7,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Alert } from '../../utils/alert';
 import { goBack } from '../../utils/navigation';
+import { getScreenTopInset } from '../../utils/safeArea';
 import { useAuth } from '../../hooks/useAuth';
 import { useCollections } from '../../hooks/useCollections';
 import { useClients } from '../../hooks/useClients';
@@ -55,6 +56,7 @@ function ProgressRow({ percent, meta }: { percent: number; meta: string }) {
 export default function CollectionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user, isAdmin, can: canDo } = useAuth();
   const canManageCollections = canDo('manage_collections');
   const { collections, loading, refresh, closeCollection, deleteCollection } = useCollections();
@@ -184,7 +186,7 @@ export default function CollectionDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView edges={['top']} style={styles.headerSafe}>
+      <View style={[styles.headerSafe, { paddingTop: getScreenTopInset(insets) }]}>
         <NotionHeader
           title={collection.name}
           showBorder
@@ -199,7 +201,7 @@ export default function CollectionDetailScreen() {
             ) : undefined
           }
         />
-      </SafeAreaView>
+      </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={[styles.profileCard, isClosed && styles.profileCardClosed]}>

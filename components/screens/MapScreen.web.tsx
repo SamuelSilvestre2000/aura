@@ -8,6 +8,7 @@ import { MapContainer, TileLayer, Polygon, CircleMarker, useMap } from 'react-le
 import type { Map as LeafletMapInstance } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
+import { getScreenTopInset } from '../../utils/safeArea';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useClients } from '../../hooks/useClients';
 import { useCollections } from '../../hooks/useCollections';
@@ -190,7 +191,7 @@ export default function MapScreenWeb() {
     );
   }, []);
 
-  const headerTop = insets.top + 4;
+  const headerTop = getScreenTopInset(insets, 4);
   const tabBarOffset = getTabBarBottomInset(insets, SPACING.sm);
   const selectedCityClients = selectedCity
     ? filteredClients.filter((c) => c.cityCode === selectedCity.code)

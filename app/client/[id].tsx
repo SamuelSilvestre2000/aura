@@ -8,11 +8,12 @@ import {
   ActivityIndicator,
   Linking,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
 import { goBack } from '../../utils/navigation';
+import { getScreenTopInset } from '../../utils/safeArea';
 import { useClients } from '../../hooks/useClients';
 import { useAuth } from '../../hooks/useAuth';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
@@ -38,6 +39,7 @@ type SaleTarget = {
 export default function ClientDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const { clients, deleteClient, loading: clientsLoading } = useClients();
   const { can: canDo, user } = useAuth();
@@ -116,7 +118,7 @@ export default function ClientDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <SafeAreaView edges={['top']} style={styles.headerSafe}>
+      <View style={[styles.headerSafe, { paddingTop: getScreenTopInset(insets) }]}>
         <NotionHeader
           title={client.name}
           showBorder
@@ -131,7 +133,7 @@ export default function ClientDetailScreen() {
             ) : undefined
           }
         />
-      </SafeAreaView>
+      </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.profileCard}>
