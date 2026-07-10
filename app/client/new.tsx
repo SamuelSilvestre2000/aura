@@ -29,6 +29,17 @@ function maskCepInput(value: string): string {
   return `${digits.slice(0, 5)}-${digits.slice(5)}`;
 }
 
+/** Aceita fixo (10 dígitos) ou celular (11 dígitos), reformatando conforme digita. */
+function maskPhoneInput(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 2) return digits.length ? `(${digits}` : '';
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
 export type InitialCity = {
   code: string;
   name: string;
@@ -194,7 +205,7 @@ export default function NewClientScreen() {
           <Text style={styles.label}>Código</Text>
           <TextInput
             style={styles.input}
-            placeholder="Código do cliente (ex: ERP, cadastro externo)"
+            placeholder="0000000"
             placeholderTextColor={COLORS.textPlaceholder}
             value={externalCode}
             onChangeText={setExternalCode}
@@ -338,8 +349,9 @@ export default function NewClientScreen() {
             placeholder="(86) 3000-0000"
             placeholderTextColor={COLORS.textPlaceholder}
             value={phone}
-            onChangeText={setPhone}
+            onChangeText={(text) => setPhone(maskPhoneInput(text))}
             keyboardType="phone-pad"
+            maxLength={15}
             returnKeyType="next"
           />
         </View>
@@ -351,8 +363,9 @@ export default function NewClientScreen() {
             placeholder="(86) 99999-9999"
             placeholderTextColor={COLORS.textPlaceholder}
             value={mobile}
-            onChangeText={setMobile}
+            onChangeText={(text) => setMobile(maskPhoneInput(text))}
             keyboardType="phone-pad"
+            maxLength={15}
             returnKeyType="next"
           />
         </View>

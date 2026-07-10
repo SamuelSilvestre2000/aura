@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Platform, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
@@ -9,6 +9,25 @@ import { CollectionsProvider } from '../hooks/useCollections';
 import { PurchasesProvider } from '../hooks/usePurchases';
 import { NOTION_MODAL_OPTIONS } from '../constants/navigation';
 import { COLORS } from '../constants/colors';
+
+/**
+ * Nenhum estilo do app define fontFamily, então no nativo o SO já usa a fonte
+ * padrão (San Francisco no iOS, Roboto no Android). Na web isso cai na fonte
+ * padrão do navegador em vez de imitar a fonte nativa — injeta a mesma pilha
+ * de fontes de sistema que o react-native-web usa quando fontFamily: 'System'
+ * é definido. Roda no carregamento do módulo (antes da 1ª renderização) para
+ * não piscar com a fonte errada.
+ */
+if (Platform.OS === 'web' && typeof document !== 'undefined' && !document.getElementById('aura-system-font')) {
+  const style = document.createElement('style');
+  style.id = 'aura-system-font';
+  style.textContent = `
+    html, body, #root, input, textarea, select, button {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
