@@ -11,6 +11,7 @@ type Props = {
   onChange: (categoryId: string | null) => void;
   includeAll?: boolean;
   allLabel?: string;
+  required?: boolean;
 };
 
 export function CategorySelect({
@@ -20,6 +21,7 @@ export function CategorySelect({
   onChange,
   includeAll = true,
   allLabel = 'Ambas',
+  required = false,
 }: Props) {
   const options: { id: string | null; label: string; slug?: string }[] = includeAll
     ? [{ id: null, label: allLabel }, ...categories.map((c) => ({ id: c.id, label: c.name, slug: c.slug }))]
@@ -27,7 +29,10 @@ export function CategorySelect({
 
   return (
     <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label}>
+        {label}
+        {required && <Text style={styles.required}> *</Text>}
+      </Text>
       <View style={styles.row}>
         {options.map((opt) => {
           const active = value === opt.id;
@@ -58,10 +63,13 @@ export function CategorySelect({
 const styles = StyleSheet.create({
   field: { gap: SPACING.sm },
   label: {
-    color: COLORS.textMuted,
+    color: COLORS.textPrimary,
     fontSize: FONTS.sizes.xs,
     fontWeight: '600',
     letterSpacing: 0.6,
+  },
+  required: {
+    color: COLORS.error,
   },
   row: {
     flexDirection: 'row',

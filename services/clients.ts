@@ -132,21 +132,29 @@ export async function createClient(
 
   await db.runAsync(
     `INSERT INTO clients (
-      id, organization_id, brand_id, name, cnpj, city, city_code, state,
-      lat, lng, phone, notes, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      id, organization_id, brand_id, external_code, name, trade_name, cnpj,
+      street, neighborhood, city, city_code, state, zip_code,
+      lat, lng, phone, mobile, email, notes, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       organizationId,
       brandId,
+      data.externalCode ?? null,
       data.name,
+      data.tradeName ?? null,
       data.cnpj ? stripCnpj(data.cnpj) : null,
+      data.street ?? null,
+      data.neighborhood ?? null,
       data.city,
       data.cityCode,
       'PI',
+      data.zipCode ?? null,
       data.lat,
       data.lng,
       data.phone ?? null,
+      data.mobile ?? null,
+      data.email ?? null,
       data.notes ?? null,
       now,
     ]

@@ -6,6 +6,7 @@ import { goBack } from '../../utils/navigation';
 import { useCollections } from '../../hooks/useCollections';
 import { useAuth } from '../../hooks/useAuth';
 import { FormScreen } from '../../components/FormScreen';
+import { FormSection } from '../../components/FormSection';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
 import { DateField } from '../../components/DateField';
 import { CategorySelect } from '../../components/CategorySelect';
@@ -24,7 +25,8 @@ export default function NewCollectionScreen() {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(addMonths(new Date(), 3));
   const [goalsByCategory, setGoalsByCategory] = useState<Record<string, number>>({});
-  const [categoryId, setCategoryId] = useState<string | null>(null);
+  /** '' = ainda não escolhida; null = "Ambas" escolhido explicitamente; string = categoria específica. */
+  const [categoryId, setCategoryId] = useState<string | null>('');
   const [categories, setCategories] = useState(user?.categories ?? []);
   const [creating, setCreating] = useState(false);
 
@@ -68,7 +70,7 @@ export default function NewCollectionScreen() {
     name.trim().length > 0 &&
     toISODate(endDate) >= toISODate(startDate) &&
     categories.length > 0 &&
-    (categories.length > 1 || categoryId != null);
+    (categories.length > 1 ? categoryId !== '' : categoryId != null);
 
   const handleGoalChange = (catId: string, amount: number) => {
     setGoalsByCategory((prev) => ({ ...prev, [catId]: amount }));
@@ -89,7 +91,7 @@ export default function NewCollectionScreen() {
         name: name.trim(),
         startDate: toISODate(startDate),
         endDate: toISODate(endDate),
-        categoryId,
+        categoryId: categoryId === '' ? null : categoryId,
         goals,
         userId: user?.id,
         userRole: user?.role,
@@ -116,41 +118,54 @@ export default function NewCollectionScreen() {
         />
       }
     >
-      <View style={styles.field}>
-        <Text style={styles.label}>NOME</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ex: Verão 2026"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={name}
-          onChangeText={setName}
-          returnKeyType="next"
-          autoFocus
-        />
-      </View>
+      <FormSection title="Informações básicas">
+        <View style={styles.field}>
+          <Text style={styles.label}>
+            Nome <Text style={styles.required}>*</Text>
+          </Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Ex: Verão 2026"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={name}
+            onChangeText={setName}
+            returnKeyType="next"
+            autoFocus
+          />
+        </View>
 
-      {categories.length > 1 && (
-        <CategorySelect
-          categories={categories}
-          value={categoryId}
-          onChange={setCategoryId}
-          includeAll
+        {categories.length > 1 && (
+          <CategorySelect
+            categories={categories}
+            value={categoryId}
+            onChange={setCategoryId}
+            includeAll
+            required
+          />
+        )}
+      </FormSection>
+
+      <FormSection title="Período">
+        <DateField label="DATA INICIAL" value={startDate} onChange={setStartDate} required />
+        <DateField
+          label="DATA FINAL"
+          value={endDate}
+          onChange={setEndDate}
+          minimumDate={startDate}
+          required
         />
+      </FormSection>
+
+      {goalCategories.length > 0 && (
+        <FormSection title="Metas">
+          <CollectionGoalsInput
+            categories={goalCategories}
+            values={goalsByCategory}
+            onChange={handleGoalChange}
+            sectionLabel=""
+          />
+        </FormSection>
       )}
-
-      <DateField label="DATA INICIAL" value={startDate} onChange={setStartDate} />
-      <DateField
-        label="DATA FINAL"
-        value={endDate}
-        onChange={setEndDate}
-        minimumDate={startDate}
-      />
-
-      <CollectionGoalsInput
-        categories={goalCategories}
-        values={goalsByCategory}
-        onChange={handleGoalChange}
-      />
     </FormScreen>
   );
 }
@@ -158,13 +173,16 @@ export default function NewCollectionScreen() {
 const styles = StyleSheet.create({
   field: { gap: SPACING.sm },
   label: {
-    color: COLORS.textMuted,
+    color: COLORS.textPrimary,
     fontSize: FONTS.sizes.xs,
     fontWeight: '600',
     letterSpacing: 0.6,
   },
+  required: {
+    color: COLORS.error,
+  },
   input: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.backgroundSubtle,
     borderRadius: RADIUS.lg,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,

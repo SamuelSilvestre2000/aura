@@ -10,9 +10,10 @@ type Props = {
   onChange: (date: Date) => void;
   minimumDate?: Date;
   maximumDate?: Date;
+  required?: boolean;
 };
 
-export function DateField({ label, value, onChange, minimumDate, maximumDate }: Props) {
+export function DateField({ label, value, onChange, minimumDate, maximumDate, required = false }: Props) {
   const [show, setShow] = useState(false);
 
   const handleChange = (event: DateTimePickerEvent, date?: Date) => {
@@ -23,7 +24,10 @@ export function DateField({ label, value, onChange, minimumDate, maximumDate }: 
 
   return (
     <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.label}>
+        {label}
+        {required && <Text style={styles.required}> *</Text>}
+      </Text>
       <TouchableOpacity
         style={styles.input}
         onPress={() => setShow(true)}
@@ -54,13 +58,16 @@ export function DateField({ label, value, onChange, minimumDate, maximumDate }: 
 const styles = StyleSheet.create({
   field: { gap: SPACING.sm },
   label: {
-    color: COLORS.textMuted,
+    color: COLORS.textPrimary,
     fontSize: FONTS.sizes.xs,
     fontWeight: '600',
     letterSpacing: 0.4,
   },
+  required: {
+    color: COLORS.error,
+  },
   input: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.backgroundSubtle,
     borderRadius: RADIUS.lg,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,

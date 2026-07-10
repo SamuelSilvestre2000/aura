@@ -21,7 +21,7 @@ export function CollectionGoalsInput({
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.label}>{sectionLabel}</Text>
+      {sectionLabel ? <Text style={styles.label}>{sectionLabel}</Text> : null}
       {categories.map((cat) => (
         <MoneyInput
           key={cat.id}
