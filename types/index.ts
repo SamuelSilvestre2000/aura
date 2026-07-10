@@ -91,6 +91,8 @@ export type Collection = {
   endDate?: string;
   /** Linha da coleção; null = ambas as categorias. */
   categoryId?: string | null;
+  /** Marcada explicitamente como a coleção vigente (só uma por organização). */
+  isVigente?: boolean;
   /** Meta em R$ do usuário logado (quando carregada). */
   myGoalAmount?: number | null;
   /** Total vendido pelo usuário logado nesta coleção. */

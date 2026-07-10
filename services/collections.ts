@@ -29,6 +29,8 @@ export type CreateCollectionInput = {
   goals?: GoalInput[];
   userId?: string;
   userRole?: UserRole;
+  /** Marca esta coleção como a vigente, desmarcando qualquer outra. */
+  isVigente?: boolean;
 };
 
 const ROW_TO_COLLECTION = (row: any): Collection => ({
@@ -41,6 +43,7 @@ const ROW_TO_COLLECTION = (row: any): Collection => ({
   startDate: row.start_date ?? undefined,
   endDate: row.end_date ?? undefined,
   categoryId: row.category_id ?? null,
+  isVigente: !!row.is_vigente,
 });
 
 export async function listCollectionsForUser(
@@ -99,11 +102,19 @@ export async function createCollection(input: CreateCollectionInput): Promise<Co
     }
   }
 
+  const isVigente = input.isVigente ?? false;
+  if (isVigente) {
+    await db.runAsync(
+      'UPDATE collections SET is_vigente = 0 WHERE organization_id = ? AND is_vigente = 1',
+      [organizationId]
+    );
+  }
+
   await db.runAsync(
     `INSERT INTO collections (
-      id, name, created_at, is_active, organization_id, brand_id, start_date, end_date, category_id
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id, name, now, 1, organizationId, brandId, input.startDate, input.endDate, categoryId]
+      id, name, created_at, is_active, organization_id, brand_id, start_date, end_date, category_id, is_vigente
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, name, now, 1, organizationId, brandId, input.startDate, input.endDate, categoryId, isVigente ? 1 : 0]
   );
 
   if (input.userId && input.goals?.length) {
@@ -120,6 +131,7 @@ export async function createCollection(input: CreateCollectionInput): Promise<Co
     startDate: input.startDate,
     endDate: input.endDate,
     categoryId,
+    isVigente,
     myGoalAmount: null,
     mySoldAmount: 0,
   };

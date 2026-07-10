@@ -30,6 +30,7 @@ import {
   filterCollectionsByCategory,
 } from '../../utils/categoryFilter';
 import { filterOpenCollections } from '../../utils/collectionStatus';
+import { getVigenteCollectionId } from '../../utils/collectionVigente';
 import { CategoryPickerPill } from '../CategoryPickerPill';
 
 import { CityPolygon } from '../MapView/CityPolygon';
@@ -128,7 +129,11 @@ export default function MapScreen() {
     }
   }, [effectiveFilter, visibleCollections, selectedCollectionId]);
 
-  const activeCollectionId = selectedCollectionId || visibleCollections[0]?.id || null;
+  const activeCollectionId =
+    selectedCollectionId ||
+    getVigenteCollectionId(visibleCollections) ||
+    visibleCollections[0]?.id ||
+    null;
   const activeCollection = visibleCollections.find((c) => c.id === activeCollectionId) || null;
 
   const { getCityStatus } = useCityStatus(filteredClients, purchases, activeCollectionId);

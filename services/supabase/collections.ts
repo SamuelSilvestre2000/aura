@@ -17,6 +17,8 @@ export type CreateCollectionRemoteInput = {
   goals?: GoalInput[];
   userId?: string;
   userRole?: UserRole;
+  /** Marca esta coleção como a vigente, desmarcando qualquer outra. */
+  isVigente?: boolean;
 };
 
 const ROW_TO_COLLECTION = (row: any): Collection => ({
@@ -29,6 +31,7 @@ const ROW_TO_COLLECTION = (row: any): Collection => ({
   startDate: row.start_date ?? undefined,
   endDate: row.end_date ?? undefined,
   categoryId: row.category_id ?? null,
+  isVigente: !!row.is_vigente,
 });
 
 export async function listCollectionsForUserRemote(
@@ -83,6 +86,16 @@ export async function createCollectionRemote(
     }
   }
 
+  const isVigente = input.isVigente ?? false;
+  if (isVigente) {
+    const { error: clearError } = await supabase
+      .from('collections')
+      .update({ is_vigente: false })
+      .eq('organization_id', organizationId)
+      .eq('is_vigente', true);
+    if (clearError) throw new Error(clearError.message);
+  }
+
   const { error } = await supabase.from('collections').insert({
     id,
     name,
@@ -93,6 +106,7 @@ export async function createCollectionRemote(
     start_date: input.startDate,
     end_date: input.endDate,
     category_id: categoryId,
+    is_vigente: isVigente,
   });
   if (error) throw new Error(error.message);
 
@@ -110,6 +124,7 @@ export async function createCollectionRemote(
     startDate: input.startDate,
     endDate: input.endDate,
     categoryId,
+    isVigente,
     myGoalAmount: null,
     mySoldAmount: 0,
   };

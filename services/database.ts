@@ -259,6 +259,7 @@ async function initDatabase(database: SQLite.SQLiteDatabase): Promise<void> {
   await migrateCollectionPeriodAndGoals(database);
   await migrateSalesV1(database);
   await migrateCollectionCategoryV1(database);
+  await migrateCollectionVigenteV1(database);
   await migrateRepScopeFromUserCategories(database);
 
   const count = await database.getFirstAsync<{ count: number }>(
@@ -442,6 +443,10 @@ async function migrateCollectionCategoryV1(database: SQLite.SQLiteDatabase): Pro
   await database.runAsync(
     "INSERT OR REPLACE INTO app_meta (key, value) VALUES ('collection_category_v1', '1')"
   );
+}
+
+async function migrateCollectionVigenteV1(database: SQLite.SQLiteDatabase): Promise<void> {
+  await addColumnIfMissing(database, 'collections', 'is_vigente', 'INTEGER NOT NULL DEFAULT 0');
 }
 
 async function migrateRepScopeFromUserCategories(

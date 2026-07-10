@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { StyleSheet, View, Text, TextInput } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
 import { goBack } from '../../utils/navigation';
 import { useCollections } from '../../hooks/useCollections';
@@ -28,6 +29,7 @@ export default function NewCollectionScreen() {
   /** '' = ainda não escolhida; null = "Ambas" escolhido explicitamente; string = categoria específica. */
   const [categoryId, setCategoryId] = useState<string | null>('');
   const [categories, setCategories] = useState(user?.categories ?? []);
+  const [setAsVigente, setSetAsVigente] = useState(true);
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
@@ -95,6 +97,7 @@ export default function NewCollectionScreen() {
         goals,
         userId: user?.id,
         userRole: user?.role,
+        isVigente: setAsVigente,
       });
       await refresh();
       goBack(router);
@@ -154,6 +157,24 @@ export default function NewCollectionScreen() {
           minimumDate={startDate}
           required
         />
+
+        <TouchableOpacity
+          style={styles.checkboxRow}
+          onPress={() => setSetAsVigente((prev) => !prev)}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name={setAsVigente ? 'checkbox' : 'square-outline'}
+            size={22}
+            color={setAsVigente ? COLORS.primary : COLORS.textMuted}
+          />
+          <View style={styles.checkboxBody}>
+            <Text style={styles.checkboxLabel}>Definir como vigente</Text>
+            <Text style={styles.checkboxHint}>
+              Esta será a coleção em destaque para vendas — substitui a vigente atual.
+            </Text>
+          </View>
+        </TouchableOpacity>
       </FormSection>
 
       {goalCategories.length > 0 && (
@@ -190,5 +211,21 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sizes.md,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
+  },
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: SPACING.sm,
+  },
+  checkboxBody: { flex: 1, gap: 2 },
+  checkboxLabel: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.md,
+    fontWeight: '600',
+  },
+  checkboxHint: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.xs,
+    lineHeight: 16,
   },
 });
