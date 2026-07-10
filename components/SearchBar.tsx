@@ -1,7 +1,10 @@
 import React from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image, type TextStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/colors';
+
+/** Remove o contorno azul de foco que o navegador desenha em <input> na web (RNW-only). */
+const NO_OUTLINE_STYLE = { outlineStyle: 'none' } as unknown as TextStyle;
 
 type Props = {
   value: string;
@@ -36,7 +39,7 @@ export function SearchBar({
       />
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, NO_OUTLINE_STYLE]}
         placeholder={placeholder}
         placeholderTextColor={COLORS.textPlaceholder}
         value={value}
