@@ -85,8 +85,17 @@ function WebPullToRefresh({ refreshing, onRefresh, children }: Props) {
 
   if (!isValidElement(children)) return children;
 
-  const existingOnScroll = (children.props as any).onScroll;
-  const clonedChild = cloneElement(children, {
+  const indicatorHeight = refreshing ? 48 : pull;
+  const indicator =
+    indicatorHeight > 0 ? (
+      <View style={[styles.indicator, { height: indicatorHeight }]}>
+        <ActivityIndicator size="small" color={COLORS.primary} />
+      </View>
+    ) : null;
+
+  const childProps = children.props as any;
+  const existingOnScroll = childProps.onScroll;
+  const touchAndScrollProps = {
     onScroll: (e: any) => {
       handleScroll(e);
       existingOnScroll?.(e);
@@ -95,17 +104,36 @@ function WebPullToRefresh({ refreshing, onRefresh, children }: Props) {
     onTouchStart: handleTouchStart,
     onTouchMove: handleTouchMove,
     onTouchEnd: handleTouchEnd,
-  } as any);
+  };
 
-  const indicatorHeight = refreshing ? 48 : pull;
+  /**
+   * FlatList: injeta o indicador via ListHeaderComponent para que ele faça
+   * parte do próprio conteúdo que rola — senão, dentro de um contêiner de
+   * altura fixa (comum p/ virtualização), a lista só "encolhia" ao puxar em
+   * vez de deslizar para baixo junto com o indicador (like num ScrollView).
+   */
+  if ('renderItem' in childProps) {
+    const ExistingHeader = childProps.ListHeaderComponent;
+    return cloneElement(children, {
+      ...touchAndScrollProps,
+      ListHeaderComponent: () => (
+        <>
+          {indicator}
+          {ExistingHeader
+            ? isValidElement(ExistingHeader)
+              ? ExistingHeader
+              : React.createElement(ExistingHeader)
+            : null}
+        </>
+      ),
+    } as any);
+  }
+
+  const clonedChild = cloneElement(children, touchAndScrollProps as any);
 
   return (
     <View style={styles.wrap}>
-      {indicatorHeight > 0 && (
-        <View style={[styles.indicator, { height: indicatorHeight }]}>
-          <ActivityIndicator size="small" color={COLORS.primary} />
-        </View>
-      )}
+      {indicator}
       {clonedChild}
     </View>
   );
