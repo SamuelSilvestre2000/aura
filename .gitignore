@@ -49,3 +49,7 @@ yarn-error.*
 
 # IDE
 .idea/
+
+# dados de clientes (PII) — CSVs de origem e migrations geradas a partir deles
+ConsultaCliente*.csv
+supabase/migrations/005_import_clients_csv.sql
