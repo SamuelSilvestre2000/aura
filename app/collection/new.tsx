@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,21 +31,32 @@ export default function NewCollectionScreen() {
   const [categories, setCategories] = useState(user?.categories ?? []);
   const [setAsVigente, setSetAsVigente] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (!canDo('manage_collections')) router.replace('/(tabs)/collections');
   }, [canDo, router]);
 
-  useEffect(() => {
-    async function loadCategories() {
-      if (!user) {
-        setCategories([]);
-        return;
-      }
-      setCategories(await getAllowedCategoriesForUser(user.id, user.role));
+  const loadCategories = useCallback(async () => {
+    if (!user) {
+      setCategories([]);
+      return;
     }
-    void loadCategories();
+    setCategories(await getAllowedCategoriesForUser(user.id, user.role));
   }, [user]);
+
+  useEffect(() => {
+    void loadCategories();
+  }, [loadCategories]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await loadCategories();
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     if (categories.length === 1) {
@@ -112,6 +123,8 @@ export default function NewCollectionScreen() {
     <FormScreen
       title="Nova coleção"
       onBack={() => goBack(router)}
+      onRefresh={handleRefresh}
+      refreshing={refreshing}
       headerRight={
         <HeaderLinkButton
           label="Criar"

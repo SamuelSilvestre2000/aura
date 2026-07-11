@@ -18,6 +18,7 @@ import { useCollections } from '../../hooks/useCollections';
 import { useClients } from '../../hooks/useClients';
 import { usePurchases } from '../../hooks/usePurchases';
 import { CollectionGoalSheet } from '../../components/CollectionGoalSheet';
+import { PullToRefresh } from '../../components/PullToRefresh';
 import { CategoryPill } from '../../components/CategoryPill';
 import { categoryLabel, filterClientsByCategory } from '../../utils/categoryFilter';
 import { getAllowedCategoriesForUser } from '../../services/categories';
@@ -65,17 +66,19 @@ export default function CollectionDetailScreen() {
   const [showGoalSheet, setShowGoalSheet] = useState(false);
   const [buyersExpanded, setBuyersExpanded] = useState(false);
   const [goalCategories, setGoalCategories] = useState<Category[]>(user?.categories ?? []);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadGoalCategories = useCallback(async () => {
+    if (!user) {
+      setGoalCategories([]);
+      return;
+    }
+    setGoalCategories(await getAllowedCategoriesForUser(user.id, user.role));
+  }, [user]);
 
   useEffect(() => {
-    async function load() {
-      if (!user) {
-        setGoalCategories([]);
-        return;
-      }
-      setGoalCategories(await getAllowedCategoriesForUser(user.id, user.role));
-    }
-    void load();
-  }, [user]);
+    void loadGoalCategories();
+  }, [loadGoalCategories]);
 
   const collection = collections.find((c) => c.id === id);
 
@@ -94,6 +97,15 @@ export default function CollectionDetailScreen() {
       refreshClients();
     }, [refresh, refreshPurchases, refreshClients])
   );
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refresh(), refreshPurchases(), refreshClients(), loadGoalCategories()]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const progress = useMemo(
     () => (id ? getCollectionProgress(id, scopedClients, purchases) : null),
@@ -204,6 +216,7 @@ export default function CollectionDetailScreen() {
         />
       </View>
 
+      <PullToRefresh refreshing={refreshing} onRefresh={handleRefresh}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={[styles.profileCard, isClosed && styles.profileCardClosed]}>
           <View style={[styles.profileIcon, isClosed && styles.profileIconClosed]}>
@@ -430,6 +443,7 @@ export default function CollectionDetailScreen() {
           </View>
         )}
       </ScrollView>
+      </PullToRefresh>
 
       <CollectionGoalSheet
         visible={showGoalSheet}

@@ -12,6 +12,7 @@ import { COLORS, SPACING } from '../constants/colors';
 import { getScreenTopInset } from '../utils/safeArea';
 import { NotionHeader } from './NotionHeader';
 import { HeaderBackButton } from './HeaderBackButton';
+import { PullToRefresh } from './PullToRefresh';
 
 type Props = {
   title: string;
@@ -19,10 +20,31 @@ type Props = {
   headerRight?: ReactNode;
   children: ReactNode;
   contentStyle?: ViewStyle;
+  /** Quando informado, habilita puxar-para-atualizar no conteúdo do formulário. */
+  onRefresh?: () => void;
+  refreshing?: boolean;
 };
 
-export function FormScreen({ title, onBack, headerRight, children, contentStyle }: Props) {
+export function FormScreen({
+  title,
+  onBack,
+  headerRight,
+  children,
+  contentStyle,
+  onRefresh,
+  refreshing = false,
+}: Props) {
   const insets = useSafeAreaInsets();
+
+  const scrollView = (
+    <ScrollView
+      contentContainerStyle={[styles.content, contentStyle]}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      {children}
+    </ScrollView>
+  );
 
   return (
     <View style={styles.container}>
@@ -38,13 +60,13 @@ export function FormScreen({ title, onBack, headerRight, children, contentStyle 
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScrollView
-          contentContainerStyle={[styles.content, contentStyle]}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {children}
-        </ScrollView>
+        {onRefresh ? (
+          <PullToRefresh refreshing={refreshing} onRefresh={onRefresh}>
+            {scrollView}
+          </PullToRefresh>
+        ) : (
+          scrollView
+        )}
       </KeyboardAvoidingView>
     </View>
   );

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -42,8 +42,23 @@ export default function EditUserScreen() {
   const [photoChanged, setPhotoChanged] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [pickingPhoto, setPickingPhoto] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const isRepresentative = targetUser?.role === 'representative';
+
+  /** Só recarrega a lista de categorias — recarregar o usuário sobrescreveria edições em andamento. */
+  const loadCategories = useCallback(async () => {
+    setCategories(await listCategories());
+  }, []);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await loadCategories();
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     if (!isAdmin) {
@@ -75,8 +90,8 @@ export default function EditUserScreen() {
     }
 
     void load();
-    listCategories().then(setCategories);
-  }, [isAdmin, params.id, router]);
+    void loadCategories();
+  }, [isAdmin, params.id, router, loadCategories]);
 
   const handlePickPhoto = async () => {
     setPickingPhoto(true);
@@ -150,6 +165,8 @@ export default function EditUserScreen() {
     <FormScreen
       title={screenTitle}
       onBack={() => goBack(router)}
+      onRefresh={handleRefresh}
+      refreshing={refreshing}
       headerRight={
         <HeaderLinkButton
           label="Salvar"

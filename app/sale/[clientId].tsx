@@ -21,6 +21,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { NotionHeader } from '../../components/NotionHeader';
 import { HeaderBackButton } from '../../components/HeaderBackButton';
 import { MoneyInput } from '../../components/MoneyInput';
+import { PullToRefresh } from '../../components/PullToRefresh';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { formatBRL } from '../../utils/money';
 
@@ -33,10 +34,15 @@ export default function SaleScreen() {
   }>();
 
   const { user } = useAuth();
-  const { clients } = useClients();
+  const { clients, refresh: refreshClients } = useClients();
   const { collections, refresh: refreshCollections } = useCollections();
-  const { getPurchaseStatus, getSaleForClientCollection, recordSale, clearSale } =
-    usePurchases();
+  const {
+    getPurchaseStatus,
+    getSaleForClientCollection,
+    recordSale,
+    clearSale,
+    refresh: refreshPurchases,
+  } = usePurchases();
 
   const client = clients.find((c) => c.id === clientId);
   const collection = collections.find((c) => c.id === collectionId);
@@ -50,7 +56,17 @@ export default function SaleScreen() {
   const [amount, setAmount] = useState(0);
   const [saving, setSaving] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const didInit = useRef(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refreshClients(), refreshCollections(), refreshPurchases()]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     if (didInit.current || !client || !collection) return;
@@ -131,6 +147,7 @@ export default function SaleScreen() {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
+        <PullToRefresh refreshing={refreshing} onRefresh={handleRefresh}>
         <ScrollView
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
@@ -153,6 +170,7 @@ export default function SaleScreen() {
             )}
           </View>
         </ScrollView>
+        </PullToRefresh>
       </KeyboardAvoidingView>
 
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, SPACING.md) }]}>

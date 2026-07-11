@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -58,7 +58,7 @@ export default function NewClientScreen() {
   }>();
 
   const { createClient } = useClients();
-  const { cities, loading: geoLoading } = useGeoJSON();
+  const { cities, loading: geoLoading, refresh: refreshCities } = useGeoJSON();
 
   const initialCity = useMemo<InitialCity | null>(() => {
     if (!params.cityCode) return null;
@@ -88,19 +88,36 @@ export default function NewClientScreen() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (!canDo('manage_clients')) router.replace('/(tabs)');
   }, [canDo, router]);
 
+  const loadCategories = useCallback(async () => {
+    if (!user) return;
+    setLoadingCategories(true);
+    try {
+      setCategories(await getAllowedCategoriesForUser(user.id, user.role));
+    } finally {
+      setLoadingCategories(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     setCitySearch(initialCity?.name ?? '');
     setSelectedCity(initialCity);
-    if (!user) return;
-    getAllowedCategoriesForUser(user.id, user.role)
-      .then(setCategories)
-      .finally(() => setLoadingCategories(false));
-  }, [initialCity, user]);
+    void loadCategories();
+  }, [initialCity, loadCategories]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refreshCities(), loadCategories()]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const filteredCities = useMemo(() => {
     if (!citySearch.trim() || citySearch === selectedCity?.name) return [];
@@ -162,6 +179,8 @@ export default function NewClientScreen() {
     <FormScreen
       title="Novo cliente"
       onBack={() => goBack(router)}
+      onRefresh={handleRefresh}
+      refreshing={refreshing}
       headerRight={
         <HeaderLinkButton
           label="Criar"

@@ -25,6 +25,7 @@ import { HeaderLinkButton } from '../../components/HeaderLinkButton';
 import { CategoryPillRow } from '../../components/CategoryPill';
 import { labelsFromCategoryIds } from '../../constants/categoryPills';
 import { PurchaseChip } from '../../components/PurchaseChip';
+import { PullToRefresh } from '../../components/PullToRefresh';
 import { SaleSheet } from '../../components/SaleSheet';
 import { isCollectionClosed } from '../../utils/collectionStatus';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
@@ -56,6 +57,7 @@ export default function ClientDetailScreen() {
   } = usePurchases();
 
   const [saleTarget, setSaleTarget] = useState<SaleTarget | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   /**
    * Cada tela mantém sua própria cópia local dos dados — sem isso, criar,
@@ -69,6 +71,15 @@ export default function ClientDetailScreen() {
       void refreshPurchases();
     }, [refreshClients, refreshCollections, refreshPurchases])
   );
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refreshClients(), refreshCollections(), refreshPurchases()]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const client = clients.find((c) => c.id === id);
 
@@ -149,6 +160,7 @@ export default function ClientDetailScreen() {
         />
       </View>
 
+      <PullToRefresh refreshing={refreshing} onRefresh={handleRefresh}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.profileCard}>
           <View style={styles.avatar}>
@@ -310,6 +322,7 @@ export default function ClientDetailScreen() {
           </View>
         )}
       </ScrollView>
+      </PullToRefresh>
 
       <SaleSheet
         visible={saleTarget != null}

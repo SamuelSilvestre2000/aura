@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -37,17 +37,34 @@ export default function NewRepresentativeScreen() {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [pickingPhoto, setPickingPhoto] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const didInitCategoriesRef = useRef(false);
 
   useEffect(() => {
     if (!canDo('manage_users')) router.replace('/(tabs)/settings');
   }, [canDo, router]);
 
-  useEffect(() => {
-    listCategories().then((items) => {
-      setCategories(items);
+  const loadCategories = useCallback(async () => {
+    const items = await listCategories();
+    setCategories(items);
+    if (!didInitCategoriesRef.current) {
       setSelectedCategoryIds(items.map((item) => item.id));
-    });
+      didInitCategoriesRef.current = true;
+    }
   }, []);
+
+  useEffect(() => {
+    void loadCategories();
+  }, [loadCategories]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await loadCategories();
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const handlePickPhoto = async () => {
     setPickingPhoto(true);
@@ -90,6 +107,8 @@ export default function NewRepresentativeScreen() {
     <FormScreen
       title="Novo representante"
       onBack={() => goBack(router)}
+      onRefresh={handleRefresh}
+      refreshing={refreshing}
       headerRight={
         <HeaderLinkButton
           label="Salvar"

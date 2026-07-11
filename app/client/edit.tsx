@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -34,8 +34,8 @@ export default function EditClientScreen() {
   const { user, can: canDo } = useAuth();
   const params = useLocalSearchParams<{ id: string }>();
 
-  const { clients, updateClient, loading: clientsLoading } = useClients();
-  const { cities, loading: geoLoading } = useGeoJSON();
+  const { clients, updateClient, loading: clientsLoading, refresh: refreshClients } = useClients();
+  const { cities, loading: geoLoading, refresh: refreshCities } = useGeoJSON();
 
   const client = useMemo(() => clients.find((c) => c.id === params.id), [clients, params.id]);
 
@@ -51,17 +51,34 @@ export default function EditClientScreen() {
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     if (!canDo('manage_clients')) router.replace('/(tabs)');
   }, [canDo, router]);
 
-  useEffect(() => {
+  const loadCategories = useCallback(async () => {
     if (!user) return;
-    getAllowedCategoriesForUser(user.id, user.role)
-      .then(setCategories)
-      .finally(() => setLoadingCategories(false));
+    setLoadingCategories(true);
+    try {
+      setCategories(await getAllowedCategoriesForUser(user.id, user.role));
+    } finally {
+      setLoadingCategories(false);
+    }
   }, [user]);
+
+  useEffect(() => {
+    void loadCategories();
+  }, [loadCategories]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refreshClients(), refreshCities(), loadCategories()]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     if (!client || initialized) return;
@@ -161,6 +178,8 @@ export default function EditClientScreen() {
     <FormScreen
       title="Editar cliente"
       onBack={() => goBack(router)}
+      onRefresh={handleRefresh}
+      refreshing={refreshing}
       headerRight={
         <HeaderLinkButton
           label="Salvar"
