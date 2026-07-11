@@ -419,7 +419,7 @@ export default function CollectionDetailScreen() {
           </View>
         )}
 
-        {isAdmin && (
+        {canManageCollections && (
           <View style={styles.section}>
             <Text style={styles.sectionLabelOutside}>ADMINISTRAÇÃO</Text>
             <View style={styles.dangerCard}>
