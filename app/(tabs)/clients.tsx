@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getScreenTopInset } from '../../utils/safeArea';
 import { useClients } from '../../hooks/useClients';
@@ -22,6 +22,7 @@ import { getTabBarBottomInset } from '../../components/CustomTabBar';
 import { CategoryPillRow } from '../../components/CategoryPill';
 import { labelsFromCategoryIds } from '../../constants/categoryPills';
 import { NotionHeader } from '../../components/NotionHeader';
+import { PullToRefresh } from '../../components/PullToRefresh';
 import { filterClientsByCategory } from '../../utils/categoryFilter';
 
 export default function ClientsScreen() {
@@ -36,8 +37,29 @@ export default function ClientsScreen() {
     allowedCategoryIds,
   } = useCategoryFilter();
   const canManageClients = canDo('manage_clients');
-  const { clients, loading } = useClients();
+  const { clients, loading, refresh } = useClients();
   const [search, setSearch] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await refresh();
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  /**
+   * Cada tela mantém sua própria cópia local dos clientes — sem isso, criar,
+   * editar ou remover um cliente em outra tela não refletia aqui até recarregar
+   * a página inteira.
+   */
+  useFocusEffect(
+    useCallback(() => {
+      void refresh();
+    }, [refresh])
+  );
 
   const listBottom = getTabBarBottomInset(insets);
 
@@ -169,15 +191,17 @@ export default function ClientsScreen() {
         <View style={styles.listWrap}>
           <Text style={styles.sectionLabel}>{countLabel}</Text>
           <View style={styles.cardList}>
-            <FlatList
-              data={filteredClients}
-              keyExtractor={(item) => item.id}
-              renderItem={renderClient}
-              showsVerticalScrollIndicator={false}
-              style={styles.cardFlatList}
-              contentContainerStyle={{ paddingBottom: listBottom }}
-              keyboardShouldPersistTaps="handled"
-            />
+            <PullToRefresh refreshing={refreshing} onRefresh={handleRefresh}>
+              <FlatList
+                data={filteredClients}
+                keyExtractor={(item) => item.id}
+                renderItem={renderClient}
+                showsVerticalScrollIndicator={false}
+                style={styles.cardFlatList}
+                contentContainerStyle={{ paddingBottom: listBottom }}
+                keyboardShouldPersistTaps="handled"
+              />
+            </PullToRefresh>
           </View>
         </View>
       )}

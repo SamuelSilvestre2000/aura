@@ -60,7 +60,7 @@ export default function CollectionDetailScreen() {
   const { user, isAdmin, can: canDo } = useAuth();
   const canManageCollections = canDo('manage_collections');
   const { collections, loading, refresh, closeCollection, deleteCollection } = useCollections();
-  const { clients } = useClients();
+  const { clients, refresh: refreshClients } = useClients();
   const { purchases, sales, refresh: refreshPurchases } = usePurchases();
   const [showGoalSheet, setShowGoalSheet] = useState(false);
   const [buyersExpanded, setBuyersExpanded] = useState(false);
@@ -91,7 +91,8 @@ export default function CollectionDetailScreen() {
     useCallback(() => {
       refresh();
       refreshPurchases();
-    }, [refresh, refreshPurchases])
+      refreshClients();
+    }, [refresh, refreshPurchases, refreshClients])
   );
 
   const progress = useMemo(

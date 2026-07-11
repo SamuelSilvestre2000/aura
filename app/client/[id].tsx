@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -9,7 +9,7 @@ import {
   Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
 import { goBack } from '../../utils/navigation';
@@ -41,7 +41,7 @@ export default function ClientDetailScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const { clients, deleteClient, loading: clientsLoading } = useClients();
+  const { clients, deleteClient, loading: clientsLoading, refresh: refreshClients } = useClients();
   const { can: canDo, user } = useAuth();
   const { categories: userCategories } = useCategoryFilter();
   const canManageClients = canDo('manage_clients');
@@ -52,9 +52,23 @@ export default function ClientDetailScreen() {
     getSaleForClientCollection,
     recordSale,
     clearSale,
+    refresh: refreshPurchases,
   } = usePurchases();
 
   const [saleTarget, setSaleTarget] = useState<SaleTarget | null>(null);
+
+  /**
+   * Cada tela mantém sua própria cópia local dos dados — sem isso, criar,
+   * editar ou remover cliente/coleção/venda em outra tela não refletia aqui
+   * até recarregar a página inteira.
+   */
+  useFocusEffect(
+    useCallback(() => {
+      void refreshClients();
+      void refreshCollections();
+      void refreshPurchases();
+    }, [refreshClients, refreshCollections, refreshPurchases])
+  );
 
   const client = clients.find((c) => c.id === id);
 

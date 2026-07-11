@@ -25,6 +25,7 @@ import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { MapTheme } from '../../services/preferences';
 import { getTabBarBottomInset } from '../../components/CustomTabBar';
 import { NotionHeader } from '../../components/NotionHeader';
+import { PullToRefresh } from '../../components/PullToRefresh';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -36,6 +37,7 @@ export default function SettingsScreen() {
 
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const canManageUsers = canDo('manage_users');
   const canResetDb = canDo('reset_database');
@@ -57,6 +59,15 @@ export default function SettingsScreen() {
       loadUsers();
     }, [loadUsers])
   );
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await loadUsers();
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const handleClearGeoCache = async () => {
     Alert.alert(
@@ -133,6 +144,7 @@ export default function SettingsScreen() {
         <NotionHeader title="Configurações" showBorder />
       </View>
 
+      <PullToRefresh refreshing={refreshing} onRefresh={handleRefresh}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={[styles.content, { paddingBottom: scrollBottom }]}
@@ -348,6 +360,7 @@ export default function SettingsScreen() {
           </View>
         )}
       </ScrollView>
+      </PullToRefresh>
     </View>
   );
 }

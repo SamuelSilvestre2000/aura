@@ -29,6 +29,7 @@ import { Collection } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { getTabBarBottomInset } from '../../components/CustomTabBar';
 import { NotionHeader } from '../../components/NotionHeader';
+import { PullToRefresh } from '../../components/PullToRefresh';
 import { formatPeriodBR } from '../../utils/dates';
 import { formatBRL } from '../../utils/money';
 import { getCollectionProgress, progressColor, progressColorOnTintedBg } from '../../utils/collectionStats';
@@ -54,10 +55,20 @@ export default function CollectionsScreen() {
   } = useCategoryFilter();
   const canManageCollections = canDo('manage_collections');
   const { collections, loading, refresh, activeCollection } = useCollections();
-  const { clients } = useClients();
+  const { clients, refresh: refreshClients } = useClients();
   const { purchases, refresh: refreshPurchases } = usePurchases();
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
   const [showYearPicker, setShowYearPicker] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refresh(), refreshPurchases(), refreshClients()]);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const availableYears = useMemo(
     () => getAvailableCollectionYears(collections),
@@ -89,7 +100,8 @@ export default function CollectionsScreen() {
     useCallback(() => {
       refresh(effectiveFilter);
       refreshPurchases();
-    }, [refresh, refreshPurchases, effectiveFilter])
+      refreshClients();
+    }, [refresh, refreshPurchases, refreshClients, effectiveFilter])
   );
 
   const openCreateScreen = () => router.push('/collection/new');
@@ -267,6 +279,7 @@ export default function CollectionsScreen() {
           )}
         </View>
       ) : (
+        <PullToRefresh refreshing={refreshing} onRefresh={handleRefresh}>
         <ScrollView
           style={styles.listScroll}
           contentContainerStyle={{ paddingBottom: listBottom }}
@@ -319,6 +332,7 @@ export default function CollectionsScreen() {
             </View>
           )}
         </ScrollView>
+        </PullToRefresh>
       )}
 
       <Modal
