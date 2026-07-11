@@ -58,6 +58,7 @@ export default function ClientDetailScreen() {
 
   const [saleTarget, setSaleTarget] = useState<SaleTarget | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [collectionsExpanded, setCollectionsExpanded] = useState(false);
 
   /**
    * Cada tela mantém sua própria cópia local dos dados — sem isso, criar,
@@ -248,8 +249,19 @@ export default function ClientDetailScreen() {
         ) : null}
 
         <View style={styles.section}>
-          <Text style={styles.sectionLabelOutside}>COLEÇÕES</Text>
-          {collections.length === 0 ? (
+          <TouchableOpacity
+            style={styles.sectionToggle}
+            onPress={() => setCollectionsExpanded((v) => !v)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.sectionLabel}>COLEÇÕES ({collections.length})</Text>
+            <Ionicons
+              name={collectionsExpanded ? 'chevron-up' : 'chevron-down'}
+              size={16}
+              color={COLORS.textMuted}
+            />
+          </TouchableOpacity>
+          {collectionsExpanded && (collections.length === 0 ? (
             <View style={styles.card}>
               <Text style={styles.emptyText}>Nenhuma coleção cadastrada</Text>
             </View>
@@ -294,8 +306,8 @@ export default function ClientDetailScreen() {
                 );
               })}
             </View>
-          )}
-          {openCollections.length === 0 && collections.length > 0 ? (
+          ))}
+          {collectionsExpanded && openCollections.length === 0 && collections.length > 0 ? (
             <Text style={styles.sectionHint}>
               Todas as coleções estão fechadas — vendas não podem ser alteradas.
             </Text>
@@ -448,6 +460,20 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.6,
     paddingHorizontal: SPACING.xs,
+  },
+  sectionToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: SPACING.xs,
+    gap: SPACING.sm,
+  },
+  sectionLabel: {
+    flex: 1,
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.xs,
+    fontWeight: '600',
+    letterSpacing: 0.6,
   },
   sectionHint: {
     color: COLORS.textMuted,
