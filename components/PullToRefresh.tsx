@@ -111,19 +111,26 @@ function WebPullToRefresh({ refreshing, onRefresh, children }: Props) {
    * parte do próprio conteúdo que rola — senão, dentro de um contêiner de
    * altura fixa (comum p/ virtualização), a lista só "encolhia" ao puxar em
    * vez de deslizar para baixo junto com o indicador (like num ScrollView).
+   *
+   * Importante: passamos um ELEMENTO já renderizado (não uma função nova a
+   * cada render). Uma função inline aqui seria um "tipo de componente" novo
+   * a cada tecla digitada na busca (que mora no header), forçando o React a
+   * desmontar e remontar o cabeçalho inteiro — o <input> perdia o foco e o
+   * teclado do celular fechava a cada letra digitada.
    */
   if ('renderItem' in childProps) {
     const ExistingHeader = childProps.ListHeaderComponent;
+    const existingHeaderElement = ExistingHeader
+      ? isValidElement(ExistingHeader)
+        ? ExistingHeader
+        : React.createElement(ExistingHeader)
+      : null;
     return cloneElement(children, {
       ...touchAndScrollProps,
-      ListHeaderComponent: () => (
+      ListHeaderComponent: (
         <>
           {indicator}
-          {ExistingHeader
-            ? isValidElement(ExistingHeader)
-              ? ExistingHeader
-              : React.createElement(ExistingHeader)
-            : null}
+          {existingHeaderElement}
         </>
       ),
     } as any);
