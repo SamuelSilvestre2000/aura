@@ -83,9 +83,15 @@ export default function ClientsScreen() {
 
   const renderClient = ({ item, index }: { item: Client; index: number }) => {
     const { labels, slugs } = labelsFromCategoryIds(item.categoryIds);
+    const isLast = index === filteredClients.length - 1;
     return (
       <TouchableOpacity
-        style={[styles.row, index > 0 && styles.rowBorder]}
+        style={[
+          styles.row,
+          index === 0 && styles.rowFirst,
+          index > 0 && styles.rowBorder,
+          isLast && styles.rowLast,
+        ]}
         activeOpacity={0.7}
         onPress={() => router.push(`/client/${item.id}`)}
       >
@@ -135,48 +141,18 @@ export default function ClientsScreen() {
         />
       </View>
 
-      <View style={styles.searchWrap}>
-        <SearchBar
-          value={search}
-          onChangeText={setSearch}
-          onClear={() => setSearch('')}
-          placeholder="Pesquisar cliente ou cidade..."
-        />
-        <CategoryPickerPill
-          categories={userCategories}
-          value={categoryFilter}
-          onChange={setCategoryFilter}
-        />
-      </View>
-
       {loading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
-      ) : filteredClients.length === 0 ? (
+      ) : clients.length === 0 ? (
         <View style={styles.emptyState}>
           <View style={styles.emptyIconWrap}>
-            <Ionicons
-              name={search.trim() ? 'search-outline' : 'person-outline'}
-              size={32}
-              color={COLORS.textMuted}
-            />
+            <Ionicons name="person-outline" size={32} color={COLORS.textMuted} />
           </View>
-          <Text style={styles.emptyTitle}>
-            {search.trim()
-              ? 'Nenhum resultado'
-              : categoryScopedClients.length === 0 && clients.length > 0
-                ? 'Nenhum cliente nesta categoria'
-                : 'Nenhum cliente'}
-          </Text>
-          <Text style={styles.emptySubtitle}>
-            {search.trim()
-              ? 'Tente outro nome ou cidade'
-              : categoryScopedClients.length === 0 && clients.length > 0
-                ? 'Selecione outra categoria ou Todas'
-                : 'Cadastre clientes pelo mapa ou aqui'}
-          </Text>
-          {canManageClients && !search.trim() && (
+          <Text style={styles.emptyTitle}>Nenhum cliente</Text>
+          <Text style={styles.emptySubtitle}>Cadastre clientes pelo mapa ou aqui</Text>
+          {canManageClients && (
             <TouchableOpacity
               style={styles.emptyButton}
               onPress={() => router.push('/client/new')}
@@ -188,22 +164,52 @@ export default function ClientsScreen() {
           )}
         </View>
       ) : (
-        <View style={styles.listWrap}>
-          <Text style={styles.sectionLabel}>{countLabel}</Text>
-          <View style={styles.cardList}>
-            <PullToRefresh refreshing={refreshing} onRefresh={handleRefresh}>
-              <FlatList
-                data={filteredClients}
-                keyExtractor={(item) => item.id}
-                renderItem={renderClient}
-                showsVerticalScrollIndicator={false}
-                style={styles.cardFlatList}
-                contentContainerStyle={{ paddingBottom: listBottom }}
-                keyboardShouldPersistTaps="handled"
-              />
-            </PullToRefresh>
-          </View>
-        </View>
+        <PullToRefresh refreshing={refreshing} onRefresh={handleRefresh}>
+          <FlatList
+            data={filteredClients}
+            keyExtractor={(item) => item.id}
+            renderItem={renderClient}
+            showsVerticalScrollIndicator={false}
+            style={styles.listScroll}
+            contentContainerStyle={{ paddingBottom: listBottom, flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+            ListHeaderComponent={
+              <>
+                <View style={styles.searchWrap}>
+                  <SearchBar
+                    value={search}
+                    onChangeText={setSearch}
+                    onClear={() => setSearch('')}
+                    placeholder="Pesquisar cliente ou cidade..."
+                  />
+                  <CategoryPickerPill
+                    categories={userCategories}
+                    value={categoryFilter}
+                    onChange={setCategoryFilter}
+                  />
+                </View>
+                <Text style={styles.sectionLabel}>{countLabel}</Text>
+              </>
+            }
+            ListEmptyComponent={
+              <View style={styles.emptyStateInline}>
+                <View style={styles.emptyIconWrap}>
+                  <Ionicons
+                    name={search.trim() ? 'search-outline' : 'person-outline'}
+                    size={32}
+                    color={COLORS.textMuted}
+                  />
+                </View>
+                <Text style={styles.emptyTitle}>
+                  {search.trim() ? 'Nenhum resultado' : 'Nenhum cliente nesta categoria'}
+                </Text>
+                <Text style={styles.emptySubtitle}>
+                  {search.trim() ? 'Tente outro nome ou cidade' : 'Selecione outra categoria ou Todas'}
+                </Text>
+              </View>
+            }
+          />
+        </PullToRefresh>
       )}
     </View>
   );
@@ -236,7 +242,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  listWrap: {
+  listScroll: {
     flex: 1,
   },
   sectionLabel: {
@@ -248,23 +254,27 @@ const styles = StyleSheet.create({
     marginHorizontal: SPACING.lg,
     paddingHorizontal: SPACING.xs,
   },
-  cardList: {
-    flex: 1,
-    marginHorizontal: SPACING.lg,
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
-    overflow: 'hidden',
-  },
-  cardFlatList: { flex: 1 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.md,
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.lg,
+    marginHorizontal: SPACING.lg,
     backgroundColor: COLORS.surface,
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderRightWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
+  },
+  rowFirst: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopLeftRadius: RADIUS.lg,
+    borderTopRightRadius: RADIUS.lg,
+  },
+  rowLast: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomLeftRadius: RADIUS.lg,
+    borderBottomRightRadius: RADIUS.lg,
   },
   rowBorder: {
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -312,6 +322,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: SPACING.xxl,
+    gap: SPACING.sm,
+  },
+  emptyStateInline: {
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xxl,
+    paddingTop: SPACING.xl,
     gap: SPACING.sm,
   },
   emptyIconWrap: {
