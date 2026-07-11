@@ -68,6 +68,7 @@ export default function MapScreenWeb() {
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [locating, setLocating] = useState(false);
+  const [refreshingMap, setRefreshingMap] = useState(false);
 
   const { user, can: canDo } = useAuth();
   const {
@@ -78,7 +79,14 @@ export default function MapScreenWeb() {
     allowedCategoryIds,
   } = useCategoryFilter();
   const canManageClients = canDo('manage_clients');
-  const { cities, cityByCode, loading: geoLoading, refreshing: geoRefreshing, error: geoError } = useGeoJSON();
+  const {
+    cities,
+    cityByCode,
+    loading: geoLoading,
+    refreshing: geoRefreshing,
+    error: geoError,
+    refresh: refreshCities,
+  } = useGeoJSON();
   const { clients, refresh: refreshClients } = useClients();
   const { collections, refresh: refreshCollections } = useCollections();
   const { purchases, refresh: refreshPurchases, getPurchaseStatus } = usePurchases();
@@ -229,6 +237,21 @@ export default function MapScreenWeb() {
       { enableHighAccuracy: true, timeout: 8000 }
     );
   }, []);
+
+  const handleRefreshMap = useCallback(async () => {
+    if (refreshingMap) return;
+    setRefreshingMap(true);
+    try {
+      await Promise.all([
+        refreshClients(),
+        refreshCollections(effectiveFilter),
+        refreshPurchases(),
+        refreshCities(),
+      ]);
+    } finally {
+      setRefreshingMap(false);
+    }
+  }, [refreshingMap, refreshClients, refreshCollections, refreshPurchases, refreshCities, effectiveFilter]);
 
   const headerTop = getScreenTopInset(insets, 4);
   const tabBarOffset = getTabBarBottomInset(insets, SPACING.sm);
@@ -413,6 +436,13 @@ export default function MapScreenWeb() {
 
         {!selectedCity && (
           <View style={[styles.bottomControls, { paddingBottom: tabBarOffset + 8 }]} pointerEvents="box-none">
+            <TouchableOpacity style={styles.mapActionBtn} onPress={handleRefreshMap} activeOpacity={0.7}>
+              {refreshingMap ? (
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              ) : (
+                <Ionicons name="refresh-outline" size={22} color={COLORS.primary} />
+              )}
+            </TouchableOpacity>
             <TouchableOpacity style={styles.mapActionBtn} onPress={handleLocateMe} activeOpacity={0.7}>
               {locating ? (
                 <ActivityIndicator size="small" color={COLORS.primary} />
@@ -601,6 +631,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'flex-end',
+    gap: SPACING.sm,
     zIndex: 5,
     pointerEvents: 'box-none',
   },

@@ -68,6 +68,7 @@ export default function MapScreen() {
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
   const [topUIHeight, setTopUIHeight] = useState(0);
+  const [refreshingMap, setRefreshingMap] = useState(false);
   const didInitialLocate = useRef(false);
   const mapRegionRef = useRef<Region>(DEFAULT_MAP_REGION);
   const programmaticRegionChangeRef = useRef(false);
@@ -85,7 +86,14 @@ export default function MapScreen() {
     allowedCategoryIds,
   } = useCategoryFilter();
   const canManageClients = canDo('manage_clients');
-  const { cities, cityByCode, loading: geoLoading, refreshing: geoRefreshing, error: geoError } = useGeoJSON();
+  const {
+    cities,
+    cityByCode,
+    loading: geoLoading,
+    refreshing: geoRefreshing,
+    error: geoError,
+    refresh: refreshCities,
+  } = useGeoJSON();
   const { clients, refresh: refreshClients } = useClients();
   const { collections, refresh: refreshCollections } = useCollections();
   const { purchases, refresh: refreshPurchases, getPurchaseStatus } = usePurchases();
@@ -376,6 +384,21 @@ export default function MapScreen() {
     }
   }, [applyRegionToMap, centerOnUserLocation]);
 
+  const handleRefreshMap = useCallback(async () => {
+    if (refreshingMap) return;
+    setRefreshingMap(true);
+    try {
+      await Promise.all([
+        refreshClients(),
+        refreshCollections(effectiveFilter),
+        refreshPurchases(),
+        refreshCities(),
+      ]);
+    } finally {
+      setRefreshingMap(false);
+    }
+  }, [refreshingMap, refreshClients, refreshCollections, refreshPurchases, refreshCities, effectiveFilter]);
+
   const handleSearchClear = useCallback(() => setSearch(''), []);
 
   const citySheetTopInset = topUIHeight ? topUIHeight + SPACING.lg : 0;
@@ -563,6 +586,13 @@ export default function MapScreen() {
 
         {!selectedCity && (
           <View style={[styles.bottomControls, { paddingBottom: tabBarOffset + 8 }]} pointerEvents="box-none">
+            <TouchableOpacity style={styles.mapActionBtn} onPress={handleRefreshMap} activeOpacity={0.7}>
+              {refreshingMap ? (
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              ) : (
+                <Ionicons name="refresh-outline" size={22} color={COLORS.primary} />
+              )}
+            </TouchableOpacity>
             <TouchableOpacity style={styles.mapActionBtn} onPress={handleCenterMap} activeOpacity={0.7}>
               <Ionicons name="locate-outline" size={22} color={COLORS.primary} />
             </TouchableOpacity>
@@ -836,6 +866,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     alignItems: 'flex-end',
+    gap: SPACING.sm,
     zIndex: 5,
     pointerEvents: 'box-none',
   },
