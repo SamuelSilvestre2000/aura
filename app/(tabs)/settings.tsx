@@ -16,13 +16,11 @@ import { getScreenTopInset } from '../../utils/safeArea';
 import { clearGeoCache } from '../../services/ibge';
 import { getDatabase } from '../../services/database';
 import { deleteUser, listUsers } from '../../services/users';
-import { useMapTheme } from '../../hooks/useMapTheme';
 import { useAuth } from '../../hooks/useAuth';
 import { User } from '../../types';
 import { ROLE_LABELS } from '../../constants/permissions';
 import { formatCategoryNames } from '../../constants/userCategories';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
-import { MapTheme } from '../../services/preferences';
 import { getTabBarBottomInset } from '../../components/CustomTabBar';
 import { NotionHeader } from '../../components/NotionHeader';
 import { PullToRefresh } from '../../components/PullToRefresh';
@@ -32,7 +30,6 @@ type IoniconName = ComponentProps<typeof Ionicons>['name'];
 export default function SettingsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { theme: mapTheme, setTheme: setMapTheme } = useMapTheme();
   const { user, logout, can: canDo, isAdmin } = useAuth();
 
   const [users, setUsers] = useState<User[]>([]);
@@ -274,53 +271,19 @@ export default function SettingsScreen() {
           </View>
         )}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mapa</Text>
-          <View style={styles.card}>
-            <View style={styles.themeRow}>
-              <View style={styles.iconWrap}>
-                <Ionicons name="map-outline" size={20} color={COLORS.textSecondary} />
-              </View>
-              <View style={styles.settingInfo}>
-                <Text style={styles.settingTitle}>Estilo do mapa</Text>
-                <Text style={styles.settingSubtitle}>Fundo claro ou escuro</Text>
-              </View>
+        {canClearCache && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Mapa</Text>
+            <View style={styles.card}>
+              <SettingRow
+                icon="refresh-outline"
+                title="Limpar cache do mapa"
+                subtitle="Força redownload dos dados do IBGE"
+                onPress={handleClearGeoCache}
+              />
             </View>
-            <View style={styles.themeToggle}>
-              {(['light', 'dark'] as MapTheme[]).map((option) => {
-                const active = mapTheme === option;
-                return (
-                  <TouchableOpacity
-                    key={option}
-                    style={[styles.themeOption, active && styles.themeOptionActive]}
-                    onPress={() => setMapTheme(option)}
-                    activeOpacity={0.7}
-                  >
-                    <Ionicons
-                      name={option === 'light' ? 'sunny-outline' : 'moon-outline'}
-                      size={16}
-                      color={active ? COLORS.primary : COLORS.textMuted}
-                    />
-                    <Text style={[styles.themeOptionText, active && styles.themeOptionTextActive]}>
-                      {option === 'light' ? 'Claro' : 'Escuro'}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-            {canClearCache && (
-              <>
-                <View style={styles.divider} />
-                <SettingRow
-                  icon="refresh-outline"
-                  title="Limpar cache do mapa"
-                  subtitle="Força redownload dos dados do IBGE"
-                  onPress={handleClearGeoCache}
-                />
-              </>
-            )}
           </View>
-        </View>
+        )}
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Território</Text>
@@ -598,43 +561,5 @@ const styles = StyleSheet.create({
     height: StyleSheet.hairlineWidth,
     backgroundColor: COLORS.surfaceBorder,
     marginHorizontal: SPACING.lg,
-  },
-  themeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.lg,
-    paddingBottom: SPACING.sm,
-    gap: SPACING.md,
-  },
-  themeToggle: {
-    flexDirection: 'row',
-    gap: SPACING.sm,
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.lg,
-  },
-  themeOption: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: SPACING.md,
-    borderRadius: RADIUS.md,
-    backgroundColor: COLORS.backgroundSubtle,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
-  },
-  themeOptionActive: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.primaryBg,
-  },
-  themeOptionText: {
-    color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.sm,
-    fontWeight: '600',
-  },
-  themeOptionTextActive: {
-    color: COLORS.primary,
   },
 });

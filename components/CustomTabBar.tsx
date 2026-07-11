@@ -4,6 +4,7 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, RADIUS, SPACING } from '../constants/colors';
+import { useAuth } from '../hooks/useAuth';
 
 /** Altura interna do dock (área dos ícones). */
 export const TAB_BAR_CONTENT_HEIGHT = 52;
@@ -44,9 +45,15 @@ export function renderTabIcon(routeName: TabName, focused: boolean) {
 
 export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const { isAdmin } = useAuth();
   const bottomPad = Math.max(insets.bottom, 6);
 
-  const orderedRoutes = TAB_ORDER.map((name) => state.routes.find((r) => r.name === name)).filter(
+  /**
+   * "Configurações" continua acessível (ex: avatar no mapa) mesmo para
+   * representantes — só o botão no dock some, ficando exclusivo de admin.
+   */
+  const visibleTabs = isAdmin ? TAB_ORDER : TAB_ORDER.filter((name) => name !== 'settings');
+  const orderedRoutes = visibleTabs.map((name) => state.routes.find((r) => r.name === name)).filter(
     (r): r is (typeof state.routes)[number] => r != null
   );
 

@@ -628,7 +628,7 @@ const styles = StyleSheet.create({
     right: 0,
     left: 0,
     paddingHorizontal: SPACING.lg,
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'flex-end',
     alignItems: 'flex-end',
     gap: SPACING.sm,
