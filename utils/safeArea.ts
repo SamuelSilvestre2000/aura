@@ -14,3 +14,8 @@ export function getScreenTopInset(insets: { top: number }, extra = 0): number {
   const top = Platform.OS === 'web' ? Math.max(insets.top, WEB_MIN_TOP_INSET) : insets.top;
   return top + extra;
 }
+
+/** Espaço reservado embaixo (home indicator / gesture bar), sem dock flutuante. */
+export function getScreenBottomInset(insets: { bottom: number }, extra = SPACING.lg): number {
+  return Math.max(insets.bottom, 6) + extra;
+}

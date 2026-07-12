@@ -10,7 +10,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getScreenTopInset } from '../../utils/safeArea';
+import { getScreenBottomInset } from '../../utils/safeArea';
 import { useClients } from '../../hooks/useClients';
 import { useAuth } from '../../hooks/useAuth';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
@@ -18,7 +18,7 @@ import { Client } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { SearchBar } from '../../components/SearchBar';
 import { CategoryPickerPill } from '../../components/CategoryPickerPill';
-import { getTabBarBottomInset } from '../../components/CustomTabBar';
+import { getTopBarInset } from '../../components/TopTabBar';
 import { CategoryPillRow } from '../../components/CategoryPill';
 import { labelsFromCategoryIds } from '../../constants/categoryPills';
 import { NotionHeader } from '../../components/NotionHeader';
@@ -61,7 +61,7 @@ export default function ClientsScreen() {
     }, [refresh])
   );
 
-  const listBottom = getTabBarBottomInset(insets);
+  const listBottom = getScreenBottomInset(insets);
 
   const categoryScopedClients = useMemo(
     () => filterClientsByCategory(clients, effectiveFilter, allowedCategoryIds),
@@ -122,7 +122,7 @@ export default function ClientsScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={{ paddingTop: getScreenTopInset(insets) }}>
+      <View style={{ paddingTop: getTopBarInset(insets) }}>
         <NotionHeader
           title="Clientes"
           showBorder

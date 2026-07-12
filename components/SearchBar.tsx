@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image, type TextStyle } from 'react-native';
+import { StyleSheet, View, TextInput, TouchableOpacity, type TextStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, FONTS, RADIUS, SPACING } from '../constants/colors';
 
@@ -12,9 +12,6 @@ type Props = {
   onClear: () => void;
   placeholder?: string;
   variant?: 'default' | 'map';
-  onProfilePress?: () => void;
-  profileImageUri?: string | null;
-  profileInitial?: string;
 };
 
 export function SearchBar({
@@ -23,9 +20,6 @@ export function SearchBar({
   onClear,
   placeholder = 'Buscar...',
   variant = 'default',
-  onProfilePress,
-  profileImageUri,
-  profileInitial,
 }: Props) {
   const isMap = variant === 'map';
 
@@ -52,21 +46,6 @@ export function SearchBar({
         <TouchableOpacity onPress={onClear} hitSlop={8} activeOpacity={0.7}>
           <Ionicons name="close-circle" size={18} color={COLORS.textMuted} />
         </TouchableOpacity>
-      )}
-
-      {isMap && onProfilePress && (
-        <>
-          <View style={styles.divider} />
-          <TouchableOpacity onPress={onProfilePress} style={styles.profileBtn} activeOpacity={0.7} hitSlop={4}>
-            {profileImageUri ? (
-              <Image source={{ uri: profileImageUri }} style={styles.profileImg} />
-            ) : (
-              <View style={styles.profilePlaceholder}>
-                <Text style={styles.profileInitial}>{profileInitial ?? '?'}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </>
       )}
     </View>
   );
@@ -105,26 +84,5 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.md,
     paddingVertical: 0,
-  },
-  divider: {
-    width: StyleSheet.hairlineWidth,
-    height: 22,
-    backgroundColor: COLORS.surfaceBorder,
-    marginHorizontal: 2,
-  },
-  profileBtn: { padding: 2 },
-  profileImg: { width: 32, height: 32, borderRadius: 16 },
-  profilePlaceholder: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: COLORS.primaryBg,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  profileInitial: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.primary,
   },
 });

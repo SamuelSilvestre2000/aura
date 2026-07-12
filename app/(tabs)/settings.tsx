@@ -11,7 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
-import { getScreenTopInset } from '../../utils/safeArea';
+import { getScreenBottomInset } from '../../utils/safeArea';
 import { clearGeoCache } from '../../services/ibge';
 import { getDatabase } from '../../services/database';
 import { deleteUser, listUsers } from '../../services/users';
@@ -20,7 +20,7 @@ import { User } from '../../types';
 import { ROLE_LABELS } from '../../constants/permissions';
 import { formatCategoryNames } from '../../constants/userCategories';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
-import { getTabBarBottomInset } from '../../components/CustomTabBar';
+import { getTopBarInset } from '../../components/TopTabBar';
 import { NotionHeader } from '../../components/NotionHeader';
 import { PullToRefresh } from '../../components/PullToRefresh';
 import { Avatar } from '../../components/Avatar';
@@ -39,7 +39,7 @@ export default function SettingsScreen() {
   const canManageUsers = canDo('manage_users');
   const canResetDb = canDo('reset_database');
   const canClearCache = canDo('clear_geo_cache');
-  const scrollBottom = getTabBarBottomInset(insets);
+  const scrollBottom = getScreenBottomInset(insets);
 
   const loadUsers = useCallback(async () => {
     if (!canManageUsers) return;
@@ -137,7 +137,7 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={{ paddingTop: getScreenTopInset(insets) }}>
+      <View style={{ paddingTop: getTopBarInset(insets) }}>
         <NotionHeader title="Configurações" showBorder />
       </View>
 

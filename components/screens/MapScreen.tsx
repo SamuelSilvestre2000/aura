@@ -30,6 +30,8 @@ import {
   filterCollectionsByCategory,
 } from '../../utils/categoryFilter';
 import { isCollectionClosed } from '../../utils/collectionStatus';
+import { getScreenBottomInset } from '../../utils/safeArea';
+import { getTopBarInset } from '../TopTabBar';
 import { getVigenteCollectionId } from '../../utils/collectionVigente';
 import { CategoryPickerPill } from '../CategoryPickerPill';
 
@@ -39,7 +41,6 @@ import { SearchBar } from '../SearchBar';
 import { CitySheet } from '../BottomSheet/CitySheet';
 import { Ionicons } from '@expo/vector-icons';
 
-import { getTabBarBottomInset } from '../CustomTabBar';
 import { CityGeoData } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { DARK_MAP_STYLE, LIGHT_MAP_STYLE } from '../../constants/mapStyles';
@@ -68,6 +69,7 @@ export default function MapScreen() {
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
   const [topUIHeight, setTopUIHeight] = useState(0);
+  const [bottomUIHeight, setBottomUIHeight] = useState(0);
   const [refreshingMap, setRefreshingMap] = useState(false);
   const didInitialLocate = useRef(false);
   const mapRegionRef = useRef<Region>(DEFAULT_MAP_REGION);
@@ -77,7 +79,7 @@ export default function MapScreen() {
   const locateInFlightRef = useRef(false);
 
   const { theme: mapTheme } = useMapTheme();
-  const { user, can: canDo } = useAuth();
+  const { can: canDo } = useAuth();
   const {
     categories: userCategories,
     filter: categoryFilter,
@@ -421,8 +423,8 @@ export default function MapScreen() {
     : [];
   const selectedCityStatus = selectedCity ? getCityStatus(selectedCity.code) : 'no-clients';
   const hasCities = cities.length > 0;
-  const headerTop = insets.top + 4;
-  const tabBarOffset = getTabBarBottomInset(insets, SPACING.sm);
+  const headerTop = getTopBarInset(insets);
+  const bottomOffset = getScreenBottomInset(insets, SPACING.sm);
   const mapCustomStyle = mapTheme === 'dark' ? DARK_MAP_STYLE : LIGHT_MAP_STYLE;
 
   return (
@@ -470,14 +472,14 @@ export default function MapScreen() {
         </MapView>
 
         {geoLoading && !hasCities && (
-          <View style={[styles.initialLoadingBanner, { top: headerTop + 56 }]}>
+          <View style={[styles.initialLoadingBanner, { top: Math.max(topUIHeight, headerTop) + SPACING.sm }]}>
             <ActivityIndicator size="small" color={COLORS.primary} />
             <Text style={styles.initialLoadingText}>Baixando mapa do Piauí...</Text>
           </View>
         )}
 
         {geoRefreshing && hasCities && (
-          <View style={[styles.refreshBanner, { top: headerTop + 56 }]}>
+          <View style={[styles.refreshBanner, { top: Math.max(topUIHeight, headerTop) + SPACING.sm }]}>
             <ActivityIndicator size="small" color={COLORS.primary} />
             <Text style={styles.refreshBannerText}>Atualizando dados...</Text>
           </View>
@@ -488,18 +490,69 @@ export default function MapScreen() {
           pointerEvents="box-none"
           onLayout={(e) => setTopUIHeight(e.nativeEvent.layout.height)}
         >
-          <View style={styles.searchContainer}>
-            <SearchBar
-              variant="map"
-              value={search}
-              onChangeText={setSearch}
-              onClear={handleSearchClear}
-              placeholder="Pesquisar cidade ou cliente..."
-              onProfilePress={() => router.push('/(tabs)/settings')}
-              profileInitial={user?.name.charAt(0).toUpperCase()}
-              profileImageUri={user?.photoUri}
-            />
+          {activeCollection && (
+            <View style={styles.collectionContainer}>
+              <View style={styles.pillRow}>
+                {visibleCollections.length > 1 ? (
+                  <TouchableOpacity
+                    style={styles.collectionPill}
+                    onPress={() => setShowCollectionPicker(true)}
+                    activeOpacity={0.75}
+                  >
+                    <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
+                    <Text style={styles.collectionPillText} numberOfLines={1}>
+                      {activeCollection.name}
+                    </Text>
+                    <Ionicons name="chevron-down" size={13} color={COLORS.textMuted} />
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.collectionPill}>
+                    <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
+                    <Text style={styles.collectionPillText} numberOfLines={1}>
+                      {activeCollection.name}
+                    </Text>
+                  </View>
+                )}
 
+                <CategoryPickerPill
+                  categories={userCategories}
+                  value={categoryFilter}
+                  onChange={setCategoryFilter}
+                />
+              </View>
+            </View>
+          )}
+        </View>
+
+        {!selectedCity && (
+          <View
+            style={[styles.bottomControls, { paddingBottom: bottomUIHeight + SPACING.sm }]}
+            pointerEvents="box-none"
+          >
+            <TouchableOpacity style={styles.mapActionBtn} onPress={handleRefreshMap} activeOpacity={0.7}>
+              {refreshingMap ? (
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              ) : (
+                <Ionicons name="refresh-outline" size={22} color={COLORS.primary} />
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.mapActionBtn} onPress={handleCenterMap} activeOpacity={0.7}>
+              <Ionicons name="locate-outline" size={22} color={COLORS.primary} />
+            </TouchableOpacity>
+            {/* {canManageClients && (
+              <TouchableOpacity style={styles.mapActionBtn} onPress={() => openNewClient()} activeOpacity={0.7}>
+                <Ionicons name="add" size={22} color={COLORS.primary} />
+              </TouchableOpacity>
+            )} */}
+          </View>
+        )}
+
+        <View
+          style={[styles.bottomSearchWrapper, { paddingBottom: bottomOffset }]}
+          pointerEvents="box-none"
+          onLayout={(e) => setBottomUIHeight(e.nativeEvent.layout.height)}
+        >
+          <View style={styles.searchAnchor}>
             {showSearchResults && (
               <View style={styles.searchResults}>
                 {citySearchResults.length === 0 && clientSearchResults.length === 0 ? (
@@ -551,61 +604,16 @@ export default function MapScreen() {
                 )}
               </View>
             )}
+
+            <SearchBar
+              variant="map"
+              value={search}
+              onChangeText={setSearch}
+              onClear={handleSearchClear}
+              placeholder="Pesquisar cidade ou cliente..."
+            />
           </View>
-
-          {activeCollection && (
-            <View style={styles.collectionContainer}>
-              <View style={styles.pillRow}>
-                {visibleCollections.length > 1 ? (
-                  <TouchableOpacity
-                    style={styles.collectionPill}
-                    onPress={() => setShowCollectionPicker(true)}
-                    activeOpacity={0.75}
-                  >
-                    <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
-                    <Text style={styles.collectionPillText} numberOfLines={1}>
-                      {activeCollection.name}
-                    </Text>
-                    <Ionicons name="chevron-down" size={13} color={COLORS.textMuted} />
-                  </TouchableOpacity>
-                ) : (
-                  <View style={styles.collectionPill}>
-                    <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
-                    <Text style={styles.collectionPillText} numberOfLines={1}>
-                      {activeCollection.name}
-                    </Text>
-                  </View>
-                )}
-
-                <CategoryPickerPill
-                  categories={userCategories}
-                  value={categoryFilter}
-                  onChange={setCategoryFilter}
-                />
-              </View>
-            </View>
-          )}
         </View>
-
-        {!selectedCity && (
-          <View style={[styles.bottomControls, { paddingBottom: tabBarOffset + 8 }]} pointerEvents="box-none">
-            <TouchableOpacity style={styles.mapActionBtn} onPress={handleRefreshMap} activeOpacity={0.7}>
-              {refreshingMap ? (
-                <ActivityIndicator size="small" color={COLORS.primary} />
-              ) : (
-                <Ionicons name="refresh-outline" size={22} color={COLORS.primary} />
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.mapActionBtn} onPress={handleCenterMap} activeOpacity={0.7}>
-              <Ionicons name="locate-outline" size={22} color={COLORS.primary} />
-            </TouchableOpacity>
-            {/* {canManageClients && (
-              <TouchableOpacity style={styles.mapActionBtn} onPress={() => openNewClient()} activeOpacity={0.7}>
-                <Ionicons name="add" size={22} color={COLORS.primary} />
-              </TouchableOpacity>
-            )} */}
-          </View>
-        )}
 
         {/* Modal seleção de coleção */}
         <Modal
@@ -694,11 +702,24 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 10,
   },
-  searchContainer: {
-    marginHorizontal: 12,
+  bottomSearchWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 12,
+    paddingTop: SPACING.sm,
+    zIndex: 10,
+  },
+  searchAnchor: {
+    position: 'relative',
   },
   searchResults: {
-    marginTop: 6,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: '100%',
+    marginBottom: 6,
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
     borderWidth: StyleSheet.hairlineWidth,

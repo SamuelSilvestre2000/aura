@@ -12,7 +12,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getScreenTopInset } from '../../utils/safeArea';
+import { getScreenBottomInset } from '../../utils/safeArea';
 import { useCollections } from '../../hooks/useCollections';
 import { useClients } from '../../hooks/useClients';
 import { usePurchases } from '../../hooks/usePurchases';
@@ -27,7 +27,7 @@ import {
 } from '../../utils/categoryFilter';
 import { Collection } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
-import { getTabBarBottomInset } from '../../components/CustomTabBar';
+import { getTopBarInset } from '../../components/TopTabBar';
 import { NotionHeader } from '../../components/NotionHeader';
 import { PullToRefresh } from '../../components/PullToRefresh';
 import { formatPeriodBR } from '../../utils/dates';
@@ -109,7 +109,7 @@ export default function CollectionsScreen() {
     [clients, effectiveFilter, allowedCategoryIds]
   );
 
-  const listBottom = getTabBarBottomInset(insets);
+  const listBottom = getScreenBottomInset(insets);
 
   useFocusEffect(
     useCallback(() => {
@@ -251,7 +251,7 @@ export default function CollectionsScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={{ paddingTop: getScreenTopInset(insets) }}>
+      <View style={{ paddingTop: getTopBarInset(insets) }}>
         <NotionHeader
           title="Coleções"
           showBorder
