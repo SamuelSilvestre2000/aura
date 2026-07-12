@@ -59,6 +59,7 @@ export default function ClientDetailScreen() {
   const [saleTarget, setSaleTarget] = useState<SaleTarget | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [collectionsExpanded, setCollectionsExpanded] = useState(false);
+  const [visibleCollectionsCount, setVisibleCollectionsCount] = useState(3);
 
   /**
    * Cada tela mantém sua própria cópia local dos dados — sem isso, criar,
@@ -251,7 +252,12 @@ export default function ClientDetailScreen() {
         <View style={styles.section}>
           <TouchableOpacity
             style={styles.sectionToggle}
-            onPress={() => setCollectionsExpanded((v) => !v)}
+            onPress={() =>
+              setCollectionsExpanded((v) => {
+                if (v) setVisibleCollectionsCount(3);
+                return !v;
+              })
+            }
             activeOpacity={0.7}
           >
             <Text style={styles.sectionLabel}>COLEÇÕES ({collections.length})</Text>
@@ -267,7 +273,7 @@ export default function ClientDetailScreen() {
             </View>
           ) : (
             <View style={styles.card}>
-              {collections.map((col, index) => {
+              {collections.slice(0, visibleCollectionsCount).map((col, index) => {
                 const purchased = getPurchaseStatus(client.id, col.id);
                 const sale = getSaleForClientCollection(client.id, col.id);
                 const closed = isCollectionClosed(col);
@@ -305,6 +311,18 @@ export default function ClientDetailScreen() {
                   </React.Fragment>
                 );
               })}
+              {visibleCollectionsCount < collections.length ? (
+                <>
+                  <View style={styles.rowDivider} />
+                  <TouchableOpacity
+                    style={styles.loadMoreRow}
+                    onPress={() => setVisibleCollectionsCount((v) => v + 3)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.loadMoreText}>Carregar mais</Text>
+                  </TouchableOpacity>
+                </>
+              ) : null}
             </View>
           ))}
           {collectionsExpanded && openCollections.length === 0 && collections.length > 0 ? (
@@ -513,6 +531,16 @@ const styles = StyleSheet.create({
   actionRow: {
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.lg,
+  },
+  loadMoreRow: {
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    alignItems: 'center',
+  },
+  loadMoreText: {
+    color: COLORS.primary,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '600',
   },
   actionLink: {
     color: COLORS.primary,
