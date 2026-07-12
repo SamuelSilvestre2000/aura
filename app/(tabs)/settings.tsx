@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
@@ -24,6 +23,7 @@ import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { getTabBarBottomInset } from '../../components/CustomTabBar';
 import { NotionHeader } from '../../components/NotionHeader';
 import { PullToRefresh } from '../../components/PullToRefresh';
+import { Avatar } from '../../components/Avatar';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -162,15 +162,13 @@ export default function SettingsScreen() {
               }}
               activeOpacity={0.7}
             >
-              {user?.photoUri ? (
-                <Image source={{ uri: user.photoUri }} style={styles.accountPhoto} />
-              ) : (
-                <View style={styles.accountAvatar}>
-                  <Text style={styles.accountAvatarText}>
-                    {user?.name.charAt(0).toUpperCase() ?? '?'}
-                  </Text>
-                </View>
-              )}
+              <Avatar
+                uri={user?.photoUri}
+                name={user?.name ?? '?'}
+                imageStyle={styles.accountPhoto}
+                fallbackStyle={styles.accountAvatar}
+                fallbackTextStyle={styles.accountAvatarText}
+              />
               <View style={styles.accountInfo}>
                 <Text style={styles.accountName}>{user?.name ?? '—'}</Text>
                 <Text style={styles.accountRole}>
@@ -217,15 +215,13 @@ export default function SettingsScreen() {
                   <React.Fragment key={rep.id}>
                     {index > 0 && <View style={styles.divider} />}
                     <View style={styles.userManageRow}>
-                      {rep.photoUri ? (
-                        <Image source={{ uri: rep.photoUri }} style={styles.repPhoto} />
-                      ) : (
-                        <View style={styles.repAvatar}>
-                          <Text style={styles.repAvatarText}>
-                            {rep.name.charAt(0).toUpperCase()}
-                          </Text>
-                        </View>
-                      )}
+                      <Avatar
+                        uri={rep.photoUri}
+                        name={rep.name}
+                        imageStyle={styles.repPhoto}
+                        fallbackStyle={styles.repAvatar}
+                        fallbackTextStyle={styles.repAvatarText}
+                      />
                       <View style={styles.userManageInfo}>
                         <Text style={styles.userManageName}>{rep.name}</Text>
                         <Text style={styles.userManageMeta}>

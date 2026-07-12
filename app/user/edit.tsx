@@ -184,7 +184,11 @@ export default function EditUserScreen() {
           disabled={pickingPhoto}
         >
           {photoUri ? (
-            <Image source={{ uri: photoUri }} style={styles.photoImage} />
+            <Image
+              source={{ uri: photoUri }}
+              style={styles.photoImage}
+              onError={() => setPhotoUri(null)}
+            />
           ) : (
             <View style={styles.photoPlaceholder}>
               {pickingPhoto ? (

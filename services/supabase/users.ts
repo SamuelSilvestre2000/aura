@@ -3,6 +3,7 @@ import { DEFAULT_ORG_ID } from '../../constants/organizations';
 import { DEFAULT_REP_PIN } from '../../constants/userCategories';
 import { generateId } from '../database';
 import { getSupabase } from './client';
+import { uploadUserAvatar } from './storage';
 
 type DbUserRow = {
   id: string;
@@ -164,13 +165,15 @@ export async function createRepresentativeRemote(
 
   await createAuthUserWithoutSwitchingSession(email, password);
 
+  const photoUri = data.photoUri ? await uploadUserAvatar(data.photoUri, id) : null;
+
   const { error: userError } = await supabase.from('users').insert({
     id,
     name,
     role: 'representative',
     pin: password,
     email,
-    photo_uri: data.photoUri ?? null,
+    photo_uri: photoUri,
     created_at: now,
   });
   if (userError) throw new Error(userError.message);
@@ -241,14 +244,14 @@ export async function updateUserRemote(
     }
   }
 
+  let photoUri = existing.photoUri ?? null;
+  if (data.photoUri !== undefined) {
+    photoUri = data.photoUri ? await uploadUserAvatar(data.photoUri, id) : null;
+  }
+
   const { error: updateError } = await supabase
     .from('users')
-    .update({
-      name,
-      email,
-      photo_uri:
-        data.photoUri === undefined ? existing.photoUri ?? null : data.photoUri,
-    })
+    .update({ name, email, photo_uri: photoUri })
     .eq('id', id);
   if (updateError) throw new Error(updateError.message);
 
@@ -301,9 +304,10 @@ export async function updateOwnProfileRemote(
   }
 
   if (data.photoUri !== undefined) {
+    const photoUri = data.photoUri ? await uploadUserAvatar(data.photoUri, userId) : null;
     const { error } = await supabase
       .from('users')
-      .update({ photo_uri: data.photoUri })
+      .update({ photo_uri: photoUri })
       .eq('id', userId);
     if (error) throw new Error(error.message);
   }
