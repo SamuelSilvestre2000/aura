@@ -138,6 +138,7 @@ export type UpdateUserData = {
 };
 
 export type UpdateOwnProfileData = {
+  name?: string;
   pin?: string;
   photoUri?: string | null;
 };
@@ -149,6 +150,7 @@ function isTempPhotoUri(uri: string): boolean {
 export async function updateOwnProfile(userId: string, data: UpdateOwnProfileData): Promise<User> {
   if (isSupabaseConfigured()) {
     return updateOwnProfileRemote(userId, {
+      name: data.name,
       password: data.pin,
       photoUri: data.photoUri,
     });
@@ -156,6 +158,12 @@ export async function updateOwnProfile(userId: string, data: UpdateOwnProfileDat
 
   const existing = await getUserById(userId);
   if (!existing) throw new Error('Usuário não encontrado');
+
+  let name = existing.name;
+  if (data.name !== undefined) {
+    name = data.name.trim();
+    if (!name) throw new Error('Nome obrigatório');
+  }
 
   let pin = existing.pin;
   if (data.pin !== undefined) {
@@ -177,7 +185,12 @@ export async function updateOwnProfile(userId: string, data: UpdateOwnProfileDat
   }
 
   const db = await getDatabase();
-  await db.runAsync('UPDATE users SET pin = ?, photo_uri = ? WHERE id = ?', [pin, photoUri, userId]);
+  await db.runAsync('UPDATE users SET name = ?, pin = ?, photo_uri = ? WHERE id = ?', [
+    name,
+    pin,
+    photoUri,
+    userId,
+  ]);
 
   const updated = await getUserById(userId);
   if (!updated) throw new Error('Falha ao atualizar perfil');

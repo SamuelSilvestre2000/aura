@@ -287,12 +287,19 @@ export async function updateUserRemote(
 
 export async function updateOwnProfileRemote(
   userId: string,
-  data: { password?: string; photoUri?: string | null }
+  data: { name?: string; password?: string; photoUri?: string | null }
 ): Promise<User> {
   const existing = await getUserByIdRemote(userId);
   if (!existing) throw new Error('Usuário não encontrado');
 
   const supabase = getSupabase();
+
+  if (data.name !== undefined) {
+    const name = data.name.trim();
+    if (!name) throw new Error('Nome obrigatório');
+    const { error } = await supabase.from('users').update({ name }).eq('id', userId);
+    if (error) throw new Error(error.message);
+  }
 
   if (data.password) {
     if (!isValidAuthPassword(data.password)) {

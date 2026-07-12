@@ -26,6 +26,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, isAdmin, refresh: refreshSession, usesSupabase } = useAuth();
 
+  const [name, setName] = useState('');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [changePin, setChangePin] = useState(false);
@@ -44,6 +45,7 @@ export default function ProfileScreen() {
       router.replace(`/user/edit?id=${user.id}`);
       return;
     }
+    setName(user.name);
     setPhotoUri(user.photoUri ?? null);
   }, [user, isAdmin, router]);
 
@@ -73,13 +75,14 @@ export default function ProfileScreen() {
     return undefined;
   };
 
+  const nameTouched = name.trim() !== user?.name && name.trim().length > 0;
   const pinTouched = changePin && (newPin.length > 0 || confirmPin.length > 0);
   const pinValid =
     !pinTouched ||
     ((usesSupabase ? isValidAuthPassword(newPin) : isValidAccessPin(newPin)) &&
       newPin === confirmPin);
   const photoTouched = photoRemoved || photoChanged;
-  const canSave = (pinTouched || photoTouched) && pinValid;
+  const canSave = (nameTouched || pinTouched || photoTouched) && pinValid;
 
   const handleSubmit = async () => {
     if (!user || !canSave || submitting) return;
@@ -109,6 +112,7 @@ export default function ProfileScreen() {
     setSubmitting(true);
     try {
       await updateOwnProfile(user.id, {
+        name: nameTouched ? name.trim() : undefined,
         pin: pinTouched ? newPin : undefined,
         photoUri: resolvePhotoPayload(),
       });
@@ -180,8 +184,20 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      <View style={styles.field}>
+        <Text style={styles.label}>NOME</Text>
+        <TextInput
+          style={styles.nameInput}
+          value={name}
+          onChangeText={setName}
+          placeholder="Seu nome"
+          placeholderTextColor={COLORS.textPlaceholder}
+          autoCapitalize="words"
+          returnKeyType="done"
+        />
+      </View>
+
       <View style={styles.readOnlyCard}>
-        <Text style={styles.readOnlyName}>{user.name}</Text>
         <Text style={styles.readOnlyMeta}>{ROLE_LABELS[user.role]}</Text>
         {user.email ? <Text style={styles.readOnlyMeta}>{user.email}</Text> : null}
         {user.categories.length > 0 ? (
@@ -316,11 +332,6 @@ const styles = StyleSheet.create({
     borderColor: COLORS.surfaceBorder,
     gap: 4,
   },
-  readOnlyName: {
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
-    fontWeight: '600',
-  },
   readOnlyMeta: {
     color: COLORS.textSecondary,
     fontSize: FONTS.sizes.sm,
@@ -378,6 +389,16 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sizes.md,
     letterSpacing: 4,
     textAlign: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
+  },
+  nameInput: {
+    backgroundColor: COLORS.backgroundSubtle,
+    borderRadius: RADIUS.lg,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.md,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
   },
