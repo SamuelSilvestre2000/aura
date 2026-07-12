@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -36,6 +36,7 @@ import { getCollectionProgress, progressColor, progressColorOnTintedBg } from '.
 import {
   filterCollectionsByYear,
   getAvailableCollectionYears,
+  getCollectionYear,
 } from '../../utils/collectionYears';
 import { getVigenteCollectionId } from '../../utils/collectionVigente';
 import { isCollectionClosed } from '../../utils/collectionStatus';
@@ -58,8 +59,27 @@ export default function CollectionsScreen() {
   const { clients, refresh: refreshClients } = useClients();
   const { purchases, refresh: refreshPurchases } = usePurchases();
   const [selectedYear, setSelectedYear] = useState(CURRENT_YEAR);
+  const [yearInitialized, setYearInitialized] = useState(false);
   const [showYearPicker, setShowYearPicker] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  const vigenteCollectionId = useMemo(
+    () => getVigenteCollectionId(collections, activeCollection?.id ?? null),
+    [collections, activeCollection?.id]
+  );
+
+  /**
+   * Por padrão a tela abre no ano corrente, mas a coleção vigente pode ter um
+   * período em outro ano (ex: coleção de verão criada com datas do ano
+   * seguinte) — nesse caso ela ficaria escondida do filtro sem essa correção,
+   * mesmo sendo a coleção ativa mostrada na tela inicial.
+   */
+  useEffect(() => {
+    if (yearInitialized || collections.length === 0) return;
+    const vigente = collections.find((c) => c.id === vigenteCollectionId);
+    if (vigente) setSelectedYear(getCollectionYear(vigente));
+    setYearInitialized(true);
+  }, [collections, vigenteCollectionId, yearInitialized]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -87,11 +107,6 @@ export default function CollectionsScreen() {
   const scopedClients = useMemo(
     () => filterClientsByCategory(clients, effectiveFilter, allowedCategoryIds),
     [clients, effectiveFilter, allowedCategoryIds]
-  );
-
-  const vigenteCollectionId = useMemo(
-    () => getVigenteCollectionId(collections, activeCollection?.id ?? null),
-    [collections, activeCollection?.id]
   );
 
   const listBottom = getTabBarBottomInset(insets);
