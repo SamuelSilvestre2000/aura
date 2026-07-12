@@ -2,8 +2,9 @@ import React, { useCallback, useMemo } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
-import { CityGeoData, Client, CityStatus, Collection } from '../../types';
+import { CityGeoData, Client, CityStatus, Collection, Sale } from '../../types';
 import { STATUS_COLORS, COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { isCollectionClosed } from '../../utils/collectionStatus';
 import { NotionHeader } from '../NotionHeader';
 import { ClientCard } from './ClientCard';
 
@@ -15,6 +16,7 @@ type Props = {
   activeCollection: Collection | null;
   onTogglePurchase: (clientId: string) => void;
   getPurchaseStatus: (clientId: string, collectionId: string) => boolean;
+  getSaleForClientCollection: (clientId: string, collectionId: string) => Sale | undefined;
   onAddClient: () => void;
   onClose: () => void;
   canManageClients?: boolean;
@@ -40,6 +42,7 @@ export function CitySheet({
   activeCollection,
   onTogglePurchase,
   getPurchaseStatus,
+  getSaleForClientCollection,
   onAddClient,
   onClose,
   canManageClients = true,
@@ -132,6 +135,8 @@ export function CitySheet({
     );
   }, [clients.length, selectedCity?.name, canManageClients, onAddClient]);
 
+  const collectionClosed = activeCollection ? isCollectionClosed(activeCollection) : false;
+
   const renderItem = useCallback(
     ({ item, index }: { item: Client; index: number }) => (
       <ClientCard
@@ -143,15 +148,21 @@ export function CitySheet({
         onToggle={() => onTogglePurchase(item.id)}
         showCategoryBadges={showCategoryBadges}
         highlighted={item.id === highlightedClientId}
+        closed={collectionClosed}
+        saleAmount={
+          activeCollection ? getSaleForClientCollection(item.id, activeCollection.id)?.amount : undefined
+        }
       />
     ),
     [
       activeCollection,
       clients.length,
       getPurchaseStatus,
+      getSaleForClientCollection,
       onTogglePurchase,
       showCategoryBadges,
       highlightedClientId,
+      collectionClosed,
     ]
   );
 

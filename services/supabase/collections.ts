@@ -145,6 +145,32 @@ export async function closeCollectionRemote(id: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+export async function setCollectionVigenteRemote(id: string, isVigente: boolean): Promise<void> {
+  const supabase = getSupabase();
+  const { data: row, error: fetchError } = await supabase
+    .from('collections')
+    .select('organization_id, is_active')
+    .eq('id', id)
+    .maybeSingle();
+  if (fetchError) throw new Error(fetchError.message);
+  if (!row) throw new Error('Coleção não encontrada');
+  if (isVigente && row.is_active === 0) {
+    throw new Error('Não é possível marcar uma coleção fechada como vigente');
+  }
+
+  if (isVigente) {
+    const { error: clearError } = await supabase
+      .from('collections')
+      .update({ is_vigente: false })
+      .eq('organization_id', row.organization_id)
+      .eq('is_vigente', true);
+    if (clearError) throw new Error(clearError.message);
+  }
+
+  const { error } = await supabase.from('collections').update({ is_vigente: isVigente }).eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
 export async function deleteCollectionRemote(id: string): Promise<void> {
   const supabase = getSupabase();
   const { error } = await supabase.from('collections').delete().eq('id', id);

@@ -20,7 +20,7 @@ import {
   filterClientsByCategory,
   filterCollectionsByCategory,
 } from '../../utils/categoryFilter';
-import { filterOpenCollections } from '../../utils/collectionStatus';
+import { isCollectionClosed } from '../../utils/collectionStatus';
 import { getVigenteCollectionId } from '../../utils/collectionVigente';
 import { CategoryPickerPill } from '../CategoryPickerPill';
 
@@ -89,7 +89,12 @@ export default function MapScreenWeb() {
   } = useGeoJSON();
   const { clients, refresh: refreshClients } = useClients();
   const { collections, refresh: refreshCollections } = useCollections();
-  const { purchases, refresh: refreshPurchases, getPurchaseStatus } = usePurchases();
+  const {
+    purchases,
+    refresh: refreshPurchases,
+    getPurchaseStatus,
+    getSaleForClientCollection,
+  } = usePurchases();
 
   const filteredClients = useMemo(
     () => filterClientsByCategory(clients, effectiveFilter, allowedCategoryIds),
@@ -97,10 +102,7 @@ export default function MapScreenWeb() {
   );
 
   const visibleCollections = useMemo(
-    () =>
-      filterOpenCollections(
-        filterCollectionsByCategory(collections, effectiveFilter, allowedCategoryIds)
-      ),
+    () => filterCollectionsByCategory(collections, effectiveFilter, allowedCategoryIds),
     [collections, effectiveFilter, allowedCategoryIds]
   );
 
@@ -127,6 +129,7 @@ export default function MapScreenWeb() {
   const activeCollectionId =
     selectedCollectionId ||
     getVigenteCollectionId(visibleCollections) ||
+    visibleCollections.find((c) => !isCollectionClosed(c))?.id ||
     visibleCollections[0]?.id ||
     null;
   const activeCollection = visibleCollections.find((c) => c.id === activeCollectionId) || null;
@@ -466,6 +469,7 @@ export default function MapScreenWeb() {
               <Text style={styles.pickerTitle}>Coleção ativa</Text>
               {visibleCollections.map((col, i) => {
                 const active = col.id === activeCollectionId;
+                const closed = isCollectionClosed(col);
                 return (
                   <TouchableOpacity
                     key={col.id}
@@ -478,11 +482,17 @@ export default function MapScreenWeb() {
                   >
                     <View style={styles.pickerRowLeft}>
                       <Ionicons
-                        name={active ? 'albums' : 'albums-outline'}
+                        name={closed ? 'lock-closed' : active ? 'albums' : 'albums-outline'}
                         size={18}
                         color={active ? COLORS.primary : COLORS.textMuted}
                       />
-                      <Text style={[styles.pickerRowText, active && styles.pickerRowTextActive]}>
+                      <Text
+                        style={[
+                          styles.pickerRowText,
+                          active && styles.pickerRowTextActive,
+                          closed && styles.pickerRowTextClosed,
+                        ]}
+                      >
                         {col.name}
                       </Text>
                     </View>
@@ -502,6 +512,7 @@ export default function MapScreenWeb() {
           activeCollection={activeCollection}
           onTogglePurchase={handleTogglePurchase}
           getPurchaseStatus={getPurchaseStatus}
+          getSaleForClientCollection={getSaleForClientCollection}
           onAddClient={handleAddClient}
           onClose={handleCloseSheet}
           canManageClients={canManageClients}
@@ -682,6 +693,7 @@ const styles = StyleSheet.create({
   pickerRowLeft: { flexDirection: 'row', alignItems: 'center', gap: SPACING.md },
   pickerRowText: { color: COLORS.textSecondary, fontSize: FONTS.sizes.md, fontWeight: '400' },
   pickerRowTextActive: { color: COLORS.textPrimary, fontWeight: '600' },
+  pickerRowTextClosed: { color: COLORS.textMuted },
   errorContainer: {
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,

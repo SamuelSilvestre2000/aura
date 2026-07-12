@@ -16,6 +16,7 @@ import {
   createCollectionRemote,
   deleteCollectionRemote,
   listCollectionsForUserRemote,
+  setCollectionVigenteRemote,
 } from './supabase/collections';
 import { DEFAULT_BRAND_ID, getDefaultBrandId, getDefaultOrganizationId } from './organizations';
 import { CategoryFilterValue } from '../utils/categoryFilter';
@@ -148,6 +149,28 @@ export async function closeCollection(id: string): Promise<void> {
   if (!row) throw new Error('Coleção não encontrada');
   if (row.is_active === 0) throw new Error('Coleção já está fechada');
   await db.runAsync('UPDATE collections SET is_active = 0 WHERE id = ?', [id]);
+}
+
+export async function setCollectionVigente(id: string, isVigente: boolean): Promise<void> {
+  if (isSupabaseConfigured()) return setCollectionVigenteRemote(id, isVigente);
+
+  const db = await getDatabase();
+  const row = await db.getFirstAsync<{ organization_id: string; is_active: number }>(
+    'SELECT organization_id, is_active FROM collections WHERE id = ?',
+    [id]
+  );
+  if (!row) throw new Error('Coleção não encontrada');
+  if (isVigente && row.is_active === 0) {
+    throw new Error('Não é possível marcar uma coleção fechada como vigente');
+  }
+
+  if (isVigente) {
+    await db.runAsync(
+      'UPDATE collections SET is_vigente = 0 WHERE organization_id = ? AND is_vigente = 1',
+      [row.organization_id]
+    );
+  }
+  await db.runAsync('UPDATE collections SET is_vigente = ? WHERE id = ?', [isVigente ? 1 : 0, id]);
 }
 
 export async function deleteCollection(id: string): Promise<void> {

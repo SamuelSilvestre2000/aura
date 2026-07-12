@@ -3,6 +3,7 @@ import {
   ActivityIndicator,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
   View,
@@ -60,7 +61,9 @@ export default function CollectionDetailScreen() {
   const insets = useSafeAreaInsets();
   const { user, isAdmin, can: canDo } = useAuth();
   const canManageCollections = canDo('manage_collections');
-  const { collections, loading, refresh, closeCollection, deleteCollection } = useCollections();
+  const { collections, loading, refresh, closeCollection, deleteCollection, setVigente } =
+    useCollections();
+  const [togglingVigente, setTogglingVigente] = useState(false);
   const { clients, refresh: refreshClients } = useClients();
   const { purchases, sales, refresh: refreshPurchases } = usePurchases();
   const [showGoalSheet, setShowGoalSheet] = useState(false);
@@ -153,6 +156,18 @@ export default function CollectionDetailScreen() {
 
   const showFinancial = hasGoal || soldAmount > 0;
   const isClosed = isCollectionClosed(collection);
+
+  const handleToggleVigente = async (value: boolean) => {
+    if (togglingVigente) return;
+    setTogglingVigente(true);
+    try {
+      await setVigente(collection.id, value);
+    } catch (err) {
+      Alert.alert('Erro', err instanceof Error ? err.message : 'Não foi possível atualizar.');
+    } finally {
+      setTogglingVigente(false);
+    }
+  };
 
   const handleCloseCollection = () => {
     Alert.alert(
@@ -399,6 +414,31 @@ export default function CollectionDetailScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionLabelOutside}>GERENCIAR</Text>
             <View style={styles.manageCard}>
+              <View style={styles.manageRow}>
+                <View style={styles.manageIconWrap}>
+                  <Ionicons
+                    name="flash-outline"
+                    size={20}
+                    color={collection.isVigente ? COLORS.success : COLORS.textSecondary}
+                  />
+                </View>
+                <View style={styles.manageInfo}>
+                  <Text style={styles.manageTitle}>Tornar vigente</Text>
+                  <Text style={styles.manageSubtitle}>
+                    {collection.isVigente
+                      ? 'Esta é a coleção em destaque para vendas'
+                      : 'Define esta como a coleção em destaque para vendas'}
+                  </Text>
+                </View>
+                <Switch
+                  value={collection.isVigente}
+                  onValueChange={handleToggleVigente}
+                  disabled={togglingVigente}
+                  trackColor={{ false: COLORS.surfaceBorderStrong, true: COLORS.success }}
+                  thumbColor="#fff"
+                />
+              </View>
+              <View style={styles.rowDivider} />
               <TouchableOpacity
                 style={styles.manageRow}
                 onPress={handleCloseCollection}

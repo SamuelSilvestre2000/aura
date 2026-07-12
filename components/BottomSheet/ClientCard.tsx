@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router';
 import { CategoryPillRow } from '../CategoryPill';
 import { labelsFromCategoryIds } from '../../constants/categoryPills';
 import { PurchaseChip } from '../PurchaseChip';
+import { formatBRL } from '../../utils/money';
 
 type Props = {
   client: Client;
@@ -17,6 +18,9 @@ type Props = {
   onToggle: () => void;
   showCategoryBadges?: boolean;
   highlighted?: boolean;
+  /** Coleção fechada: não é mais possível registrar compra, só ver o valor comprado. */
+  closed?: boolean;
+  saleAmount?: number;
 };
 
 export function ClientCard({
@@ -28,6 +32,8 @@ export function ClientCard({
   onToggle,
   showCategoryBadges = true,
   highlighted = false,
+  closed = false,
+  saleAmount,
 }: Props) {
   const router = useRouter();
   const { labels, slugs } = labelsFromCategoryIds(client.categoryIds);
@@ -62,12 +68,14 @@ export function ClientCard({
       </View>
 
       <View style={styles.actions}>
-        {collectionId && (
-          <PurchaseChip
-            purchased={purchased}
-            onPress={onToggle}
-          />
-        )}
+        {collectionId &&
+          (closed
+            ? saleAmount != null && (
+                <View style={styles.saleAmountChip}>
+                  <Text style={styles.saleAmountText}>{formatBRL(saleAmount)}</Text>
+                </View>
+              )
+            : <PurchaseChip purchased={purchased} onPress={onToggle} />)}
         <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
       </View>
     </TouchableOpacity>
@@ -138,5 +146,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: SPACING.sm,
     flexShrink: 0,
+  },
+  saleAmountChip: {
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 5,
+    borderRadius: RADIUS.sm,
+    backgroundColor: COLORS.successBg,
+  },
+  saleAmountText: {
+    fontSize: FONTS.sizes.xs,
+    fontWeight: '600',
+    color: COLORS.success,
   },
 });

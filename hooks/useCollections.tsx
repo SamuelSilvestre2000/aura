@@ -12,6 +12,7 @@ import {
   createCollection as createCollectionService,
   closeCollection as closeCollectionService,
   deleteCollection as deleteCollectionService,
+  setCollectionVigente as setCollectionVigenteService,
   CreateCollectionInput,
 } from '../services/collections';
 import { CategoryFilterValue } from '../utils/categoryFilter';
@@ -24,7 +25,7 @@ type CollectionsContextValue = {
   createCollection: (input: CreateCollectionInput) => Promise<Collection>;
   closeCollection: (id: string) => Promise<void>;
   deleteCollection: (id: string) => Promise<void>;
-  setActiveCollection: (id: string) => Promise<void>;
+  setVigente: (id: string, isVigente: boolean) => Promise<void>;
   refresh: (viewCategoryFilter?: CategoryFilterValue) => Promise<void>;
 };
 
@@ -84,9 +85,13 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
     [load]
   );
 
-  const setActiveCollection = useCallback(async (_id: string) => {
-    await load();
-  }, [load]);
+  const setVigente = useCallback(
+    async (id: string, isVigente: boolean) => {
+      await setCollectionVigenteService(id, isVigente);
+      await load();
+    },
+    [load]
+  );
 
   const activeCollection = collections.length > 0 ? collections[0] : null;
 
@@ -98,7 +103,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       createCollection,
       closeCollection,
       deleteCollection,
-      setActiveCollection,
+      setVigente,
       refresh: load,
     }),
     [
@@ -108,7 +113,7 @@ export function CollectionsProvider({ children }: { children: React.ReactNode })
       createCollection,
       closeCollection,
       deleteCollection,
-      setActiveCollection,
+      setVigente,
       load,
     ]
   );
