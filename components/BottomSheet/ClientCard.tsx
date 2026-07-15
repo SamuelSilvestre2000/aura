@@ -8,6 +8,7 @@ import { CategoryPillRow } from '../CategoryPill';
 import { labelsFromCategoryIds } from '../../constants/categoryPills';
 import { PurchaseChip } from '../PurchaseChip';
 import { formatBRL } from '../../utils/money';
+import { displayClientName } from '../../utils/clientName';
 
 type Props = {
   client: Client;
@@ -37,6 +38,7 @@ export function ClientCard({
 }: Props) {
   const router = useRouter();
   const { labels, slugs } = labelsFromCategoryIds(client.categoryIds);
+  const name = displayClientName(client);
 
   return (
     <TouchableOpacity
@@ -51,11 +53,11 @@ export function ClientCard({
       activeOpacity={0.7}
     >
       <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{client.name.charAt(0).toUpperCase()}</Text>
+        <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
       </View>
 
       <View style={styles.body}>
-        <Text style={styles.name} numberOfLines={1}>{client.name}</Text>
+        <Text style={styles.name} numberOfLines={1}>{name}</Text>
         {showCategoryBadges && labels.length > 0 ? (
           <CategoryPillRow labels={labels} slugs={slugs} />
         ) : null}

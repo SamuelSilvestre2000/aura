@@ -23,6 +23,7 @@ import { CategoryPillRow } from '../../components/CategoryPill';
 import { labelsFromCategoryIds } from '../../constants/categoryPills';
 import { NotionHeader } from '../../components/NotionHeader';
 import { PullToRefresh } from '../../components/PullToRefresh';
+import { displayClientName } from '../../utils/clientName';
 import { filterClientsByCategory } from '../../utils/categoryFilter';
 
 export default function ClientsScreen() {
@@ -83,6 +84,7 @@ export default function ClientsScreen() {
 
   const renderClient = ({ item, index }: { item: Client; index: number }) => {
     const { labels, slugs } = labelsFromCategoryIds(item.categoryIds);
+    const name = displayClientName(item);
     const isLast = index === filteredClients.length - 1;
     return (
       <TouchableOpacity
@@ -96,10 +98,10 @@ export default function ClientsScreen() {
         onPress={() => router.push(`/client/${item.id}`)}
       >
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{item.name.charAt(0).toUpperCase()}</Text>
+          <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
         </View>
         <View style={styles.rowBody}>
-          <Text style={styles.rowTitle} numberOfLines={1}>{item.name}</Text>
+          <Text style={styles.rowTitle} numberOfLines={1}>{name}</Text>
           {showCategoryBadges && labels.length > 0 ? (
             <CategoryPillRow labels={labels} slugs={slugs} />
           ) : null}
