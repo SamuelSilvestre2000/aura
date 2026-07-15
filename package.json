@@ -22,6 +22,7 @@
     "@react-native-community/datetimepicker": "8.4.4",
     "@supabase/supabase-js": "^2.108.2",
     "expo": "~54.0.33",
+    "expo-clipboard": "~8.0.8",
     "expo-constants": "~18.0.13",
     "expo-file-system": "~19.0.23",
     "expo-image-picker": "~17.0.11",
