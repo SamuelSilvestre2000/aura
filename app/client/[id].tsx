@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import { Alert } from '../../utils/alert';
 import { goBack } from '../../utils/navigation';
 import { getScreenTopInset } from '../../utils/safeArea';
@@ -61,6 +62,7 @@ export default function ClientDetailScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [collectionsExpanded, setCollectionsExpanded] = useState(false);
   const [visibleCollectionsCount, setVisibleCollectionsCount] = useState(3);
+  const [addressExpanded, setAddressExpanded] = useState(false);
 
   /**
    * Cada tela mantém sua própria cópia local dos dados — sem isso, criar,
@@ -106,15 +108,15 @@ export default function ClientDetailScreen() {
     );
   };
 
-  const handleCall = () => {
-    if (client?.phone) Linking.openURL(`tel:${client.phone}`);
-  };
-
-  const handleWhatsApp = () => {
-    if (client?.phone) {
-      const phone = client.phone.replace(/\D/g, '');
+  const handleWhatsAppMobile = () => {
+    if (client?.mobile) {
+      const phone = client.mobile.replace(/\D/g, '');
       Linking.openURL(`whatsapp://send?phone=55${phone}`);
     }
+  };
+
+  const handleCopy = (value: string) => {
+    void Clipboard.setStringAsync(value);
   };
 
   if (clientsLoading) {
@@ -140,10 +142,11 @@ export default function ClientDetailScreen() {
 
   const { labels, slugs } = labelsFromCategoryIds(client.categoryIds);
   const name = displayClientName(client);
-  const boughtCount = collections.filter((col) =>
+  const purchasedCollections = collections.filter((col) =>
     getPurchaseStatus(client.id, col.id)
-  ).length;
-  const openCollections = collections.filter((col) => !isCollectionClosed(col));
+  );
+  const boughtCount = purchasedCollections.length;
+  const openPurchasedCollections = purchasedCollections.filter((col) => !isCollectionClosed(col));
 
   return (
     <View style={styles.container}>
@@ -171,6 +174,9 @@ export default function ClientDetailScreen() {
             <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
           </View>
           <Text style={styles.clientName}>{name}</Text>
+          {client.tradeName && client.tradeName !== name ? (
+            <Text style={styles.clientTradeName}>{client.tradeName}</Text>
+          ) : null}
           {showCategoryBadges && labels.length > 0 ? (
             <CategoryPillRow labels={labels} slugs={slugs} />
           ) : null}
@@ -199,7 +205,7 @@ export default function ClientDetailScreen() {
           </View>
         </View>
 
-        {client.phone || client.cnpj ? (
+        {client.cnpj || client.phone || client.mobile || client.email ? (
           <View style={styles.section}>
             <Text style={styles.sectionLabelOutside}>CONTATO</Text>
             <View style={styles.card}>
@@ -214,31 +220,139 @@ export default function ClientDetailScreen() {
                       <Text style={styles.infoValue}>{formatCnpj(client.cnpj)}</Text>
                     </View>
                   </View>
-                  {client.phone ? <View style={styles.rowDivider} /> : null}
+                  {client.phone || client.mobile || client.email ? (
+                    <View style={styles.rowDivider} />
+                  ) : null}
                 </>
               ) : null}
-              {client.phone ? (
+              {client.phone || client.mobile ? (
+                <>
+                  <View style={styles.phoneRow}>
+                    {client.mobile ? (
+                      <TouchableOpacity
+                        style={styles.phoneCol}
+                        onPress={() => handleCopy(client.mobile!)}
+                        activeOpacity={0.7}
+                      >
+                        <View style={styles.infoIconWrap}>
+                          <Ionicons name="phone-portrait-outline" size={18} color={COLORS.textSecondary} />
+                        </View>
+                        <View style={styles.infoBody}>
+                          <Text style={styles.infoLabel}>Celular</Text>
+                          <Text style={styles.infoValue} numberOfLines={1}>
+                            {client.mobile}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ) : null}
+                    {client.mobile && client.phone ? <View style={styles.phoneColDivider} /> : null}
+                    {client.phone ? (
+                      <TouchableOpacity
+                        style={styles.phoneCol}
+                        onPress={() => handleCopy(client.phone!)}
+                        activeOpacity={0.7}
+                      >
+                        <View style={styles.infoIconWrap}>
+                          <Ionicons name="call-outline" size={18} color={COLORS.textSecondary} />
+                        </View>
+                        <View style={styles.infoBody}>
+                          <Text style={styles.infoLabel}>Telefone</Text>
+                          <Text style={styles.infoValue} numberOfLines={1}>
+                            {client.phone}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    ) : null}
+                  </View>
+                  {client.mobile ? (
+                    <>
+                      <View style={styles.rowDivider} />
+                      <TouchableOpacity style={styles.actionRow} onPress={handleWhatsAppMobile} activeOpacity={0.7}>
+                        <Text style={[styles.actionLink, styles.whatsappLink]}>WhatsApp</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : null}
+                  {client.email ? <View style={styles.rowDivider} /> : null}
+                </>
+              ) : null}
+              {client.email ? (
+                <TouchableOpacity
+                  style={styles.infoRow}
+                  onPress={() => handleCopy(client.email!)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.infoIconWrap}>
+                    <Ionicons name="mail-outline" size={18} color={COLORS.textSecondary} />
+                  </View>
+                  <View style={styles.infoBody}>
+                    <Text style={styles.infoLabel}>Email</Text>
+                    <Text style={styles.infoValue} numberOfLines={1}>
+                      {client.email}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          </View>
+        ) : null}
+
+        {client.street || client.neighborhood || client.zipCode ? (
+          <View style={styles.section}>
+            <TouchableOpacity
+              style={styles.sectionToggle}
+              onPress={() => setAddressExpanded((v) => !v)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.sectionLabel}>ENDEREÇO</Text>
+              <Ionicons
+                name={addressExpanded ? 'chevron-up' : 'chevron-down'}
+                size={16}
+                color={COLORS.textMuted}
+              />
+            </TouchableOpacity>
+            {addressExpanded && (
+            <View style={styles.card}>
+              {client.street ? (
                 <>
                   <View style={styles.infoRow}>
                     <View style={styles.infoIconWrap}>
-                      <Ionicons name="call-outline" size={18} color={COLORS.textSecondary} />
+                      <Ionicons name="location-outline" size={18} color={COLORS.textSecondary} />
                     </View>
                     <View style={styles.infoBody}>
-                      <Text style={styles.infoLabel}>Telefone</Text>
-                      <Text style={styles.infoValue}>{client.phone}</Text>
+                      <Text style={styles.infoLabel}>Logradouro</Text>
+                      <Text style={styles.infoValue}>{client.street}</Text>
                     </View>
                   </View>
-                  <View style={styles.rowDivider} />
-                  <TouchableOpacity style={styles.actionRow} onPress={handleCall} activeOpacity={0.7}>
-                    <Text style={styles.actionLink}>Ligar</Text>
-                  </TouchableOpacity>
-                  <View style={styles.rowDivider} />
-                  <TouchableOpacity style={styles.actionRow} onPress={handleWhatsApp} activeOpacity={0.7}>
-                    <Text style={[styles.actionLink, styles.whatsappLink]}>WhatsApp</Text>
-                  </TouchableOpacity>
+                  {client.neighborhood || client.zipCode ? <View style={styles.rowDivider} /> : null}
                 </>
               ) : null}
+              {client.neighborhood ? (
+                <>
+                  <View style={styles.infoRow}>
+                    <View style={styles.infoIconWrap}>
+                      <Ionicons name="map-outline" size={18} color={COLORS.textSecondary} />
+                    </View>
+                    <View style={styles.infoBody}>
+                      <Text style={styles.infoLabel}>Bairro</Text>
+                      <Text style={styles.infoValue}>{client.neighborhood}</Text>
+                    </View>
+                  </View>
+                  {client.zipCode ? <View style={styles.rowDivider} /> : null}
+                </>
+              ) : null}
+              {client.zipCode ? (
+                <View style={styles.infoRow}>
+                  <View style={styles.infoIconWrap}>
+                    <Ionicons name="navigate-outline" size={18} color={COLORS.textSecondary} />
+                  </View>
+                  <View style={styles.infoBody}>
+                    <Text style={styles.infoLabel}>CEP</Text>
+                    <Text style={styles.infoValue}>{client.zipCode}</Text>
+                  </View>
+                </View>
+              ) : null}
             </View>
+            )}
           </View>
         ) : null}
 
@@ -262,20 +376,20 @@ export default function ClientDetailScreen() {
             }
             activeOpacity={0.7}
           >
-            <Text style={styles.sectionLabel}>COLEÇÕES ({collections.length})</Text>
+            <Text style={styles.sectionLabel}>COLEÇÕES ({purchasedCollections.length})</Text>
             <Ionicons
               name={collectionsExpanded ? 'chevron-up' : 'chevron-down'}
               size={16}
               color={COLORS.textMuted}
             />
           </TouchableOpacity>
-          {collectionsExpanded && (collections.length === 0 ? (
+          {collectionsExpanded && (purchasedCollections.length === 0 ? (
             <View style={styles.card}>
-              <Text style={styles.emptyText}>Nenhuma coleção cadastrada</Text>
+              <Text style={styles.emptyText}>Nenhuma compra registrada</Text>
             </View>
           ) : (
             <View style={styles.card}>
-              {collections.slice(0, visibleCollectionsCount).map((col, index) => {
+              {purchasedCollections.slice(0, visibleCollectionsCount).map((col, index) => {
                 const purchased = getPurchaseStatus(client.id, col.id);
                 const sale = getSaleForClientCollection(client.id, col.id);
                 const closed = isCollectionClosed(col);
@@ -313,7 +427,7 @@ export default function ClientDetailScreen() {
                   </React.Fragment>
                 );
               })}
-              {visibleCollectionsCount < collections.length ? (
+              {visibleCollectionsCount < purchasedCollections.length ? (
                 <>
                   <View style={styles.rowDivider} />
                   <TouchableOpacity
@@ -327,7 +441,7 @@ export default function ClientDetailScreen() {
               ) : null}
             </View>
           ))}
-          {collectionsExpanded && openCollections.length === 0 && collections.length > 0 ? (
+          {collectionsExpanded && openPurchasedCollections.length === 0 && purchasedCollections.length > 0 ? (
             <Text style={styles.sectionHint}>
               Todas as coleções estão fechadas — vendas não podem ser alteradas.
             </Text>
@@ -435,6 +549,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     letterSpacing: -0.2,
   },
+  clientTradeName: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.sm,
+    textAlign: 'center',
+    marginTop: -2,
+  },
   locationRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -529,6 +649,23 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.md,
     fontWeight: '500',
+  },
+  phoneRow: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+  },
+  phoneCol: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.lg,
+    gap: SPACING.sm,
+    minWidth: 0,
+  },
+  phoneColDivider: {
+    width: StyleSheet.hairlineWidth,
+    backgroundColor: COLORS.surfaceBorder,
+    marginVertical: SPACING.sm,
   },
   actionRow: {
     paddingVertical: SPACING.md,
