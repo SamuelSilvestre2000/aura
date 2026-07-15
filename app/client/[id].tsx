@@ -31,6 +31,7 @@ import { isCollectionClosed } from '../../utils/collectionStatus';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { formatBRL } from '../../utils/money';
 import { formatCnpj } from '../../utils/cnpj';
+import { displayClientName } from '../../utils/clientName';
 
 type SaleTarget = {
   collectionId: string;
@@ -88,7 +89,7 @@ export default function ClientDetailScreen() {
   const handleDelete = () => {
     Alert.alert(
       'Remover cliente',
-      `Deseja remover "${client?.name}"? Isso apagará todas as compras registradas.`,
+      `Deseja remover "${client ? displayClientName(client) : ''}"? Isso apagará todas as compras registradas.`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -138,6 +139,7 @@ export default function ClientDetailScreen() {
   }
 
   const { labels, slugs } = labelsFromCategoryIds(client.categoryIds);
+  const name = displayClientName(client);
   const boughtCount = collections.filter((col) =>
     getPurchaseStatus(client.id, col.id)
   ).length;
@@ -147,7 +149,7 @@ export default function ClientDetailScreen() {
     <View style={styles.container}>
       <View style={[styles.headerSafe, { paddingTop: getScreenTopInset(insets) }]}>
         <NotionHeader
-          title={client.name}
+          title={name}
           showBorder
           compact
           leftAction={<HeaderBackButton onPress={() => goBack(router)} />}
@@ -166,9 +168,9 @@ export default function ClientDetailScreen() {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.profileCard}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{client.name.charAt(0).toUpperCase()}</Text>
+            <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
           </View>
-          <Text style={styles.clientName}>{client.name}</Text>
+          <Text style={styles.clientName}>{name}</Text>
           {showCategoryBadges && labels.length > 0 ? (
             <CategoryPillRow labels={labels} slugs={slugs} />
           ) : null}
@@ -356,7 +358,7 @@ export default function ClientDetailScreen() {
 
       <SaleSheet
         visible={saleTarget != null}
-        clientName={client.name}
+        clientName={name}
         collectionName={saleTarget?.collectionName ?? ''}
         purchased={
           saleTarget ? getPurchaseStatus(client.id, saleTarget.collectionId) : false
