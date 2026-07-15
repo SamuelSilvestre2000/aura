@@ -80,6 +80,8 @@ export default function NewClientScreen() {
   const [phone, setPhone] = useState('');
   const [mobile, setMobile] = useState('');
   const [email, setEmail] = useState('');
+  const [instagram, setInstagram] = useState('');
+  const [facebook, setFacebook] = useState('');
   const [notes, setNotes] = useState('');
   const [citySearch, setCitySearch] = useState(initialCity?.name ?? '');
   const [selectedCity, setSelectedCity] = useState<InitialCity | null>(initialCity);
@@ -164,6 +166,8 @@ export default function NewClientScreen() {
         phone: phone.trim() || undefined,
         mobile: mobile.trim() || undefined,
         email: email.trim() || undefined,
+        instagram: instagram.trim() || undefined,
+        facebook: facebook.trim() || undefined,
         notes: notes.trim() || undefined,
         categoryIds,
       });
@@ -398,6 +402,36 @@ export default function NewClientScreen() {
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="next"
+          />
+        </View>
+      </FormSection>
+
+      <FormSection title="Redes sociais">
+        <View style={styles.field}>
+          <Text style={styles.label}>Instagram</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="@usuario"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={instagram}
+            onChangeText={setInstagram}
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="next"
+          />
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.label}>Facebook</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="facebook.com/loja"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={facebook}
+            onChangeText={setFacebook}
             autoCapitalize="none"
             autoCorrect={false}
             returnKeyType="next"

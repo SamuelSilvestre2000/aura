@@ -128,6 +128,8 @@ export type Client = {
   phone?: string;
   mobile?: string;
   email?: string;
+  instagram?: string;
+  facebook?: string;
   notes?: string;
   clientGroup?: string;
   createdAt: string;
