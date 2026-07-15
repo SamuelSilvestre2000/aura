@@ -79,6 +79,8 @@ const ROW_TO_CLIENT = (row: any): Client => ({
   phone: row.phone || undefined,
   mobile: row.mobile || undefined,
   email: row.email || undefined,
+  instagram: row.instagram || undefined,
+  facebook: row.facebook || undefined,
   notes: row.notes || undefined,
   clientGroup: row.client_group || undefined,
   createdAt: row.created_at,
@@ -134,8 +136,8 @@ export async function createClient(
     `INSERT INTO clients (
       id, organization_id, brand_id, external_code, name, trade_name, cnpj,
       street, neighborhood, city, city_code, state, zip_code,
-      lat, lng, phone, mobile, email, notes, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      lat, lng, phone, mobile, email, instagram, facebook, notes, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       organizationId,
@@ -155,6 +157,8 @@ export async function createClient(
       data.phone ?? null,
       data.mobile ?? null,
       data.email ?? null,
+      data.instagram ?? null,
+      data.facebook ?? null,
       data.notes ?? null,
       now,
     ]
@@ -198,6 +202,8 @@ export async function updateClient(
   if (data.lat !== undefined) { fields.push('lat = ?'); values.push(data.lat); }
   if (data.lng !== undefined) { fields.push('lng = ?'); values.push(data.lng); }
   if (data.phone !== undefined) { fields.push('phone = ?'); values.push(data.phone); }
+  if (data.instagram !== undefined) { fields.push('instagram = ?'); values.push(data.instagram); }
+  if (data.facebook !== undefined) { fields.push('facebook = ?'); values.push(data.facebook); }
   if (data.notes !== undefined) { fields.push('notes = ?'); values.push(data.notes); }
   if (data.brandId !== undefined) { fields.push('brand_id = ?'); values.push(data.brandId); }
   if (data.organizationId !== undefined) { fields.push('organization_id = ?'); values.push(data.organizationId); }

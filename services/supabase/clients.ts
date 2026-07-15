@@ -37,6 +37,8 @@ const ROW_TO_CLIENT = (row: any): Client => ({
   phone: row.phone || undefined,
   mobile: row.mobile || undefined,
   email: row.email || undefined,
+  instagram: row.instagram || undefined,
+  facebook: row.facebook || undefined,
   notes: row.notes || undefined,
   clientGroup: row.client_group || undefined,
   createdAt: row.created_at,
@@ -129,6 +131,8 @@ export async function createClientRemote(
     phone: data.phone ?? null,
     mobile: data.mobile ?? null,
     email: data.email ?? null,
+    instagram: data.instagram ?? null,
+    facebook: data.facebook ?? null,
     notes: data.notes ?? null,
     created_at: now,
   });
@@ -165,6 +169,8 @@ export async function updateClientRemote(
   if (data.lat !== undefined) patch.lat = data.lat;
   if (data.lng !== undefined) patch.lng = data.lng;
   if (data.phone !== undefined) patch.phone = data.phone;
+  if (data.instagram !== undefined) patch.instagram = data.instagram;
+  if (data.facebook !== undefined) patch.facebook = data.facebook;
   if (data.notes !== undefined) patch.notes = data.notes;
   if (data.brandId !== undefined) patch.brand_id = data.brandId;
   if (data.organizationId !== undefined) patch.organization_id = data.organizationId;
