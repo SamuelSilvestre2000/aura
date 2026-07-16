@@ -114,6 +114,7 @@ export type Client = {
   id: string;
   externalCode?: string;
   cnpj?: string;
+  municipalRegistration?: string;
   name: string;
   tradeName?: string;
   legalName?: string;

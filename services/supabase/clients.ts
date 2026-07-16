@@ -23,6 +23,7 @@ const ROW_TO_CLIENT = (row: any): Client => ({
   id: row.id,
   externalCode: row.external_code || undefined,
   cnpj: row.cnpj || undefined,
+  municipalRegistration: row.municipal_registration || undefined,
   name: row.name,
   tradeName: row.trade_name || undefined,
   legalName: row.legal_name || undefined,
@@ -120,6 +121,7 @@ export async function createClientRemote(
     name: data.name,
     trade_name: data.tradeName ?? null,
     cnpj: data.cnpj ? stripCnpj(data.cnpj) : null,
+    municipal_registration: data.municipalRegistration ?? null,
     street: data.street ?? null,
     neighborhood: data.neighborhood ?? null,
     city: data.city,
@@ -164,6 +166,7 @@ export async function updateClientRemote(
 
   if (data.name !== undefined) patch.name = data.name;
   if (data.cnpj !== undefined) patch.cnpj = data.cnpj ? stripCnpj(data.cnpj) : null;
+  if (data.municipalRegistration !== undefined) patch.municipal_registration = data.municipalRegistration;
   if (data.city !== undefined) patch.city = data.city;
   if (data.cityCode !== undefined) patch.city_code = data.cityCode;
   if (data.lat !== undefined) patch.lat = data.lat;
