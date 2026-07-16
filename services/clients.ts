@@ -65,6 +65,7 @@ const ROW_TO_CLIENT = (row: any): Client => ({
   id: row.id,
   externalCode: row.external_code || undefined,
   cnpj: row.cnpj || undefined,
+  municipalRegistration: row.municipal_registration || undefined,
   name: row.name,
   tradeName: row.trade_name || undefined,
   legalName: row.legal_name || undefined,
@@ -134,10 +135,10 @@ export async function createClient(
 
   await db.runAsync(
     `INSERT INTO clients (
-      id, organization_id, brand_id, external_code, name, trade_name, cnpj,
+      id, organization_id, brand_id, external_code, name, trade_name, cnpj, municipal_registration,
       street, neighborhood, city, city_code, state, zip_code,
       lat, lng, phone, mobile, email, instagram, facebook, notes, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       id,
       organizationId,
@@ -146,6 +147,7 @@ export async function createClient(
       data.name,
       data.tradeName ?? null,
       data.cnpj ? stripCnpj(data.cnpj) : null,
+      data.municipalRegistration ?? null,
       data.street ?? null,
       data.neighborhood ?? null,
       data.city,
@@ -196,6 +198,10 @@ export async function updateClient(
   if (data.cnpj !== undefined) {
     fields.push('cnpj = ?');
     values.push(data.cnpj ? stripCnpj(data.cnpj) : null);
+  }
+  if (data.municipalRegistration !== undefined) {
+    fields.push('municipal_registration = ?');
+    values.push(data.municipalRegistration ?? null);
   }
   if (data.city !== undefined) { fields.push('city = ?'); values.push(data.city); }
   if (data.cityCode !== undefined) { fields.push('city_code = ?'); values.push(data.cityCode); }

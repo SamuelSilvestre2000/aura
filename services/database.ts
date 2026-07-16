@@ -532,6 +532,7 @@ async function migrateClientExtendedColumns(database: SQLite.SQLiteDatabase): Pr
   await addColumnIfMissing(database, 'clients', 'instagram', 'TEXT');
   await addColumnIfMissing(database, 'clients', 'facebook', 'TEXT');
   await addColumnIfMissing(database, 'clients', 'cnpj', 'TEXT');
+  await addColumnIfMissing(database, 'clients', 'municipal_registration', 'TEXT');
 
   const migrated = await database.getFirstAsync<{ value: string }>(
     "SELECT value FROM app_meta WHERE key = 'client_extended_columns_v1'"

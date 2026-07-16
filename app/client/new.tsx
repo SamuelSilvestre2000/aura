@@ -74,6 +74,7 @@ export default function NewClientScreen() {
   const [tradeName, setTradeName] = useState('');
   const [externalCode, setExternalCode] = useState('');
   const [cnpj, setCnpj] = useState('');
+  const [municipalRegistration, setMunicipalRegistration] = useState('');
   const [street, setStreet] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
   const [zipCode, setZipCode] = useState('');
@@ -156,6 +157,7 @@ export default function NewClientScreen() {
         tradeName: tradeName.trim() || undefined,
         externalCode: externalCode.trim() || undefined,
         cnpj: cnpj.trim() || undefined,
+        municipalRegistration: municipalRegistration.trim() || undefined,
         street: street.trim() || undefined,
         neighborhood: neighborhood.trim() || undefined,
         city: selectedCity.name,
@@ -245,6 +247,20 @@ export default function NewClientScreen() {
             value={cnpj}
             onChangeText={(text) => setCnpj(maskCnpjInput(text))}
             keyboardType="number-pad"
+            returnKeyType="next"
+          />
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.label}>Inscrição Municipal</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="000000000"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={municipalRegistration}
+            onChangeText={setMunicipalRegistration}
+            keyboardType="number-pad"
+            maxLength={20}
             returnKeyType="next"
           />
         </View>
