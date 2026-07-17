@@ -165,13 +165,19 @@ export async function updateClientRemote(
   const patch: Record<string, unknown> = {};
 
   if (data.name !== undefined) patch.name = data.name;
+  if (data.tradeName !== undefined) patch.trade_name = data.tradeName;
   if (data.cnpj !== undefined) patch.cnpj = data.cnpj ? stripCnpj(data.cnpj) : null;
   if (data.municipalRegistration !== undefined) patch.municipal_registration = data.municipalRegistration;
+  if (data.street !== undefined) patch.street = data.street;
+  if (data.neighborhood !== undefined) patch.neighborhood = data.neighborhood;
+  if (data.zipCode !== undefined) patch.zip_code = data.zipCode;
   if (data.city !== undefined) patch.city = data.city;
   if (data.cityCode !== undefined) patch.city_code = data.cityCode;
   if (data.lat !== undefined) patch.lat = data.lat;
   if (data.lng !== undefined) patch.lng = data.lng;
   if (data.phone !== undefined) patch.phone = data.phone;
+  if (data.mobile !== undefined) patch.mobile = data.mobile;
+  if (data.email !== undefined) patch.email = data.email;
   if (data.instagram !== undefined) patch.instagram = data.instagram;
   if (data.facebook !== undefined) patch.facebook = data.facebook;
   if (data.notes !== undefined) patch.notes = data.notes;

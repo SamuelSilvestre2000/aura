@@ -22,6 +22,23 @@ import { HeaderLinkButton } from '../../components/HeaderLinkButton';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { formatCnpj, isValidCnpj, maskCnpjInput } from '../../utils/cnpj';
 
+function maskCepInput(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 5) return digits;
+  return `${digits.slice(0, 5)}-${digits.slice(5)}`;
+}
+
+/** Aceita fixo (10 dígitos) ou celular (11 dígitos), reformatando conforme digita. */
+function maskPhoneInput(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 2) return digits.length ? `(${digits}` : '';
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  }
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
 type SelectedCity = {
   code: string;
   name: string;
@@ -40,8 +57,17 @@ export default function EditClientScreen() {
   const client = useMemo(() => clients.find((c) => c.id === params.id), [clients, params.id]);
 
   const [name, setName] = useState('');
+  const [tradeName, setTradeName] = useState('');
   const [cnpj, setCnpj] = useState('');
+  const [municipalRegistration, setMunicipalRegistration] = useState('');
+  const [street, setStreet] = useState('');
+  const [neighborhood, setNeighborhood] = useState('');
+  const [zipCode, setZipCode] = useState('');
   const [phone, setPhone] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [email, setEmail] = useState('');
+  const [instagram, setInstagram] = useState('');
+  const [facebook, setFacebook] = useState('');
   const [notes, setNotes] = useState('');
   const [citySearch, setCitySearch] = useState('');
   const [selectedCity, setSelectedCity] = useState<SelectedCity | null>(null);
@@ -83,8 +109,17 @@ export default function EditClientScreen() {
   useEffect(() => {
     if (!client || initialized) return;
     setName(client.name);
+    setTradeName(client.tradeName || '');
     setCnpj(client.cnpj ? formatCnpj(client.cnpj) : '');
+    setMunicipalRegistration(client.municipalRegistration || '');
+    setStreet(client.street || '');
+    setNeighborhood(client.neighborhood || '');
+    setZipCode(client.zipCode || '');
     setPhone(client.phone || '');
+    setMobile(client.mobile || '');
+    setEmail(client.email || '');
+    setInstagram(client.instagram || '');
+    setFacebook(client.facebook || '');
     setNotes(client.notes || '');
     setCategoryIds(client.categoryIds ?? []);
     setCitySearch(client.city);
@@ -134,12 +169,21 @@ export default function EditClientScreen() {
     try {
       await updateClient(client.id, {
         name: name.trim(),
+        tradeName: tradeName.trim() || undefined,
         cnpj: cnpj.trim(),
+        municipalRegistration: municipalRegistration.trim() || undefined,
+        street: street.trim() || undefined,
+        neighborhood: neighborhood.trim() || undefined,
+        zipCode: zipCode.trim() || undefined,
         city: selectedCity.name,
         cityCode: selectedCity.code,
         lat: selectedCity.lat,
         lng: selectedCity.lng,
         phone: phone.trim() || undefined,
+        mobile: mobile.trim() || undefined,
+        email: email.trim() || undefined,
+        instagram: instagram.trim() || undefined,
+        facebook: facebook.trim() || undefined,
         notes: notes.trim() || undefined,
         categoryIds,
       });
@@ -203,6 +247,18 @@ export default function EditClientScreen() {
       </View>
 
       <View style={styles.field}>
+        <Text style={styles.label}>NOME FANTASIA</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Nome usado no dia a dia da loja"
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={tradeName}
+          onChangeText={setTradeName}
+          returnKeyType="next"
+        />
+      </View>
+
+      <View style={styles.field}>
         <Text style={styles.label}>CNPJ</Text>
         <TextInput
           style={styles.input}
@@ -211,6 +267,20 @@ export default function EditClientScreen() {
           value={cnpj}
           onChangeText={(text) => setCnpj(maskCnpjInput(text))}
           keyboardType="number-pad"
+          returnKeyType="next"
+        />
+      </View>
+
+      <View style={styles.field}>
+        <Text style={styles.label}>INSCRIÇÃO MUNICIPAL</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="000000000"
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={municipalRegistration}
+          onChangeText={setMunicipalRegistration}
+          keyboardType="number-pad"
+          maxLength={20}
           returnKeyType="next"
         />
       </View>
@@ -255,6 +325,43 @@ export default function EditClientScreen() {
         ) : null}
       </View>
 
+      <View style={styles.field}>
+        <Text style={styles.label}>LOGRADOURO</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Rua, avenida, número..."
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={street}
+          onChangeText={setStreet}
+          returnKeyType="next"
+        />
+      </View>
+
+      <View style={styles.field}>
+        <Text style={styles.label}>BAIRRO</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Bairro"
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={neighborhood}
+          onChangeText={setNeighborhood}
+          returnKeyType="next"
+        />
+      </View>
+
+      <View style={styles.field}>
+        <Text style={styles.label}>CEP</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="00000-000"
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={zipCode}
+          onChangeText={(text) => setZipCode(maskCepInput(text))}
+          keyboardType="number-pad"
+          returnKeyType="next"
+        />
+      </View>
+
       {showCategoryField ? (
         <View style={styles.field}>
           <Text style={styles.label}>CATEGORIAS</Text>
@@ -280,6 +387,63 @@ export default function EditClientScreen() {
           value={phone}
           onChangeText={setPhone}
           keyboardType="phone-pad"
+          returnKeyType="next"
+        />
+      </View>
+
+      <View style={styles.field}>
+        <Text style={styles.label}>CELULAR</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="(86) 99999-9999"
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={mobile}
+          onChangeText={(text) => setMobile(maskPhoneInput(text))}
+          keyboardType="phone-pad"
+          maxLength={15}
+          returnKeyType="next"
+        />
+      </View>
+
+      <View style={styles.field}>
+        <Text style={styles.label}>EMAIL</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="contato@loja.com.br"
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="next"
+        />
+      </View>
+
+      <View style={styles.field}>
+        <Text style={styles.label}>INSTAGRAM</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="@usuario"
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={instagram}
+          onChangeText={setInstagram}
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="next"
+        />
+      </View>
+
+      <View style={styles.field}>
+        <Text style={styles.label}>FACEBOOK</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="facebook.com/loja"
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={facebook}
+          onChangeText={setFacebook}
+          autoCapitalize="none"
+          autoCorrect={false}
           returnKeyType="next"
         />
       </View>
