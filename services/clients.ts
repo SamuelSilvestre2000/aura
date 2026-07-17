@@ -195,6 +195,7 @@ export async function updateClient(
   const values: SQLite.SQLiteBindValue[] = [];
 
   if (data.name !== undefined) { fields.push('name = ?'); values.push(data.name); }
+  if (data.tradeName !== undefined) { fields.push('trade_name = ?'); values.push(data.tradeName ?? null); }
   if (data.cnpj !== undefined) {
     fields.push('cnpj = ?');
     values.push(data.cnpj ? stripCnpj(data.cnpj) : null);
@@ -203,11 +204,16 @@ export async function updateClient(
     fields.push('municipal_registration = ?');
     values.push(data.municipalRegistration ?? null);
   }
+  if (data.street !== undefined) { fields.push('street = ?'); values.push(data.street ?? null); }
+  if (data.neighborhood !== undefined) { fields.push('neighborhood = ?'); values.push(data.neighborhood ?? null); }
+  if (data.zipCode !== undefined) { fields.push('zip_code = ?'); values.push(data.zipCode ?? null); }
   if (data.city !== undefined) { fields.push('city = ?'); values.push(data.city); }
   if (data.cityCode !== undefined) { fields.push('city_code = ?'); values.push(data.cityCode); }
   if (data.lat !== undefined) { fields.push('lat = ?'); values.push(data.lat); }
   if (data.lng !== undefined) { fields.push('lng = ?'); values.push(data.lng); }
   if (data.phone !== undefined) { fields.push('phone = ?'); values.push(data.phone); }
+  if (data.mobile !== undefined) { fields.push('mobile = ?'); values.push(data.mobile ?? null); }
+  if (data.email !== undefined) { fields.push('email = ?'); values.push(data.email ?? null); }
   if (data.instagram !== undefined) { fields.push('instagram = ?'); values.push(data.instagram); }
   if (data.facebook !== undefined) { fields.push('facebook = ?'); values.push(data.facebook); }
   if (data.notes !== undefined) { fields.push('notes = ?'); values.push(data.notes); }
