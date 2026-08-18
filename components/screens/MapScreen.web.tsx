@@ -1,15 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Modal, Pressable } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Modal, Pressable, ScrollView } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapContainer, TileLayer, Polygon, CircleMarker, useMap } from 'react-leaflet';
 import type { Map as LeafletMapInstance } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import { getScreenBottomInset } from '../../utils/safeArea';
-import { getTopBarInset } from '../TopTabBar';
+import { getTopBarInset, TOP_BAR_CONTENT_HEIGHT } from '../TopTabBar';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useClients } from '../../hooks/useClients';
 import { useCollections } from '../../hooks/useCollections';
@@ -17,21 +17,40 @@ import { usePurchases } from '../../hooks/usePurchases';
 import { useCityStatus } from '../../hooks/useCityStatus';
 import { useAuth } from '../../hooks/useAuth';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
+import { usePanelNav } from '../../hooks/usePanelNav';
+import { useSetTopBarSlots } from '../../contexts/TopBarSlots';
+import { useDesktopPanel } from '../../contexts/DesktopPanel';
 import {
   filterClientsByCategory,
   filterCollectionsByCategory,
 } from '../../utils/categoryFilter';
 import { isCollectionClosed } from '../../utils/collectionStatus';
 import { getVigenteCollectionId } from '../../utils/collectionVigente';
+import {
+  findCollectionTypeYearSibling,
+  findMostRecentCollectionInSeries,
+  getCollectionYear,
+} from '../../utils/collectionYears';
 import { CategoryPickerPill } from '../CategoryPickerPill';
+import { NotionHeader } from '../NotionHeader';
 
 import { SearchBar } from '../SearchBar';
 import { CitySheet } from '../BottomSheet/CitySheet';
+import { CityDetailsPanel } from '../BottomSheet/CityDetailsPanel';
 import { Ionicons } from '@expo/vector-icons';
+import SaleScreen from '../../app/sale/[clientId]';
+import NewClientScreen from '../../app/client/new';
 
 import { CityGeoData } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING, STATUS_COLORS, STATUS_FILL_OPACITY, PIAUI_REGION } from '../../constants/colors';
 import { OUTER_BOUNDS } from '../../constants/mapBounds';
+
+/** `backdropFilter` não existe no ViewStyle do React Native — só roda na web (isDesktop já exige Platform.OS === 'web'), então nativo nunca chega a montar isto. */
+const WEB_BLUR = {
+  backdropFilter: 'blur(24px) saturate(1.6)',
+  WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+} as any;
 
 const MAP_CENTER: [number, number] = [PIAUI_REGION.latitude, PIAUI_REGION.longitude];
 const MAP_BOUNDS: [[number, number], [number, number]] = [
@@ -57,8 +76,10 @@ function FlyToUser({ target }: { target: [number, number] | null }) {
  * polígonos de cidade (IBGE) do app nativo.
  */
 export default function MapScreenWeb() {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
+  const isDesktop = useIsDesktop();
+  const nav = usePanelNav();
+  const { panel, openPanel, closePanel, setCityContent, setSearchContent } = useDesktopPanel();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const mapRef = useRef<LeafletMapInstance | null>(null);
   const [search, setSearch] = useState('');
@@ -71,6 +92,23 @@ export default function MapScreenWeb() {
   const [refreshingMap, setRefreshingMap] = useState(false);
   const [topUIHeight, setTopUIHeight] = useState(0);
   const [bottomUIHeight, setBottomUIHeight] = useState(0);
+
+  /**
+   * O Leaflet não percebe sozinho quando o container dele muda de tamanho
+   * (ex: painel lateral do desktop abrindo/fechando e empurrando o mapa) —
+   * sem isso os tiles ficam cortados/desalinhados até o usuário redimensionar
+   * a janela manualmente.
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const container = map.getContainer();
+    const observer = new ResizeObserver(() => {
+      map.invalidateSize();
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
   const { can: canDo } = useAuth();
   const {
@@ -128,13 +166,38 @@ export default function MapScreenWeb() {
     }, [refreshClients, refreshCollections, refreshPurchases, effectiveFilter])
   );
 
-  const activeCollectionId =
-    selectedCollectionId ||
+  const defaultCollectionId =
     getVigenteCollectionId(visibleCollections) ||
     visibleCollections.find((c) => !isCollectionClosed(c))?.id ||
     visibleCollections[0]?.id ||
     null;
+  const defaultCollection = visibleCollections.find((c) => c.id === defaultCollectionId) || null;
+  // Sem seleção manual, abre sempre no ano mais novo já cadastrado da mesma
+  // temporada — não só na coleção marcada como vigente.
+  const mostRecentDefaultCollection = defaultCollection
+    ? findMostRecentCollectionInSeries(collections, defaultCollection)
+    : null;
+  const isMostRecentDefaultVisible =
+    !!mostRecentDefaultCollection &&
+    visibleCollections.some((c) => c.id === mostRecentDefaultCollection.id);
+
+  const activeCollectionId =
+    selectedCollectionId ||
+    (isMostRecentDefaultVisible ? mostRecentDefaultCollection!.id : defaultCollectionId);
   const activeCollection = visibleCollections.find((c) => c.id === activeCollectionId) || null;
+
+  // Segmentos em posição fixa: o ano mais novo da série sempre à esquerda,
+  // o ano anterior sempre à direita — só a coleção destacada (azul) muda.
+  const currentYearCollection = activeCollection
+    ? findMostRecentCollectionInSeries(collections, activeCollection)
+    : null;
+  const previousYearCollection = currentYearCollection
+    ? findCollectionTypeYearSibling(collections, currentYearCollection, -1)
+    : null;
+  const yearToggleSegments =
+    currentYearCollection && previousYearCollection
+      ? [currentYearCollection, previousYearCollection]
+      : null;
 
   const { getCityStatus } = useCityStatus(filteredClients, purchases, activeCollectionId);
 
@@ -156,11 +219,18 @@ export default function MapScreenWeb() {
 
   const showSearchResults = searchQuery.length > 0;
 
-  const handleCityPress = useCallback((city: CityGeoData) => {
-    setSelectedCity(city);
-    setHighlightedClientId(null);
-    bottomSheetRef.current?.snapToIndex(0);
-  }, []);
+  const handleCityPress = useCallback(
+    (city: CityGeoData) => {
+      setSelectedCity(city);
+      setHighlightedClientId(null);
+      if (isDesktop) {
+        openPanel('city');
+      } else {
+        bottomSheetRef.current?.snapToIndex(0);
+      }
+    },
+    [isDesktop, openPanel]
+  );
 
   const handleSelectSearchCity = useCallback(
     (city: CityGeoData) => {
@@ -184,31 +254,31 @@ export default function MapScreenWeb() {
   const handleTogglePurchase = useCallback(
     (clientId: string) => {
       if (!activeCollectionId) return;
-      router.push({
-        pathname: '/sale/[clientId]',
-        params: { clientId, collectionId: activeCollectionId },
-      });
+      nav.open(
+        `sale-${clientId}-${activeCollectionId}`,
+        <SaleScreen clientId={clientId} collectionId={activeCollectionId} />,
+        '/sale/[clientId]',
+        { clientId, collectionId: activeCollectionId }
+      );
     },
-    [activeCollectionId, router]
+    [activeCollectionId, nav]
   );
 
   const openNewClient = useCallback(
     (city?: CityGeoData | null) => {
       if (city) {
-        router.push({
-          pathname: '/client/new',
-          params: {
-            city: city.name,
-            cityCode: city.code,
-            lat: String(city.centroid[1]),
-            lng: String(city.centroid[0]),
-          },
-        });
+        const params = {
+          city: city.name,
+          cityCode: city.code,
+          lat: String(city.centroid[1]),
+          lng: String(city.centroid[0]),
+        };
+        nav.open(`client-new-${city.code}`, <NewClientScreen {...params} />, '/client/new', params);
       } else {
-        router.push('/client/new');
+        nav.open('client-new', <NewClientScreen />, '/client/new');
       }
     },
-    [router]
+    [nav]
   );
 
   const handleAddClient = useCallback(() => {
@@ -220,6 +290,29 @@ export default function MapScreenWeb() {
   const handleCloseSheet = useCallback(() => {
     setSelectedCity(null);
     setHighlightedClientId(null);
+    closePanel();
+  }, [closePanel]);
+
+  /**
+   * No desktop o painel de cidade não é fechado só pelo próprio X — trocar de
+   * aba (Mapa/Clientes/Coleções/Conta) também fecha, e sem isso o mapa
+   * ficaria com uma cidade "presa" selecionada (botões flutuantes escondidos)
+   * mesmo depois do painel sumir.
+   */
+  useEffect(() => {
+    if (isDesktop && panel !== 'city' && selectedCity) {
+      setSelectedCity(null);
+      setHighlightedClientId(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [panel, isDesktop]);
+
+  const handleZoomIn = useCallback(() => {
+    mapRef.current?.zoomIn();
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    mapRef.current?.zoomOut();
   }, []);
 
   const handleLocateMe = useCallback(() => {
@@ -266,6 +359,171 @@ export default function MapScreenWeb() {
   const selectedCityStatus = selectedCity ? getCityStatus(selectedCity.code) : 'no-clients';
   const hasCities = cities.length > 0;
 
+  const cityPanelNode = (
+    <CityDetailsPanel
+      selectedCity={selectedCity}
+      cityStatus={selectedCityStatus}
+      clients={selectedCityClients}
+      activeCollection={activeCollection}
+      onTogglePurchase={handleTogglePurchase}
+      getPurchaseStatus={getPurchaseStatus}
+      getSaleForClientCollection={getSaleForClientCollection}
+      onAddClient={handleAddClient}
+      onClose={handleCloseSheet}
+      canManageClients={canManageClients}
+      showCategoryBadges={userCategories.length > 1}
+      highlightedClientId={highlightedClientId}
+    />
+  );
+
+  useEffect(() => {
+    setCityContent(isDesktop ? cityPanelNode : null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDesktop, cityPanelNode]);
+
+  const searchResultsContent = !showSearchResults ? null : citySearchResults.length === 0 &&
+    clientSearchResults.length === 0 ? (
+    <Text style={styles.searchResultsEmpty}>Nenhum resultado encontrado</Text>
+  ) : (
+    <>
+      {citySearchResults.length > 0 && (
+        <>
+          <Text style={styles.searchResultsLabel}>Cidades</Text>
+          {citySearchResults.map((city) => (
+            <TouchableOpacity
+              key={city.code}
+              style={styles.searchResultRow}
+              onPress={() => handleSelectSearchCity(city)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="location-outline" size={16} color={COLORS.textMuted} />
+              <Text style={styles.searchResultText} numberOfLines={1}>
+                {city.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </>
+      )}
+      {clientSearchResults.length > 0 && (
+        <>
+          <Text style={styles.searchResultsLabel}>Clientes</Text>
+          {clientSearchResults.map((client) => (
+            <TouchableOpacity
+              key={client.id}
+              style={styles.searchResultRow}
+              onPress={() => handleSelectSearchClient(client)}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="storefront-outline" size={16} color={COLORS.textMuted} />
+              <View style={styles.searchResultBody}>
+                <Text style={styles.searchResultText} numberOfLines={1}>
+                  {client.name}
+                </Text>
+                <Text style={styles.searchResultSubtext} numberOfLines={1}>
+                  {client.city}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </>
+      )}
+    </>
+  );
+
+  const searchPanelNode = (
+    <View style={styles.searchPanel}>
+      <View style={{ paddingTop: getTopBarInset(insets) }}>
+        <NotionHeader title="Buscar" showBorder />
+      </View>
+      <View style={styles.searchPanelInputWrap}>
+        <SearchBar
+          value={search}
+          onChangeText={setSearch}
+          onClear={() => setSearch('')}
+          placeholder="Pesquisar cidade ou cliente..."
+        />
+      </View>
+      <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        {showSearchResults ? (
+          searchResultsContent
+        ) : (
+          <Text style={styles.searchPanelHint}>Digite para encontrar uma cidade ou cliente</Text>
+        )}
+      </ScrollView>
+    </View>
+  );
+
+  useEffect(() => {
+    setSearchContent(isDesktop ? searchPanelNode : null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDesktop, searchPanelNode]);
+
+  const collectionPillNode = !activeCollection ? null : visibleCollections.length > 1 ? (
+    <TouchableOpacity
+      style={[styles.collectionPill, isDesktop && styles.pillGlass]}
+      onPress={() => setShowCollectionPicker(true)}
+      activeOpacity={0.75}
+    >
+      <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
+      <Text style={styles.collectionPillText} numberOfLines={1}>
+        {activeCollection.name}
+      </Text>
+      <Ionicons name="chevron-down" size={13} color={COLORS.textMuted} />
+    </TouchableOpacity>
+  ) : (
+    <View style={[styles.collectionPill, isDesktop && styles.pillGlass]}>
+      <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
+      <Text style={styles.collectionPillText} numberOfLines={1}>
+        {activeCollection.name}
+      </Text>
+    </View>
+  );
+
+  const yearTogglePillNode = yearToggleSegments ? (
+    <View style={[styles.yearTogglePill, isDesktop && styles.pillGlass]}>
+      {yearToggleSegments.map((seg) => {
+        const isActive = seg.id === activeCollection?.id;
+        return (
+          <TouchableOpacity
+            key={seg.id}
+            style={[styles.yearToggleSegment, isActive && styles.yearToggleSegmentActive]}
+            onPress={() => setSelectedCollectionId(seg.id)}
+            activeOpacity={0.75}
+            accessibilityLabel={`Ver ${seg.name}`}
+          >
+            <Text
+              style={[
+                styles.yearToggleSegmentText,
+                isActive && styles.yearToggleSegmentTextActive,
+              ]}
+            >
+              {getCollectionYear(seg)}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  ) : null;
+
+  const categoryPillNode = (
+    <CategoryPickerPill
+      categories={userCategories}
+      value={categoryFilter}
+      onChange={setCategoryFilter}
+      style={[styles.toolbarPillShadow, isDesktop && styles.pillGlass]}
+    />
+  );
+
+  const desktopTogglesNode = activeCollection ? (
+    <View style={styles.pillRow}>
+      {collectionPillNode}
+      {yearTogglePillNode}
+      {categoryPillNode}
+    </View>
+  ) : null;
+
+  useSetTopBarSlots(isDesktop ? desktopTogglesNode : null);
+
   if (geoError && cities.length === 0) {
     return (
       <View style={styles.errorContainer}>
@@ -288,6 +546,7 @@ export default function MapScreenWeb() {
             maxZoom={14}
             maxBounds={MAP_BOUNDS}
             maxBoundsViscosity={1.0}
+            zoomControl={false}
             style={{ width: '100%', height: '100%' }}
           >
             <TileLayer
@@ -344,35 +603,11 @@ export default function MapScreenWeb() {
           pointerEvents="box-none"
           onLayout={(e) => setTopUIHeight(e.nativeEvent.layout.height)}
         >
-          {activeCollection && (
+          {!isDesktop && activeCollection && (
             <View style={styles.collectionContainer}>
               <View style={styles.pillRow}>
-                {visibleCollections.length > 1 ? (
-                  <TouchableOpacity
-                    style={styles.collectionPill}
-                    onPress={() => setShowCollectionPicker(true)}
-                    activeOpacity={0.75}
-                  >
-                    <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
-                    <Text style={styles.collectionPillText} numberOfLines={1}>
-                      {activeCollection.name}
-                    </Text>
-                    <Ionicons name="chevron-down" size={13} color={COLORS.textMuted} />
-                  </TouchableOpacity>
-                ) : (
-                  <View style={styles.collectionPill}>
-                    <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
-                    <Text style={styles.collectionPillText} numberOfLines={1}>
-                      {activeCollection.name}
-                    </Text>
-                  </View>
-                )}
-
-                <CategoryPickerPill
-                  categories={userCategories}
-                  value={categoryFilter}
-                  onChange={setCategoryFilter}
-                />
+                {collectionPillNode}
+                {categoryPillNode}
               </View>
             </View>
           )}
@@ -383,6 +618,15 @@ export default function MapScreenWeb() {
             style={[styles.bottomControls, { paddingBottom: bottomUIHeight + SPACING.sm }]}
             pointerEvents="box-none"
           >
+            <View style={styles.zoomControl}>
+              <TouchableOpacity style={styles.zoomButton} onPress={handleZoomIn} activeOpacity={0.7}>
+                <Ionicons name="add" size={20} color={COLORS.primary} />
+              </TouchableOpacity>
+              <View style={styles.zoomDivider} />
+              <TouchableOpacity style={styles.zoomButton} onPress={handleZoomOut} activeOpacity={0.7}>
+                <Ionicons name="remove" size={20} color={COLORS.primary} />
+              </TouchableOpacity>
+            </View>
             <TouchableOpacity style={styles.mapActionBtn} onPress={handleRefreshMap} activeOpacity={0.7}>
               {refreshingMap ? (
                 <ActivityIndicator size="small" color={COLORS.primary} />
@@ -400,73 +644,29 @@ export default function MapScreenWeb() {
           </View>
         )}
 
-        <View
-          style={[styles.bottomSearchWrapper, { paddingBottom: bottomOffset }]}
-          pointerEvents="box-none"
-          onLayout={(e) => setBottomUIHeight(e.nativeEvent.layout.height)}
-        >
-          <View style={styles.searchAnchor}>
-            {showSearchResults && (
-              <View style={styles.searchResults} pointerEvents="auto">
-                {citySearchResults.length === 0 && clientSearchResults.length === 0 ? (
-                  <Text style={styles.searchResultsEmpty}>Nenhum resultado encontrado</Text>
-                ) : (
-                  <>
-                    {citySearchResults.length > 0 && (
-                      <>
-                        <Text style={styles.searchResultsLabel}>Cidades</Text>
-                        {citySearchResults.map((city) => (
-                          <TouchableOpacity
-                            key={city.code}
-                            style={styles.searchResultRow}
-                            onPress={() => handleSelectSearchCity(city)}
-                            activeOpacity={0.7}
-                          >
-                            <Ionicons name="location-outline" size={16} color={COLORS.textMuted} />
-                            <Text style={styles.searchResultText} numberOfLines={1}>
-                              {city.name}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </>
-                    )}
-                    {clientSearchResults.length > 0 && (
-                      <>
-                        <Text style={styles.searchResultsLabel}>Clientes</Text>
-                        {clientSearchResults.map((client) => (
-                          <TouchableOpacity
-                            key={client.id}
-                            style={styles.searchResultRow}
-                            onPress={() => handleSelectSearchClient(client)}
-                            activeOpacity={0.7}
-                          >
-                            <Ionicons name="storefront-outline" size={16} color={COLORS.textMuted} />
-                            <View style={styles.searchResultBody}>
-                              <Text style={styles.searchResultText} numberOfLines={1}>
-                                {client.name}
-                              </Text>
-                              <Text style={styles.searchResultSubtext} numberOfLines={1}>
-                                {client.city}
-                              </Text>
-                            </View>
-                          </TouchableOpacity>
-                        ))}
-                      </>
-                    )}
-                  </>
-                )}
-              </View>
-            )}
+        {!isDesktop && (
+          <View
+            style={[styles.bottomSearchWrapper, { paddingBottom: bottomOffset }]}
+            pointerEvents="box-none"
+            onLayout={(e) => setBottomUIHeight(e.nativeEvent.layout.height)}
+          >
+            <View style={styles.searchAnchor}>
+              {showSearchResults && (
+                <View style={styles.searchResults} pointerEvents="auto">
+                  {searchResultsContent}
+                </View>
+              )}
 
-            <SearchBar
-              variant="map"
-              value={search}
-              onChangeText={setSearch}
-              onClear={() => setSearch('')}
-              placeholder="Pesquisar cidade ou cliente..."
-            />
+              <SearchBar
+                variant="map"
+                value={search}
+                onChangeText={setSearch}
+                onClear={() => setSearch('')}
+                placeholder="Pesquisar cidade ou cliente..."
+              />
+            </View>
           </View>
-        </View>
+        )}
 
         {/* Modal seleção de coleção */}
         <Modal
@@ -516,21 +716,23 @@ export default function MapScreenWeb() {
           </Pressable>
         </Modal>
 
-        <CitySheet
-          bottomSheetRef={bottomSheetRef}
-          selectedCity={selectedCity}
-          cityStatus={selectedCityStatus}
-          clients={selectedCityClients}
-          activeCollection={activeCollection}
-          onTogglePurchase={handleTogglePurchase}
-          getPurchaseStatus={getPurchaseStatus}
-          getSaleForClientCollection={getSaleForClientCollection}
-          onAddClient={handleAddClient}
-          onClose={handleCloseSheet}
-          canManageClients={canManageClients}
-          showCategoryBadges={userCategories.length > 1}
-          highlightedClientId={highlightedClientId}
-        />
+        {!isDesktop && (
+          <CitySheet
+            bottomSheetRef={bottomSheetRef}
+            selectedCity={selectedCity}
+            cityStatus={selectedCityStatus}
+            clients={selectedCityClients}
+            activeCollection={activeCollection}
+            onTogglePurchase={handleTogglePurchase}
+            getPurchaseStatus={getPurchaseStatus}
+            getSaleForClientCollection={getSaleForClientCollection}
+            onAddClient={handleAddClient}
+            onClose={handleCloseSheet}
+            canManageClients={canManageClients}
+            showCategoryBadges={userCategories.length > 1}
+            highlightedClientId={highlightedClientId}
+          />
+        )}
       </View>
     </GestureHandlerRootView>
   );
@@ -575,6 +777,26 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
   },
+  searchPanel: {
+    flex: 1,
+    // Transparente (não translúcido) — só é usado dentro do painel flutuante
+    // do desktop, que já é translúcido com blur; uma segunda camada
+    // translúcida por cima somaria as opacidades e ficaria quase opaco.
+    backgroundColor: 'transparent',
+    borderRadius: RADIUS.xxl,
+    overflow: 'hidden',
+  },
+  searchPanelInputWrap: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.sm,
+  },
+  searchPanelHint: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.sm,
+    textAlign: 'center',
+    paddingHorizontal: SPACING.lg,
+    paddingTop: SPACING.xl,
+  },
   searchResultsEmpty: {
     color: COLORS.textMuted,
     fontSize: FONTS.sizes.sm,
@@ -610,23 +832,80 @@ const styles = StyleSheet.create({
   },
   collectionContainer: { marginTop: 6, marginHorizontal: 12 },
   pillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.sm },
+  // Só no desktop: mesmo material de vidro da rail/painel (translúcido + blur),
+  // no lugar do branco opaco — substitui backgroundColor/borderColor do pill.
+  pillGlass: {
+    backgroundColor: COLORS.floatingBg,
+    borderColor: COLORS.floatingBorder,
+    ...WEB_BLUR,
+  },
+  // Mesmo padrão visual dos botões "Clientes"/"Coleções" da TopTabBar:
+  // fundo branco, borda hairline cinza, sombra suave, altura fixa, full rounded.
+  toolbarPillShadow: {
+    height: TOP_BAR_CONTENT_HEIGHT,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 6,
+  },
   collectionPill: {
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
+    height: TOP_BAR_CONTENT_HEIGHT,
     gap: 6,
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.md,
-    paddingVertical: 6,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 6,
   },
   collectionPillText: {
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.sm,
     fontWeight: '500',
     maxWidth: 180,
+  },
+  yearTogglePill: {
+    flexDirection: 'row',
+    alignSelf: 'flex-start',
+    alignItems: 'center',
+    height: TOP_BAR_CONTENT_HEIGHT,
+    backgroundColor: COLORS.surface,
+    borderRadius: RADIUS.full,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
+    padding: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  yearToggleSegment: {
+    height: '100%',
+    paddingHorizontal: SPACING.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: RADIUS.full,
+  },
+  yearToggleSegmentActive: {
+    backgroundColor: '#E9E9E7',
+  },
+  yearToggleSegmentText: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '600',
+  },
+  yearToggleSegmentTextActive: {
+    color: COLORS.textPrimary,
+    fontWeight: '700',
   },
   initialLoadingBanner: {
     position: 'absolute',
@@ -680,6 +959,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
+  },
+  /** Pill único (+ em cima, − embaixo) estilo Apple Maps, nas cores do app. */
+  zoomControl: {
+    width: 44,
+    borderRadius: 14,
+    backgroundColor: COLORS.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
+    overflow: 'hidden',
+  },
+  zoomButton: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  zoomDivider: {
+    height: StyleSheet.hairlineWidth,
+    marginHorizontal: 8,
+    backgroundColor: COLORS.surfaceBorder,
   },
   pickerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.25)', justifyContent: 'flex-end' },
   pickerSheet: {

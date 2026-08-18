@@ -1,0 +1,301 @@
+import React, { useCallback } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, FlatList } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { CityGeoData, Client, CityStatus, Collection, Sale } from '../../types';
+import { STATUS_COLORS, COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { isCollectionClosed } from '../../utils/collectionStatus';
+import { NotionHeader } from '../NotionHeader';
+import { ClientCard } from './ClientCard';
+
+type Props = {
+  selectedCity: CityGeoData | null;
+  cityStatus: CityStatus;
+  clients: Client[];
+  activeCollection: Collection | null;
+  onTogglePurchase: (clientId: string) => void;
+  getPurchaseStatus: (clientId: string, collectionId: string) => boolean;
+  getSaleForClientCollection: (clientId: string, collectionId: string) => Sale | undefined;
+  onAddClient: () => void;
+  onClose: () => void;
+  canManageClients?: boolean;
+  showCategoryBadges?: boolean;
+  highlightedClientId?: string | null;
+};
+
+const STATUS_LABELS: Record<CityStatus, string> = {
+  all: 'Todos compraram',
+  partial: 'Compras parciais',
+  none: 'Nenhum comprou',
+  'no-clients': 'Sem clientes',
+};
+
+/** Versão do CitySheet para o painel lateral do desktop — mesmo conteúdo, sem o BottomSheet. */
+export function CityDetailsPanel({
+  selectedCity,
+  cityStatus,
+  clients,
+  activeCollection,
+  onTogglePurchase,
+  getPurchaseStatus,
+  getSaleForClientCollection,
+  onAddClient,
+  onClose,
+  canManageClients = true,
+  showCategoryBadges = true,
+  highlightedClientId = null,
+}: Props) {
+  const statusColor = STATUS_COLORS[cityStatus];
+
+  const countLabel =
+    clients.length === 0
+      ? 'Nenhum cliente'
+      : `${clients.length} cliente${clients.length !== 1 ? 's' : ''}`;
+
+  const renderHeader = useCallback(() => {
+    if (!selectedCity) return null;
+    return (
+      <View style={styles.header}>
+        <NotionHeader
+          title={selectedCity.name}
+          showBorder
+          leftAction={
+            <TouchableOpacity
+              onPress={onClose}
+              style={styles.closeButton}
+              activeOpacity={0.7}
+              hitSlop={8}
+              accessibilityLabel="Fechar"
+            >
+              <Ionicons name="close" size={20} color={COLORS.textMuted} />
+            </TouchableOpacity>
+          }
+          rightAction={
+            canManageClients ? (
+              <TouchableOpacity
+                onPress={onAddClient}
+                style={styles.newButton}
+                activeOpacity={0.7}
+                hitSlop={8}
+              >
+                <Text style={styles.newButtonText}>Adicionar</Text>
+              </TouchableOpacity>
+            ) : undefined
+          }
+        />
+
+        <View style={styles.metaRow}>
+          <View style={[styles.statusPill, { borderColor: `${statusColor}55` }]}>
+            <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+            <Text style={[styles.statusText, { color: statusColor }]}>
+              {STATUS_LABELS[cityStatus]}
+            </Text>
+          </View>
+          {activeCollection && (
+            <View style={styles.collectionPill}>
+              <Ionicons name="albums-outline" size={13} color={COLORS.textMuted} />
+              <Text style={styles.collectionPillText} numberOfLines={1}>
+                {activeCollection.name}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {clients.length > 0 && <Text style={styles.sectionLabel}>{countLabel}</Text>}
+      </View>
+    );
+  }, [selectedCity, cityStatus, statusColor, countLabel, canManageClients, onAddClient, onClose, activeCollection, clients.length]);
+
+  const renderEmpty = useCallback(() => {
+    if (clients.length > 0) return null;
+    return (
+      <View style={styles.empty}>
+        <View style={styles.emptyIconWrap}>
+          <Ionicons name="storefront-outline" size={32} color={COLORS.textMuted} />
+        </View>
+        <Text style={styles.emptyTitle}>Nenhum cliente em {selectedCity?.name}</Text>
+        <Text style={styles.emptySubtitle}>
+          {canManageClients
+            ? 'Cadastre o primeiro cliente desta cidade para acompanhar no mapa.'
+            : 'Nenhum cliente cadastrado nesta cidade.'}
+        </Text>
+        {canManageClients && (
+          <TouchableOpacity style={styles.addRow} onPress={onAddClient} activeOpacity={0.7}>
+            <Ionicons name="add" size={18} color={COLORS.textMuted} />
+            <Text style={styles.addRowText}>Novo cliente</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  }, [clients.length, selectedCity?.name, canManageClients, onAddClient]);
+
+  const collectionClosed = activeCollection ? isCollectionClosed(activeCollection) : false;
+
+  const renderItem = useCallback(
+    ({ item, index }: { item: Client; index: number }) => (
+      <ClientCard
+        client={item}
+        index={index}
+        isLast={index === clients.length - 1}
+        collectionId={activeCollection?.id ?? null}
+        purchased={activeCollection ? getPurchaseStatus(item.id, activeCollection.id) : false}
+        onToggle={() => onTogglePurchase(item.id)}
+        showCategoryBadges={showCategoryBadges}
+        highlighted={item.id === highlightedClientId}
+        closed={collectionClosed}
+        saleAmount={
+          activeCollection ? getSaleForClientCollection(item.id, activeCollection.id)?.amount : undefined
+        }
+      />
+    ),
+    [
+      activeCollection,
+      clients.length,
+      getPurchaseStatus,
+      getSaleForClientCollection,
+      onTogglePurchase,
+      showCategoryBadges,
+      highlightedClientId,
+      collectionClosed,
+    ]
+  );
+
+  return (
+    <FlatList
+      data={clients}
+      keyExtractor={(item) => item.id}
+      renderItem={renderItem}
+      ListHeaderComponent={renderHeader}
+      ListEmptyComponent={renderEmpty}
+      contentContainerStyle={styles.listContent}
+      showsVerticalScrollIndicator={false}
+      style={styles.list}
+    />
+  );
+}
+
+const styles = StyleSheet.create({
+  list: {
+    flex: 1,
+    // Transparente (não translúcido) — só é usado no painel lateral do
+    // desktop (CitySheet cobre o mobile), que já é translúcido com blur; uma
+    // segunda camada translúcida por cima somaria as opacidades.
+    backgroundColor: 'transparent',
+  },
+  header: {
+    marginHorizontal: -SPACING.lg,
+    paddingBottom: SPACING.sm,
+    gap: SPACING.sm,
+    // Transparente (não translúcido) — só é usado no painel lateral do
+    // desktop (CitySheet cobre o mobile), que já é translúcido com blur; uma
+    // segunda camada translúcida por cima somaria as opacidades.
+    backgroundColor: 'transparent',
+  },
+  newButton: {
+    paddingVertical: 6,
+    paddingHorizontal: SPACING.xs,
+    backgroundColor: 'transparent',
+  },
+  newButtonText: {
+    color: COLORS.primary,
+    fontWeight: '600',
+    fontSize: FONTS.sizes.sm,
+  },
+  closeButton: {
+    padding: 2,
+  },
+  metaRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
+  },
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 4,
+    borderRadius: RADIUS.full,
+    borderWidth: StyleSheet.hairlineWidth,
+    backgroundColor: COLORS.surface,
+  },
+  statusDot: { width: 6, height: 6, borderRadius: 3 },
+  statusText: { fontSize: FONTS.sizes.xs, fontWeight: '600' },
+  collectionPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 4,
+    borderRadius: RADIUS.full,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
+    backgroundColor: COLORS.surface,
+    maxWidth: 160,
+  },
+  collectionPillText: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.xs,
+    fontWeight: '500',
+    flexShrink: 1,
+  },
+  sectionLabel: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.xs,
+    fontWeight: '600',
+    letterSpacing: 0.6,
+    paddingHorizontal: SPACING.lg,
+    marginTop: SPACING.xs,
+  },
+  listContent: {
+    flexGrow: 1,
+    paddingBottom: 48,
+    paddingHorizontal: SPACING.lg,
+    // Transparente (não translúcido) — só é usado no painel lateral do
+    // desktop (CitySheet cobre o mobile), que já é translúcido com blur; uma
+    // segunda camada translúcida por cima somaria as opacidades.
+    backgroundColor: 'transparent',
+  },
+  empty: {
+    alignItems: 'center',
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: SPACING.xxl,
+    gap: SPACING.sm,
+  },
+  emptyIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: COLORS.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.sm,
+  },
+  emptyTitle: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.lg,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  addRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    marginTop: SPACING.lg,
+    paddingVertical: SPACING.md,
+  },
+  addRowText: {
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '500',
+  },
+});
