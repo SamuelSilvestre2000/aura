@@ -46,7 +46,18 @@ CREATE TABLE IF NOT EXISTS collections (
   brand_id TEXT,
   start_date TEXT,
   end_date TEXT,
-  category_id TEXT
+  category_id TEXT,
+  collection_type_id TEXT
+);
+
+CREATE TABLE IF NOT EXISTS collection_types (
+  id TEXT PRIMARY KEY,
+  organization_id TEXT REFERENCES organizations(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  slug TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  UNIQUE(organization_id, slug)
 );
 
 CREATE TABLE IF NOT EXISTS clients (
@@ -222,6 +233,10 @@ function ensureMigrations(db) {
   if (!columns.includes('cnpj')) {
     db.exec('ALTER TABLE clients ADD COLUMN cnpj TEXT');
   }
+  const collectionColumns = db.prepare('PRAGMA table_info(collections)').all().map((row) => row.name);
+  if (!collectionColumns.includes('collection_type_id')) {
+    db.exec('ALTER TABLE collections ADD COLUMN collection_type_id TEXT');
+  }
 }
 
 function seedBase(db) {
@@ -249,6 +264,18 @@ function seedBase(db) {
       'cat_adulto', 'Adulto', 'adulto', DEFAULT_ORG_ID, DEFAULT_DIMENSION_ID, now,
       'cat_infantil', 'Infantil', 'infantil', DEFAULT_ORG_ID, DEFAULT_DIMENSION_ID, now
     );
+  }
+
+  const collectionTypes = [
+    ['ctype_outono_inverno', 'Outono/Inverno', 'outono-inverno', 0],
+    ['ctype_alto_verao', 'Alto Verão', 'alto-verao', 1],
+    ['ctype_primavera', 'Primavera', 'primavera', 2],
+  ];
+  for (const [id, name, slug, sortOrder] of collectionTypes) {
+    db.prepare(
+      `INSERT OR IGNORE INTO collection_types (id, organization_id, name, slug, sort_order, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`
+    ).run(id, DEFAULT_ORG_ID, name, slug, sortOrder, now);
   }
 
   db.prepare(

@@ -54,6 +54,16 @@ export type CategoryDimension = {
   createdAt: string;
 };
 
+/** Tipo/temporada da coleção (Alto Verão, Outono/Inverno, Primavera, ...). */
+export type CollectionType = {
+  id: string;
+  organizationId?: string;
+  name: string;
+  slug: string;
+  sortOrder: number;
+  createdAt: string;
+};
+
 export type RepresentativeScope = {
   id: string;
   userId: string;
@@ -91,6 +101,8 @@ export type Collection = {
   endDate?: string;
   /** Linha da coleção; null = ambas as categorias. */
   categoryId?: string | null;
+  /** Tipo/temporada (Alto Verão, Outono/Inverno, Primavera, ...); null = sem tipo definido. */
+  collectionTypeId?: string | null;
   /** Marcada explicitamente como a coleção vigente (só uma por organização). */
   isVigente?: boolean;
   /** Meta em R$ do usuário logado (quando carregada). */

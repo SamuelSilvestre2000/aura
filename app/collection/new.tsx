@@ -3,22 +3,26 @@ import { StyleSheet, View, Text, TextInput, TouchableOpacity } from 'react-nativ
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
-import { goBack } from '../../utils/navigation';
 import { useCollections } from '../../hooks/useCollections';
 import { useAuth } from '../../hooks/useAuth';
+import { usePanelNav } from '../../hooks/usePanelNav';
 import { FormScreen } from '../../components/FormScreen';
 import { FormSection } from '../../components/FormSection';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
 import { DateField } from '../../components/DateField';
 import { CategorySelect } from '../../components/CategorySelect';
+import { CollectionTypeSelect } from '../../components/CollectionTypeSelect';
 import { CollectionGoalsInput } from '../../components/CollectionGoalsInput';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { addMonths, toISODate } from '../../utils/dates';
 import { getAllowedCategoriesForUser } from '../../services/categories';
+import { listCollectionTypes } from '../../services/collectionTypes';
+import { CollectionType } from '../../types';
 import { applicableGoalCategories } from '../../utils/collectionGoalCategories';
 
 export default function NewCollectionScreen() {
   const router = useRouter();
+  const nav = usePanelNav();
   const { user, can: canDo } = useAuth();
   const { createCollection, refresh } = useCollections();
 
@@ -29,12 +33,20 @@ export default function NewCollectionScreen() {
   /** '' = ainda não escolhida; null = "Ambas" escolhido explicitamente; string = categoria específica. */
   const [categoryId, setCategoryId] = useState<string | null>('');
   const [categories, setCategories] = useState(user?.categories ?? []);
+  const [collectionTypeId, setCollectionTypeId] = useState<string | null>(null);
+  const [collectionTypes, setCollectionTypes] = useState<CollectionType[]>([]);
   const [setAsVigente, setSetAsVigente] = useState(true);
   const [creating, setCreating] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (!canDo('manage_collections')) router.replace('/(tabs)/collections');
+    if (canDo('manage_collections')) return;
+    if (nav.isDesktop) {
+      nav.back();
+      return;
+    }
+    router.replace('/(tabs)/collections');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canDo, router]);
 
   const loadCategories = useCallback(async () => {
@@ -45,14 +57,22 @@ export default function NewCollectionScreen() {
     setCategories(await getAllowedCategoriesForUser(user.id, user.role));
   }, [user]);
 
+  const loadCollectionTypes = useCallback(async () => {
+    setCollectionTypes(await listCollectionTypes());
+  }, []);
+
   useEffect(() => {
     void loadCategories();
   }, [loadCategories]);
 
+  useEffect(() => {
+    void loadCollectionTypes();
+  }, [loadCollectionTypes]);
+
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await loadCategories();
+      await Promise.all([loadCategories(), loadCollectionTypes()]);
     } finally {
       setRefreshing(false);
     }
@@ -105,13 +125,14 @@ export default function NewCollectionScreen() {
         startDate: toISODate(startDate),
         endDate: toISODate(endDate),
         categoryId: categoryId === '' ? null : categoryId,
+        collectionTypeId,
         goals,
         userId: user?.id,
         userRole: user?.role,
         isVigente: setAsVigente,
       });
       await refresh();
-      goBack(router);
+      nav.back();
     } catch (err) {
       Alert.alert('Erro', err instanceof Error ? err.message : 'Não foi possível criar a coleção.');
     } finally {
@@ -122,7 +143,7 @@ export default function NewCollectionScreen() {
   return (
     <FormScreen
       title="Nova coleção"
-      onBack={() => goBack(router)}
+      onBack={() => nav.back()}
       onRefresh={handleRefresh}
       refreshing={refreshing}
       headerRight={
@@ -159,6 +180,12 @@ export default function NewCollectionScreen() {
             required
           />
         )}
+
+        <CollectionTypeSelect
+          types={collectionTypes}
+          value={collectionTypeId}
+          onChange={setCollectionTypeId}
+        />
       </FormSection>
 
       <FormSection title="Período">
