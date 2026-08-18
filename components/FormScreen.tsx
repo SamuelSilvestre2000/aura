@@ -10,9 +10,11 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SPACING } from '../constants/colors';
 import { getScreenTopInset } from '../utils/safeArea';
+import { useIsDesktop } from '../hooks/useIsDesktop';
 import { NotionHeader } from './NotionHeader';
 import { HeaderBackButton } from './HeaderBackButton';
 import { PullToRefresh } from './PullToRefresh';
+import { getTopBarInset } from './TopTabBar';
 
 type Props = {
   title: string;
@@ -35,6 +37,14 @@ export function FormScreen({
   refreshing = false,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const isDesktop = useIsDesktop();
+  /**
+   * No desktop esta tela é empilhada dentro da sidebar, ao lado dos painéis
+   * base (Clientes/Coleções/Conta) — o header precisa reservar o mesmo
+   * espaço do topo que eles (getTopBarInset) para os títulos alinharem na
+   * mesma altura. No mobile ela ainda é página cheia sem barra por cima.
+   */
+  const headerTopInset = isDesktop ? getTopBarInset(insets) : getScreenTopInset(insets);
 
   const scrollView = (
     <ScrollView
@@ -48,7 +58,7 @@ export function FormScreen({
 
   return (
     <View style={styles.container}>
-      <View style={{ paddingTop: getScreenTopInset(insets) }}>
+      <View style={{ paddingTop: headerTopInset }}>
         <NotionHeader
           title={title}
           showBorder
