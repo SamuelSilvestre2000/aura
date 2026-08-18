@@ -50,6 +50,11 @@ export const COLORS = {
   cardBlur: 'rgba(255, 255, 255, 0.97)',
   searchBar: 'rgba(255, 255, 255, 0.97)',
 
+  // Material flutuante (rail/painel do desktop, estilo Apple Maps: vidro translúcido)
+  floatingBg: 'rgba(247, 247, 245, 0.72)',
+  floatingPanelBg: 'rgba(255, 255, 255, 0.75)',
+  floatingBorder: 'rgba(255, 255, 255, 0.6)',
+
   // Status aliases
   statusAll: '#448361',
   statusPartial: '#D9730D',
@@ -61,6 +66,20 @@ export const COLORS = {
   tabInactive: '#AFACAA',
   tabBackground: '#FFFFFF',
 } as const;
+
+// ─── Paleta de avatares de cliente ────────────────────────────────────────────
+// Cor determinística por id (estilo Contatos da Apple): o mesmo cliente sempre
+// cai na mesma cor, em qualquer tela — ver utils/avatarColor.ts.
+export const AVATAR_PALETTE = [
+  '#FF9500',
+  '#34C759',
+  '#007AFF',
+  '#AF52DE',
+  '#FF3B30',
+  '#5AC8FA',
+  '#FF2D55',
+  '#5856D6',
+] as const;
 
 // ─── Mapa ─────────────────────────────────────────────────────────────────────
 export const PIAUI_REGION = {
@@ -102,5 +121,6 @@ export const RADIUS = {
   md: 6,
   lg: 8,
   xl: 12,
+  xxl: 20,
   full: 999,
 } as const;
