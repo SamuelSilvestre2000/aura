@@ -16,6 +16,7 @@ import { clearGeoCache } from '../../services/ibge';
 import { getDatabase } from '../../services/database';
 import { deleteUser, listUsers } from '../../services/users';
 import { useAuth } from '../../hooks/useAuth';
+import { usePanelNav } from '../../hooks/usePanelNav';
 import { User } from '../../types';
 import { ROLE_LABELS } from '../../constants/permissions';
 import { formatCategoryNames } from '../../constants/userCategories';
@@ -24,12 +25,18 @@ import { getTopBarInset } from '../../components/TopTabBar';
 import { NotionHeader } from '../../components/NotionHeader';
 import { PullToRefresh } from '../../components/PullToRefresh';
 import { Avatar } from '../../components/Avatar';
+import EditUserScreen from '../user/edit';
+import ProfileScreen from '../user/profile';
+import NewRepresentativeScreen from '../representative/new';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const nav = usePanelNav();
   const insets = useSafeAreaInsets();
+  const isDesktop = useIsDesktop();
   const { user, logout, can: canDo, isAdmin } = useAuth();
 
   const [users, setUsers] = useState<User[]>([]);
@@ -136,7 +143,7 @@ export default function SettingsScreen() {
   const representatives = users.filter((u) => u.role === 'representative');
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDesktop && styles.containerDesktop]}>
       <View style={{ paddingTop: getTopBarInset(insets) }}>
         <NotionHeader title="Configurações" showBorder />
       </View>
@@ -155,9 +162,11 @@ export default function SettingsScreen() {
               onPress={() => {
                 if (!user) return;
                 if (isAdmin) {
-                  router.push(`/user/edit?id=${user.id}`);
+                  nav.open(`user-edit-${user.id}`, <EditUserScreen id={user.id} />, '/user/edit', {
+                    id: user.id,
+                  });
                 } else {
-                  router.push('/user/profile');
+                  nav.open('user-profile', <ProfileScreen />, '/user/profile');
                 }
               }}
               activeOpacity={0.7}
@@ -235,7 +244,11 @@ export default function SettingsScreen() {
                       </View>
                       <View style={styles.repActions}>
                         <TouchableOpacity
-                          onPress={() => router.push(`/user/edit?id=${rep.id}`)}
+                          onPress={() =>
+                            nav.open(`user-edit-${rep.id}`, <EditUserScreen id={rep.id} />, '/user/edit', {
+                              id: rep.id,
+                            })
+                          }
                           hitSlop={8}
                           style={styles.iconAction}
                           activeOpacity={0.6}
@@ -258,7 +271,9 @@ export default function SettingsScreen() {
             </View>
             <TouchableOpacity
               style={styles.addRow}
-              onPress={() => router.push('/representative/new')}
+              onPress={() =>
+                nav.open('representative-new', <NewRepresentativeScreen />, '/representative/new')
+              }
               activeOpacity={0.7}
             >
               <Ionicons name="add" size={18} color={COLORS.textMuted} />
@@ -381,6 +396,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
+  },
+  // No painel flutuante do desktop, deixa o vidro do painel (DesktopSidePanel)
+  // aparecer nos vãos em vez de cobrir tudo com fundo opaco. Totalmente
+  // transparente (não translúcido) — empilhar duas camadas translúcidas soma
+  // as opacidades e o vidro acaba quase opaco de novo.
+  containerDesktop: {
+    backgroundColor: 'transparent',
   },
   scroll: {
     flex: 1,

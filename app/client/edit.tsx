@@ -10,10 +10,10 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
-import { goBack } from '../../utils/navigation';
 import { useClients } from '../../hooks/useClients';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useAuth } from '../../hooks/useAuth';
+import { usePanelNav } from '../../hooks/usePanelNav';
 import { getAllowedCategoriesForUser } from '../../services/categories';
 import { Category } from '../../types';
 import { CategoryMultiSelect } from '../../components/CategoryMultiSelect';
@@ -46,15 +46,19 @@ type SelectedCity = {
   lng: number;
 };
 
-export default function EditClientScreen() {
+type Props = { id?: string };
+
+export default function EditClientScreen({ id: propId }: Props = {}) {
   const router = useRouter();
+  const nav = usePanelNav();
   const { user, can: canDo } = useAuth();
   const params = useLocalSearchParams<{ id: string }>();
+  const id = propId ?? params.id;
 
   const { clients, updateClient, loading: clientsLoading, refresh: refreshClients } = useClients();
   const { cities, loading: geoLoading, refresh: refreshCities } = useGeoJSON();
 
-  const client = useMemo(() => clients.find((c) => c.id === params.id), [clients, params.id]);
+  const client = useMemo(() => clients.find((c) => c.id === id), [clients, id]);
 
   const [name, setName] = useState('');
   const [tradeName, setTradeName] = useState('');
@@ -80,7 +84,13 @@ export default function EditClientScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (!canDo('manage_clients')) router.replace('/(tabs)');
+    if (canDo('manage_clients')) return;
+    if (nav.isDesktop) {
+      nav.back();
+      return;
+    }
+    router.replace('/(tabs)');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canDo, router]);
 
   const loadCategories = useCallback(async () => {
@@ -187,7 +197,7 @@ export default function EditClientScreen() {
         notes: notes.trim() || undefined,
         categoryIds,
       });
-      goBack(router);
+      nav.back();
     } catch {
       Alert.alert('Erro', 'Não foi possível atualizar o cliente.');
     } finally {
@@ -208,7 +218,7 @@ export default function EditClientScreen() {
       <View style={styles.center}>
         <Ionicons name="person-outline" size={40} color={COLORS.textMuted} />
         <Text style={styles.notFoundText}>Cliente não encontrado</Text>
-        <TouchableOpacity onPress={() => goBack(router)} style={styles.outlineButton}>
+        <TouchableOpacity onPress={() => nav.back()} style={styles.outlineButton}>
           <Ionicons name="arrow-back" size={16} color={COLORS.primary} />
           <Text style={styles.outlineButtonText}>Voltar</Text>
         </TouchableOpacity>
@@ -221,7 +231,7 @@ export default function EditClientScreen() {
   return (
     <FormScreen
       title="Editar cliente"
-      onBack={() => goBack(router)}
+      onBack={() => nav.back()}
       onRefresh={handleRefresh}
       refreshing={refreshing}
       headerRight={

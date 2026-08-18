@@ -11,8 +11,8 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
-import { goBack } from '../../utils/navigation';
 import { useAuth } from '../../hooks/useAuth';
+import { usePanelNav } from '../../hooks/usePanelNav';
 import { getUserById, updateUser } from '../../services/users';
 import { listCategories } from '../../services/categories';
 import { pickUserPhoto } from '../../services/userPhotos';
@@ -24,9 +24,13 @@ import { HeaderLinkButton } from '../../components/HeaderLinkButton';
 import { RepresentativePinField } from '../../components/RepresentativePinField';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 
-export default function EditUserScreen() {
+type Props = { id?: string };
+
+export default function EditUserScreen({ id: propId }: Props = {}) {
   const router = useRouter();
+  const nav = usePanelNav();
   const params = useLocalSearchParams<{ id: string }>();
+  const id = propId ?? params.id;
   const { user: sessionUser, isAdmin, refresh: refreshSession } = useAuth();
 
   const [targetUser, setTargetUser] = useState<User | null>(null);
@@ -62,20 +66,24 @@ export default function EditUserScreen() {
 
   useEffect(() => {
     if (!isAdmin) {
+      if (nav.isDesktop) {
+        nav.back();
+        return;
+      }
       router.replace('/(tabs)/settings');
       return;
     }
 
     async function load() {
-      if (!params.id) {
-        goBack(router);
+      if (!id) {
+        nav.back();
         return;
       }
       try {
-        const data = await getUserById(params.id);
+        const data = await getUserById(id);
         if (!data) {
           Alert.alert('Erro', 'Usuário não encontrado.');
-          goBack(router);
+          nav.back();
           return;
         }
         setTargetUser(data);
@@ -91,7 +99,8 @@ export default function EditUserScreen() {
 
     void load();
     void loadCategories();
-  }, [isAdmin, params.id, router, loadCategories]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAdmin, id, router, loadCategories]);
 
   const handlePickPhoto = async () => {
     setPickingPhoto(true);
@@ -142,7 +151,7 @@ export default function EditUserScreen() {
         await refreshSession();
       }
 
-      goBack(router);
+      nav.back();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Não foi possível salvar.';
       Alert.alert('Erro', msg);
@@ -164,7 +173,7 @@ export default function EditUserScreen() {
   return (
     <FormScreen
       title={screenTitle}
-      onBack={() => goBack(router)}
+      onBack={() => nav.back()}
       onRefresh={handleRefresh}
       refreshing={refreshing}
       headerRight={

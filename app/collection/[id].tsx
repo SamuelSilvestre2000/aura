@@ -10,14 +10,14 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Alert } from '../../utils/alert';
-import { goBack } from '../../utils/navigation';
 import { getScreenTopInset } from '../../utils/safeArea';
 import { useAuth } from '../../hooks/useAuth';
 import { useCollections } from '../../hooks/useCollections';
 import { useClients } from '../../hooks/useClients';
 import { usePurchases } from '../../hooks/usePurchases';
+import { usePanelNav } from '../../hooks/usePanelNav';
 import { CollectionGoalSheet } from '../../components/CollectionGoalSheet';
 import { PullToRefresh } from '../../components/PullToRefresh';
 import { CategoryPill } from '../../components/CategoryPill';
@@ -27,7 +27,9 @@ import { Category } from '../../types';
 import { NotionHeader } from '../../components/NotionHeader';
 import { HeaderBackButton } from '../../components/HeaderBackButton';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
+import { getTopBarInset } from '../../components/TopTabBar';
 import { StackedBarChart } from '../../components/collection/StackedBarChart';
+import ClientDetailScreen from '../client/[id]';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { formatDateTimeBR, formatPeriodBR } from '../../utils/dates';
 import { formatBRL } from '../../utils/money';
@@ -55,9 +57,12 @@ function ProgressRow({ percent, meta }: { percent: number; meta: string }) {
   );
 }
 
-export default function CollectionDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
+type Props = { id?: string };
+
+export default function CollectionDetailScreen({ id: propId }: Props = {}) {
+  const params = useLocalSearchParams<{ id: string }>();
+  const id = propId ?? params.id;
+  const nav = usePanelNav();
   const insets = useSafeAreaInsets();
   const { user, isAdmin, can: canDo } = useAuth();
   const canManageCollections = canDo('manage_collections');
@@ -135,7 +140,7 @@ export default function CollectionDetailScreen() {
       <View style={styles.center}>
         <Ionicons name="albums-outline" size={40} color={COLORS.textMuted} />
         <Text style={styles.notFoundText}>Coleção não encontrada</Text>
-        <TouchableOpacity onPress={() => goBack(router)} style={styles.outlineButton}>
+        <TouchableOpacity onPress={() => nav.back()} style={styles.outlineButton}>
           <Ionicons name="arrow-back" size={16} color={COLORS.primary} />
           <Text style={styles.outlineButtonText}>Voltar</Text>
         </TouchableOpacity>
@@ -205,7 +210,7 @@ export default function CollectionDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             await deleteCollection(collection.id);
-            goBack(router);
+            nav.back();
           },
         },
       ]
@@ -214,12 +219,17 @@ export default function CollectionDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.headerSafe, { paddingTop: getScreenTopInset(insets) }]}>
+      <View
+        style={[
+          styles.headerSafe,
+          { paddingTop: nav.isDesktop ? getTopBarInset(insets) : getScreenTopInset(insets) },
+        ]}
+      >
         <NotionHeader
           title={collection.name}
           showBorder
           compact
-          leftAction={<HeaderBackButton onPress={() => goBack(router)} />}
+          leftAction={<HeaderBackButton onPress={() => nav.back()} />}
           rightAction={
             !isAdmin && !isClosed ? (
               <HeaderLinkButton
@@ -377,7 +387,13 @@ export default function CollectionDetailScreen() {
                     {index > 0 && <View style={styles.rowDivider} />}
                     <TouchableOpacity
                       style={styles.buyerRow}
-                      onPress={() => router.push(`/client/${row.client.id}`)}
+                      onPress={() =>
+                        nav.open(
+                          `client-${row.client.id}`,
+                          <ClientDetailScreen id={row.client.id} />,
+                          `/client/${row.client.id}`
+                        )
+                      }
                       activeOpacity={0.7}
                     >
                       <View style={styles.buyerAvatar}>

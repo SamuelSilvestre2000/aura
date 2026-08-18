@@ -11,8 +11,8 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
-import { goBack } from '../../utils/navigation';
 import { useAuth } from '../../hooks/useAuth';
+import { usePanelNav } from '../../hooks/usePanelNav';
 import { createRepresentative } from '../../services/users';
 import { listCategories } from '../../services/categories';
 import { pickUserPhoto } from '../../services/userPhotos';
@@ -26,6 +26,7 @@ import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 
 export default function NewRepresentativeScreen() {
   const router = useRouter();
+  const nav = usePanelNav();
   const { can: canDo } = useAuth();
 
   const [name, setName] = useState('');
@@ -41,7 +42,13 @@ export default function NewRepresentativeScreen() {
   const didInitCategoriesRef = useRef(false);
 
   useEffect(() => {
-    if (!canDo('manage_users')) router.replace('/(tabs)/settings');
+    if (canDo('manage_users')) return;
+    if (nav.isDesktop) {
+      nav.back();
+      return;
+    }
+    router.replace('/(tabs)/settings');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canDo, router]);
 
   const loadCategories = useCallback(async () => {
@@ -94,7 +101,7 @@ export default function NewRepresentativeScreen() {
         pin,
         photoUri,
       });
-      goBack(router);
+      nav.back();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Não foi possível cadastrar.';
       Alert.alert('Erro', msg.includes('UNIQUE') ? 'Já existe um usuário com este nome.' : msg);
@@ -106,7 +113,7 @@ export default function NewRepresentativeScreen() {
   return (
     <FormScreen
       title="Novo representante"
-      onBack={() => goBack(router)}
+      onBack={() => nav.back()}
       onRefresh={handleRefresh}
       refreshing={refreshing}
       headerRight={

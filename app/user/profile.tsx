@@ -11,8 +11,8 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
-import { goBack } from '../../utils/navigation';
 import { useAuth } from '../../hooks/useAuth';
+import { usePanelNav } from '../../hooks/usePanelNav';
 import { updateOwnProfile } from '../../services/users';
 import { pickUserPhoto } from '../../services/userPhotos';
 import { formatCategoryNames, isValidAccessPin, MAX_ACCESS_PIN_LENGTH } from '../../constants/userCategories';
@@ -24,6 +24,7 @@ import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const nav = usePanelNav();
   const { user, isAdmin, refresh: refreshSession, usesSupabase } = useAuth();
 
   const [name, setName] = useState('');
@@ -117,7 +118,7 @@ export default function ProfileScreen() {
         photoUri: resolvePhotoPayload(),
       });
       await refreshSession();
-      goBack(router);
+      nav.back();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Não foi possível salvar.';
       Alert.alert('Erro', msg);
@@ -137,7 +138,7 @@ export default function ProfileScreen() {
   return (
     <FormScreen
       title="Minha conta"
-      onBack={() => goBack(router)}
+      onBack={() => nav.back()}
       headerRight={
         <HeaderLinkButton
           label="Salvar"

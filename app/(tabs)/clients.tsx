@@ -8,13 +8,16 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getScreenBottomInset } from '../../utils/safeArea';
 import { useClients } from '../../hooks/useClients';
 import { useAuth } from '../../hooks/useAuth';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
+import { usePanelNav } from '../../hooks/usePanelNav';
 import { Client } from '../../types';
+import ClientDetailScreen from '../client/[id]';
+import NewClientScreen from '../client/new';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { SearchBar } from '../../components/SearchBar';
 import { CategoryPickerPill } from '../../components/CategoryPickerPill';
@@ -25,10 +28,13 @@ import { NotionHeader } from '../../components/NotionHeader';
 import { PullToRefresh } from '../../components/PullToRefresh';
 import { displayClientName } from '../../utils/clientName';
 import { filterClientsByCategory } from '../../utils/categoryFilter';
+import { getAvatarColor } from '../../utils/avatarColor';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
 
 export default function ClientsScreen() {
-  const router = useRouter();
+  const nav = usePanelNav();
   const insets = useSafeAreaInsets();
+  const isDesktop = useIsDesktop();
   const { can: canDo } = useAuth();
   const {
     categories: userCategories,
@@ -95,10 +101,12 @@ export default function ClientsScreen() {
           isLast && styles.rowLast,
         ]}
         activeOpacity={0.7}
-        onPress={() => router.push(`/client/${item.id}`)}
+        onPress={() =>
+          nav.open(`client-${item.id}`, <ClientDetailScreen id={item.id} />, `/client/${item.id}`)
+        }
       >
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
+        <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.id) }]}>
+          <Ionicons name="storefront" size={17} color="#FFFFFF" />
         </View>
         <View style={styles.rowBody}>
           <Text style={styles.rowTitle} numberOfLines={1}>{name}</Text>
@@ -123,7 +131,7 @@ export default function ClientsScreen() {
     : `${categoryScopedClients.length} cliente${categoryScopedClients.length !== 1 ? 's' : ''}`;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDesktop && styles.containerDesktop]}>
       <View style={{ paddingTop: getTopBarInset(insets) }}>
         <NotionHeader
           title="Clientes"
@@ -132,7 +140,7 @@ export default function ClientsScreen() {
             canManageClients ? (
               <TouchableOpacity
                 style={styles.newButton}
-                onPress={() => router.push('/client/new')}
+                onPress={() => nav.open('client-new', <NewClientScreen />, '/client/new')}
                 activeOpacity={0.7}
                 hitSlop={8}
               >
@@ -157,7 +165,7 @@ export default function ClientsScreen() {
           {canManageClients && (
             <TouchableOpacity
               style={styles.emptyButton}
-              onPress={() => router.push('/client/new')}
+              onPress={() => nav.open('client-new', <NewClientScreen />, '/client/new')}
               activeOpacity={0.85}
             >
               <Ionicons name="add" size={18} color="#fff" />
@@ -177,7 +185,7 @@ export default function ClientsScreen() {
             keyboardShouldPersistTaps="handled"
             ListHeaderComponent={
               <>
-                <View style={styles.searchWrap}>
+                <View style={[styles.searchWrap, isDesktop && styles.containerDesktop]}>
                   <SearchBar
                     value={search}
                     onChangeText={setSearch}
@@ -221,6 +229,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
+  },
+  // No painel flutuante do desktop, deixa o vidro do painel (DesktopSidePanel)
+  // aparecer nos vãos em vez de cobrir tudo com fundo opaco. Totalmente
+  // transparente (não translúcido) — empilhar duas camadas translúcidas soma
+  // as opacidades e o vidro acaba quase opaco de novo.
+  containerDesktop: {
+    backgroundColor: 'transparent',
   },
   newButton: {
     paddingVertical: 6,
@@ -285,16 +300,11 @@ const styles = StyleSheet.create({
   avatar: {
     width: 36,
     height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.primaryBg,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
     flexShrink: 0,
-  },
-  avatarText: {
-    color: COLORS.primary,
-    fontSize: FONTS.sizes.md,
-    fontWeight: '700',
   },
   rowBody: {
     flex: 1,

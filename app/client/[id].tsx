@@ -9,20 +9,22 @@ import {
   Linking,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { Alert } from '../../utils/alert';
-import { goBack } from '../../utils/navigation';
 import { getScreenTopInset } from '../../utils/safeArea';
 import { useClients } from '../../hooks/useClients';
 import { useAuth } from '../../hooks/useAuth';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
 import { useCollections } from '../../hooks/useCollections';
 import { usePurchases } from '../../hooks/usePurchases';
+import { usePanelNav } from '../../hooks/usePanelNav';
+import { getTopBarInset } from '../../components/TopTabBar';
 import { NotionHeader } from '../../components/NotionHeader';
 import { HeaderBackButton } from '../../components/HeaderBackButton';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
+import ClientEditScreen from './edit';
 import { CategoryPillRow } from '../../components/CategoryPill';
 import { labelsFromCategoryIds } from '../../constants/categoryPills';
 import { PurchaseChip } from '../../components/PurchaseChip';
@@ -33,15 +35,19 @@ import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { formatBRL } from '../../utils/money';
 import { formatCnpj } from '../../utils/cnpj';
 import { displayClientName } from '../../utils/clientName';
+import { getAvatarColor } from '../../utils/avatarColor';
 
 type SaleTarget = {
   collectionId: string;
   collectionName: string;
 };
 
-export default function ClientDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
+type Props = { id?: string };
+
+export default function ClientDetailScreen({ id: propId }: Props = {}) {
+  const params = useLocalSearchParams<{ id: string }>();
+  const id = propId ?? params.id;
+  const nav = usePanelNav();
   const insets = useSafeAreaInsets();
 
   const { clients, deleteClient, loading: clientsLoading, refresh: refreshClients } = useClients();
@@ -100,7 +106,7 @@ export default function ClientDetailScreen() {
           onPress: async () => {
             if (id) {
               await deleteClient(id);
-              goBack(router);
+              nav.back();
             }
           },
         },
@@ -132,7 +138,7 @@ export default function ClientDetailScreen() {
       <View style={styles.center}>
         <Ionicons name="person-outline" size={40} color={COLORS.textMuted} />
         <Text style={styles.notFoundText}>Cliente não encontrado</Text>
-        <TouchableOpacity onPress={() => goBack(router)} style={styles.outlineButton}>
+        <TouchableOpacity onPress={() => nav.back()} style={styles.outlineButton}>
           <Ionicons name="arrow-back" size={16} color={COLORS.primary} />
           <Text style={styles.outlineButtonText}>Voltar</Text>
         </TouchableOpacity>
@@ -150,17 +156,29 @@ export default function ClientDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.headerSafe, { paddingTop: getScreenTopInset(insets) }]}>
+      <View
+        style={[
+          styles.headerSafe,
+          { paddingTop: nav.isDesktop ? getTopBarInset(insets) : getScreenTopInset(insets) },
+        ]}
+      >
         <NotionHeader
           title={name}
           showBorder
           compact
-          leftAction={<HeaderBackButton onPress={() => goBack(router)} />}
+          leftAction={<HeaderBackButton onPress={() => nav.back()} />}
           rightAction={
             canManageClients ? (
               <HeaderLinkButton
                 label="Editar"
-                onPress={() => router.push(`/client/edit?id=${client.id}`)}
+                onPress={() =>
+                  nav.open(
+                    `client-edit-${client.id}`,
+                    <ClientEditScreen id={client.id} />,
+                    '/client/edit',
+                    { id: client.id }
+                  )
+                }
               />
             ) : undefined
           }
@@ -170,8 +188,8 @@ export default function ClientDetailScreen() {
       <PullToRefresh refreshing={refreshing} onRefresh={handleRefresh}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.profileCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
+          <View style={[styles.avatar, { backgroundColor: getAvatarColor(client.id) }]}>
+            <Ionicons name="storefront" size={24} color="#FFFFFF" />
           </View>
           <Text style={styles.clientName}>{name}</Text>
           {client.tradeName && client.tradeName !== name ? (
@@ -531,16 +549,11 @@ const styles = StyleSheet.create({
   avatar: {
     width: 56,
     height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.primaryBg,
+    borderRadius: RADIUS.xl,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.xs,
-  },
-  avatarText: {
-    color: COLORS.primary,
-    fontSize: FONTS.sizes.xl,
-    fontWeight: '700',
   },
   clientName: {
     color: COLORS.textPrimary,

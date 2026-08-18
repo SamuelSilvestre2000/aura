@@ -10,10 +10,10 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
-import { goBack } from '../../utils/navigation';
 import { useClients } from '../../hooks/useClients';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useAuth } from '../../hooks/useAuth';
+import { usePanelNav } from '../../hooks/usePanelNav';
 import { getAllowedCategoriesForUser } from '../../services/categories';
 import { Category } from '../../types';
 import { CategoryMultiSelect } from '../../components/CategoryMultiSelect';
@@ -47,8 +47,16 @@ export type InitialCity = {
   lng: number;
 };
 
-export default function NewClientScreen() {
+type Props = {
+  city?: string;
+  cityCode?: string;
+  lat?: string;
+  lng?: string;
+};
+
+export default function NewClientScreen(props: Props = {}) {
   const router = useRouter();
+  const nav = usePanelNav();
   const { user, can: canDo } = useAuth();
   const params = useLocalSearchParams<{
     city?: string;
@@ -56,19 +64,23 @@ export default function NewClientScreen() {
     lat?: string;
     lng?: string;
   }>();
+  const city = props.city ?? params.city;
+  const cityCode = props.cityCode ?? params.cityCode;
+  const lat = props.lat ?? params.lat;
+  const lng = props.lng ?? params.lng;
 
   const { createClient } = useClients();
   const { cities, loading: geoLoading, refresh: refreshCities } = useGeoJSON();
 
   const initialCity = useMemo<InitialCity | null>(() => {
-    if (!params.cityCode) return null;
+    if (!cityCode) return null;
     return {
-      code: params.cityCode,
-      name: params.city || '',
-      lat: parseFloat(params.lat || '0'),
-      lng: parseFloat(params.lng || '0'),
+      code: cityCode,
+      name: city || '',
+      lat: parseFloat(lat || '0'),
+      lng: parseFloat(lng || '0'),
     };
-  }, [params.city, params.cityCode, params.lat, params.lng]);
+  }, [city, cityCode, lat, lng]);
 
   const [name, setName] = useState('');
   const [tradeName, setTradeName] = useState('');
@@ -94,7 +106,13 @@ export default function NewClientScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (!canDo('manage_clients')) router.replace('/(tabs)');
+    if (canDo('manage_clients')) return;
+    if (nav.isDesktop) {
+      nav.back();
+      return;
+    }
+    router.replace('/(tabs)');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canDo, router]);
 
   const loadCategories = useCallback(async () => {
@@ -173,7 +191,7 @@ export default function NewClientScreen() {
         notes: notes.trim() || undefined,
         categoryIds,
       });
-      goBack(router);
+      nav.back();
     } catch {
       Alert.alert('Erro', 'Não foi possível cadastrar o cliente.');
     } finally {
@@ -184,7 +202,7 @@ export default function NewClientScreen() {
   return (
     <FormScreen
       title="Novo cliente"
-      onBack={() => goBack(router)}
+      onBack={() => nav.back()}
       onRefresh={handleRefresh}
       refreshing={refreshing}
       headerRight={

@@ -10,14 +10,15 @@ import {
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { Alert } from '../../utils/alert';
-import { goBack } from '../../utils/navigation';
 import { getScreenTopInset } from '../../utils/safeArea';
 import { useClients } from '../../hooks/useClients';
 import { useCollections } from '../../hooks/useCollections';
 import { usePurchases } from '../../hooks/usePurchases';
 import { useAuth } from '../../hooks/useAuth';
+import { usePanelNav } from '../../hooks/usePanelNav';
+import { getTopBarInset } from '../../components/TopTabBar';
 import { NotionHeader } from '../../components/NotionHeader';
 import { HeaderBackButton } from '../../components/HeaderBackButton';
 import { MoneyInput } from '../../components/MoneyInput';
@@ -25,13 +26,17 @@ import { PullToRefresh } from '../../components/PullToRefresh';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { formatBRL } from '../../utils/money';
 
-export default function SaleScreen() {
-  const router = useRouter();
+type Props = { clientId?: string; collectionId?: string };
+
+export default function SaleScreen(props: Props = {}) {
+  const nav = usePanelNav();
   const insets = useSafeAreaInsets();
-  const { clientId, collectionId } = useLocalSearchParams<{
+  const params = useLocalSearchParams<{
     clientId: string;
     collectionId: string;
   }>();
+  const clientId = props.clientId ?? params.clientId;
+  const collectionId = props.collectionId ?? params.collectionId;
 
   const { user } = useAuth();
   const { clients, refresh: refreshClients } = useClients();
@@ -84,7 +89,7 @@ export default function SaleScreen() {
     try {
       await recordSale(clientId, collectionId, user.id, amount);
       await refreshCollections();
-      goBack(router);
+      nav.back();
     } catch (err) {
       Alert.alert(
         'Erro',
@@ -110,7 +115,7 @@ export default function SaleScreen() {
             try {
               await clearSale(clientId, collectionId);
               await refreshCollections();
-              goBack(router);
+              nav.back();
             } catch (err) {
               Alert.alert(
                 'Erro',
@@ -135,11 +140,16 @@ export default function SaleScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.headerSafe, { paddingTop: getScreenTopInset(insets) }]}>
+      <View
+        style={[
+          styles.headerSafe,
+          { paddingTop: nav.isDesktop ? getTopBarInset(insets) : getScreenTopInset(insets) },
+        ]}
+      >
         <NotionHeader
           title={purchased ? 'Venda registrada' : 'Registrar venda'}
           showBorder
-          leftAction={<HeaderBackButton onPress={() => goBack(router)} />}
+          leftAction={<HeaderBackButton onPress={() => nav.back()} />}
         />
       </View>
 
@@ -191,7 +201,7 @@ export default function SaleScreen() {
           ) : (
             <TouchableOpacity
               style={styles.cancelBtn}
-              onPress={() => goBack(router)}
+              onPress={() => nav.back()}
               activeOpacity={0.7}
             >
               <Text style={styles.cancelText}>Cancelar</Text>

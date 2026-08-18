@@ -10,7 +10,7 @@ import {
   Pressable,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter, useFocusEffect } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getScreenBottomInset } from '../../utils/safeArea';
 import { useCollections } from '../../hooks/useCollections';
@@ -18,6 +18,7 @@ import { useClients } from '../../hooks/useClients';
 import { usePurchases } from '../../hooks/usePurchases';
 import { useAuth } from '../../hooks/useAuth';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
+import { usePanelNav } from '../../hooks/usePanelNav';
 import { CategoryPickerPill } from '../../components/CategoryPickerPill';
 import { CategoryPill } from '../../components/CategoryPill';
 import {
@@ -40,12 +41,16 @@ import {
 } from '../../utils/collectionYears';
 import { getVigenteCollectionId } from '../../utils/collectionVigente';
 import { isCollectionClosed } from '../../utils/collectionStatus';
+import CollectionDetailScreen from '../collection/[id]';
+import NewCollectionScreen from '../collection/new';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
 export default function CollectionsScreen() {
-  const router = useRouter();
+  const nav = usePanelNav();
   const insets = useSafeAreaInsets();
+  const isDesktop = useIsDesktop();
   const { can: canDo, isAdmin } = useAuth();
   const {
     categories: userCategories,
@@ -119,10 +124,16 @@ export default function CollectionsScreen() {
     }, [refresh, refreshPurchases, refreshClients, effectiveFilter])
   );
 
-  const openCreateScreen = () => router.push('/collection/new');
+  const openCreateScreen = () =>
+    nav.open('collection-new', <NewCollectionScreen />, '/collection/new');
 
   const openCollection = (col: Collection) => {
-    router.push({ pathname: '/collection/[id]', params: { id: col.id } });
+    nav.open(
+      `collection-${col.id}`,
+      <CollectionDetailScreen id={col.id} />,
+      '/collection/[id]',
+      { id: col.id }
+    );
   };
 
   const getProgress = useCallback(
@@ -250,7 +261,7 @@ export default function CollectionsScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDesktop && styles.containerDesktop]}>
       <View style={{ paddingTop: getTopBarInset(insets) }}>
         <NotionHeader
           title="Coleções"
@@ -391,6 +402,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
+  },
+  // No painel flutuante do desktop, deixa o vidro do painel (DesktopSidePanel)
+  // aparecer nos vãos em vez de cobrir tudo com fundo opaco. Totalmente
+  // transparente (não translúcido) — empilhar duas camadas translúcidas soma
+  // as opacidades e o vidro acaba quase opaco de novo.
+  containerDesktop: {
+    backgroundColor: 'transparent',
   },
   newButton: {
     paddingVertical: 6,
