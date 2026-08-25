@@ -39,6 +39,7 @@ import {
 import { CategoryPickerPill } from '../CategoryPickerPill';
 
 import { SearchBar } from '../SearchBar';
+import { PanelCloseButton } from '../PanelCloseButton';
 import { CitySheet } from '../BottomSheet/CitySheet';
 import { CityDetailsPanel } from '../BottomSheet/CityDetailsPanel';
 import { Ionicons } from '@expo/vector-icons';
@@ -462,6 +463,7 @@ export default function MapScreenWeb() {
       */}
       <View style={[styles.searchPanelTitleRow, { paddingTop: PANEL_TOP_INSET }]}>
         <Text style={styles.searchPanelTitle}>Buscar</Text>
+        <PanelCloseButton />
       </View>
       <View style={styles.searchPanelInputWrap}>
         <SearchBar
@@ -820,6 +822,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   searchPanelTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: SPACING.md,
     paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.sm,
   },

@@ -108,7 +108,7 @@ export function CityDetailsPanel({
             accessibilityLabel="Fechar"
           >
             <View style={styles.closeCircle}>
-              <Ionicons name="close" size={16} color={COLORS.textSecondary} />
+              <Ionicons name="close" size={17} color={COLORS.textSecondary} />
             </View>
           </TouchableOpacity>
         </View>
@@ -281,9 +281,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   closeCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     backgroundColor: COLORS.fill,
     alignItems: 'center',
     justifyContent: 'center',

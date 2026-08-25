@@ -28,6 +28,7 @@ import ProfileScreen from '../user/profile';
 import NewRepresentativeScreen from '../representative/new';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { useScreenTopInset } from '../../hooks/useScreenTopInset';
+import { PanelCloseButton } from '../../components/PanelCloseButton';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -150,6 +151,7 @@ export default function SettingsScreen() {
       */}
       <View style={[styles.titleRow, { paddingTop: topInset }]}>
         <Text style={styles.title}>Conta</Text>
+        <PanelCloseButton />
       </View>
 
       <PullToRefresh refreshing={refreshing} onRefresh={handleRefresh}>
@@ -417,6 +419,10 @@ const styles = StyleSheet.create({
   },
   section: { gap: SPACING.sm },
   titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: SPACING.md,
     paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.sm,
   },

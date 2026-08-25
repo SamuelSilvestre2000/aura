@@ -42,6 +42,7 @@ import CollectionDetailScreen from '../collection/[id]';
 import NewCollectionScreen from '../collection/new';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { useScreenTopInset } from '../../hooks/useScreenTopInset';
+import { PanelCloseButton } from '../../components/PanelCloseButton';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -253,19 +254,23 @@ export default function CollectionsScreen() {
             {filteredCollections.length === 1 ? 'coleção' : 'coleções'} em {selectedYear}
           </Text>
         </View>
-        {canManageCollections ? (
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={openCreateScreen}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Nova coleção"
-          >
-            <View style={styles.addCircle}>
-              <Ionicons name="add" size={22} color={COLORS.primary} />
-            </View>
-          </TouchableOpacity>
-        ) : null}
+        {/* Criar fica à esquerda; a quina é sempre fechar. */}
+        <View style={styles.headerActions}>
+          {canManageCollections ? (
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={openCreateScreen}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Nova coleção"
+            >
+              <View style={styles.addCircle}>
+                <Ionicons name="add" size={22} color={COLORS.primary} />
+              </View>
+            </TouchableOpacity>
+          ) : null}
+          <PanelCloseButton />
+        </View>
       </View>
 
       {loading ? (
@@ -415,6 +420,10 @@ const styles = StyleSheet.create({
     ...FONTS.tabular,
     color: COLORS.textSecondary,
     fontSize: FONTS.sizes.md,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   addButton: {
     minWidth: HIT_TARGET,

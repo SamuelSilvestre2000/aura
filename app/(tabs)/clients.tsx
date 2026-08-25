@@ -28,6 +28,7 @@ import { filterClientsByCategory } from '../../utils/categoryFilter';
 import { getAvatarColor } from '../../utils/avatarColor';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { useScreenTopInset } from '../../hooks/useScreenTopInset';
+import { PanelCloseButton } from '../../components/PanelCloseButton';
 
 export default function ClientsScreen() {
   const nav = usePanelNav();
@@ -185,19 +186,23 @@ export default function ClientsScreen() {
           <Text style={styles.title}>Clientes</Text>
           <Text style={styles.subtitle}>{countLabel}</Text>
         </View>
-        {canManageClients ? (
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={() => nav.open('client-new', <NewClientScreen />, '/client/new')}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Novo cliente"
-          >
-            <View style={styles.addCircle}>
-              <Ionicons name="add" size={22} color={COLORS.primary} />
-            </View>
-          </TouchableOpacity>
-        ) : null}
+        {/* Criar fica à esquerda; a quina é sempre fechar. */}
+        <View style={styles.headerActions}>
+          {canManageClients ? (
+            <TouchableOpacity
+              style={styles.addButton}
+              onPress={() => nav.open('client-new', <NewClientScreen />, '/client/new')}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Novo cliente"
+            >
+              <View style={styles.addCircle}>
+                <Ionicons name="add" size={22} color={COLORS.primary} />
+              </View>
+            </TouchableOpacity>
+          ) : null}
+          <PanelCloseButton />
+        </View>
       </View>
 
       {loading ? (
@@ -332,6 +337,10 @@ const styles = StyleSheet.create({
     ...FONTS.tabular,
     color: COLORS.textSecondary,
     fontSize: FONTS.sizes.md,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   addButton: {
     minWidth: HIT_TARGET,
