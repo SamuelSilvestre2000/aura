@@ -11,6 +11,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getScreenBottomInset } from '../../utils/safeArea';
+import { getTabBarBottomInset } from '../../components/CustomTabBar';
 import { useClients } from '../../hooks/useClients';
 import { useAuth } from '../../hooks/useAuth';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
@@ -32,6 +33,7 @@ import { PanelCloseButton } from '../../components/PanelCloseButton';
 
 /** Altura da linha e do cabeçalho de seção — ver itemLayouts. */
 const ROW_HEIGHT = 64;
+const AVATAR_SIZE = 36;
 const SECTION_HEADER_HEIGHT = 26;
 
 export default function ClientsScreen() {
@@ -72,7 +74,7 @@ export default function ClientsScreen() {
     }, [refresh])
   );
 
-  const listBottom = getScreenBottomInset(insets);
+  const listBottom = isDesktop ? getScreenBottomInset(insets) : getTabBarBottomInset(insets);
 
   const categoryScopedClients = useMemo(
     () => filterClientsByCategory(clients, effectiveFilter, allowedCategoryIds),
@@ -187,17 +189,18 @@ export default function ClientsScreen() {
 
     return (
       <TouchableOpacity
-        style={[
-          styles.row,
-          index === 0 && styles.rowFirst,
-          index > 0 && styles.rowBorder,
-          isLast && styles.rowLast,
-        ]}
+        style={[styles.row, index === 0 && styles.rowFirst, isLast && styles.rowLast]}
         activeOpacity={0.7}
         onPress={() =>
           nav.open(`client-${item.id}`, <ClientDetailScreen id={item.id} />, `/client/${item.id}`)
         }
       >
+        {/*
+          Divisória posicionada, não borda da linha: como estilo da linha, o
+          marginLeft que a alinha ao texto empurrava a linha inteira.
+        */}
+        {index > 0 ? <View style={styles.rowDivider} pointerEvents="none" /> : null}
+
         <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.id) }]}>
           <Text style={styles.avatarText}>{clientInitials(name)}</Text>
         </View>
@@ -445,17 +448,20 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: RADIUS.lg,
     borderBottomRightRadius: RADIUS.lg,
   },
-  // A divisória começa alinhada ao texto, não sob o avatar: é o que dá à lista
-  // o ritmo de coluna em vez de fatiar a linha inteira.
-  rowBorder: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: COLORS.surfaceBorder,
-    marginLeft: 36 + SPACING.md,
+  // Começa alinhada ao texto, não sob o avatar: é o que dá à lista o ritmo de
+  // coluna em vez de fatiar a linha inteira.
+  rowDivider: {
+    position: 'absolute',
+    top: 0,
+    left: AVATAR_SIZE + SPACING.md + SPACING.lg,
+    right: 0,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: COLORS.surfaceBorder,
   },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
+    borderRadius: AVATAR_SIZE / 2,
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',

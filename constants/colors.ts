@@ -19,16 +19,23 @@ export const STATUS_FILL_OPACITY = {
 
 /**
  * Contorno por status, para o polígono não se distinguir só pelo matiz: sólido
- * quando todos compraram, tracejado quando faltam clientes (o traço "incompleto"
- * carrega o sentido), e grosso com miolo vazado quando nenhum comprou.
+ * quando todos compraram e tracejado quando faltam clientes — o traço
+ * "incompleto" carrega o sentido. A largura é a mesma de produção (1,5): o que
+ * distingue é a forma do traço, não o peso dele.
  */
+/**
+ * Opacidade do contorno, em hexadecimal para concatenar na cor — o mesmo valor
+ * que está em produção.
+ */
+export const STATUS_STROKE_ALPHA = 'CC';
+
 export const STATUS_STROKE: Record<
   'all' | 'partial' | 'none' | 'no-clients',
   { width: number; dash?: number[] }
 > = {
-  all: { width: 2 },
-  partial: { width: 2.5, dash: [7, 4] },
-  none: { width: 3 },
+  all: { width: 1.5 },
+  partial: { width: 1.5, dash: [7, 4] },
+  none: { width: 1.5 },
   'no-clients': { width: 0.5 },
 };
 

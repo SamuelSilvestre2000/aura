@@ -57,6 +57,7 @@ import {
   STATUS_COLORS,
   STATUS_FILL_OPACITY,
   STATUS_STROKE,
+  STATUS_STROKE_ALPHA,
   PIAUI_REGION,
 } from '../../constants/colors';
 import { clientInitials, displayClientName } from '../../utils/clientName';
@@ -602,7 +603,7 @@ export default function MapScreenWeb() {
                     key={city.code}
                     positions={positions}
                     pathOptions={{
-                      color: `${STATUS_COLORS[status]}CC`,
+                      color: `${STATUS_COLORS[status]}${STATUS_STROKE_ALPHA}`,
                       weight: STATUS_STROKE[status].width,
                       dashArray: STATUS_STROKE[status].dash?.join(' '),
                       fillColor: hexAlpha(STATUS_COLORS[status], STATUS_FILL_OPACITY[status]),
@@ -1000,7 +1001,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    backgroundColor: 'rgba(255,255,255,0.97)',
+    backgroundColor: MATERIALS.thick.background,
     borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
@@ -1015,7 +1016,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    backgroundColor: 'rgba(255,255,255,0.97)',
+    backgroundColor: MATERIALS.thick.background,
     borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.md,
     paddingVertical: 6,

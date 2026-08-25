@@ -23,6 +23,6 @@ export function getScreenTopInset(insets: { top: number }, extra = 0): number {
 export const PANEL_TOP_INSET: number = SPACING.lg;
 
 /** Espaço reservado embaixo (home indicator / gesture bar), sem dock flutuante. */
-export function getScreenBottomInset(insets: { bottom: number }, extra = SPACING.lg): number {
+export function getScreenBottomInset(insets: { bottom: number }, extra: number = SPACING.lg): number {
   return Math.max(insets.bottom, 6) + extra;
 }

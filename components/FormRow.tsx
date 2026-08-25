@@ -23,7 +23,7 @@ export function FormRow({ label, required = false, first = false, alignTop = fal
   return (
     <View style={[styles.row, !first && styles.rowBorder, alignTop && styles.rowTop]}>
       <View style={styles.labelWrap}>
-        <Text style={styles.label} numberOfLines={2}>
+        <Text style={styles.label} numberOfLines={1}>
           {label}
         </Text>
         {required ? <Text style={styles.required}>Obrigatório</Text> : null}
@@ -33,7 +33,12 @@ export function FormRow({ label, required = false, first = false, alignTop = fal
   );
 }
 
-const LABEL_WIDTH = 112;
+/**
+ * O rotulo tem largura minima, nao fixa: com 112 px fixos, "Nome fantasia" e
+ * "Inscr. municipal" quebravam em duas linhas no celular. Assim ele cresce ate
+ * caber e o controle fica com o resto.
+ */
+const LABEL_MIN_WIDTH = 104;
 
 const styles = StyleSheet.create({
   row: {
@@ -53,7 +58,7 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.surfaceBorder,
   },
   labelWrap: {
-    width: LABEL_WIDTH,
+    minWidth: LABEL_MIN_WIDTH,
     flexShrink: 0,
   },
   label: {
@@ -68,5 +73,6 @@ const styles = StyleSheet.create({
   control: {
     flex: 1,
     minWidth: 0,
+    alignItems: 'flex-end',
   },
 });

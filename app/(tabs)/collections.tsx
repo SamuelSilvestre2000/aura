@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { getScreenBottomInset } from '../../utils/safeArea';
+import { getTabBarBottomInset } from '../../components/CustomTabBar';
 import { useCollections } from '../../hooks/useCollections';
 import { useClients } from '../../hooks/useClients';
 import { usePurchases } from '../../hooks/usePurchases';
@@ -114,7 +115,7 @@ export default function CollectionsScreen() {
     [clients, effectiveFilter, allowedCategoryIds]
   );
 
-  const listBottom = getScreenBottomInset(insets);
+  const listBottom = isDesktop ? getScreenBottomInset(insets) : getTabBarBottomInset(insets);
 
   useFocusEffect(
     useCallback(() => {

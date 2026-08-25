@@ -6,6 +6,7 @@ import {
   STATUS_COLORS,
   STATUS_FILL_OPACITY,
   STATUS_STROKE,
+  STATUS_STROKE_ALPHA,
   COLORS,
 } from '../../constants/colors';
 
@@ -33,7 +34,7 @@ function CityPolygonComponent({ city, status, onPress }: Props) {
     <Polygon
       coordinates={coordinates}
       fillColor={`${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`}
-      strokeColor={`${color}CC`}
+      strokeColor={`${color}${STATUS_STROKE_ALPHA}`}
       strokeWidth={stroke.width}
       lineDashPattern={stroke.dash}
       tappable

@@ -12,7 +12,12 @@ import { useDesktopPanel, PANEL_WIDTH } from '../contexts/DesktopPanel';
 import { getScreenTopInset } from '../utils/safeArea';
 import { Avatar } from './Avatar';
 
-/** Altura interna da barra — é também o alvo de toque dos pills, daí os 44. */
+/**
+ * Barra superior do desktop: hospeda os filtros que a tela publica (coleção,
+ * ano, categoria). No celular ela não aparece — lá quem navega é a dock
+ * (CustomTabBar) e a busca fica no topo do mapa.
+ */
+/** Altura interna da barra. */
 export const TOP_BAR_CONTENT_HEIGHT = HIT_TARGET;
 
 const WRAPPER_PADDING_BOTTOM = 8;
@@ -63,61 +68,6 @@ export function TopTabBar({ state, navigation }: BottomTabBarProps) {
           isDesktop && { paddingLeft: desktopPillsLeft },
         ]}
       >
-        {!isDesktop && (
-          <Pressable
-            style={styles.avatarPill}
-            onPress={() => router.push('/(tabs)/settings')}
-            accessibilityRole="button"
-            accessibilityLabel="Minha conta"
-          >
-            <Avatar
-              uri={user?.photoUri}
-              name={user?.name ?? '?'}
-              imageStyle={styles.avatarImage}
-              fallbackStyle={styles.avatarFallback}
-              fallbackTextStyle={styles.avatarFallbackText}
-            />
-          </Pressable>
-        )}
-
-        {!isDesktop && (
-          <View style={styles.navGroup}>
-            {NAV_ROUTES.map((tab) => {
-              const routeIndex = state.routes.findIndex((r) => r.name === tab.name);
-              if (routeIndex === -1) return null;
-              const route = state.routes[routeIndex];
-              const isFocused = state.index === routeIndex;
-
-              const onPress = () => {
-                const event = navigation.emit({
-                  type: 'tabPress',
-                  target: route.key,
-                  canPreventDefault: true,
-                });
-                if (!isFocused && !event.defaultPrevented) {
-                  navigation.navigate(route.name, route.params);
-                }
-              };
-
-              return (
-                <Pressable
-                  key={route.key}
-                  style={[styles.navPill, isFocused && styles.navPillActive]}
-                  onPress={onPress}
-                  accessibilityRole="button"
-                  accessibilityState={isFocused ? { selected: true } : {}}
-                >
-                  <Ionicons
-                    name={isFocused ? tab.iconActive : tab.icon}
-                    size={19}
-                    color={isFocused ? COLORS.textPrimary : COLORS.textMuted}
-                  />
-                </Pressable>
-              );
-            })}
-          </View>
-        )}
-
         {isDesktop && toggles ? <View style={styles.desktopTogglesSlot}>{toggles}</View> : null}
       </Animated.View>
     </View>

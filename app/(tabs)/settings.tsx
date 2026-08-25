@@ -12,6 +12,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
 import { getScreenBottomInset } from '../../utils/safeArea';
+import { getTabBarBottomInset } from '../../components/CustomTabBar';
 import { clearGeoCache } from '../../services/ibge';
 import { getDatabase } from '../../services/database';
 import { deleteUser, listUsers } from '../../services/users';
@@ -47,7 +48,7 @@ export default function SettingsScreen() {
   const canManageUsers = canDo('manage_users');
   const canResetDb = canDo('reset_database');
   const canClearCache = canDo('clear_geo_cache');
-  const scrollBottom = getScreenBottomInset(insets);
+  const scrollBottom = isDesktop ? getScreenBottomInset(insets) : getTabBarBottomInset(insets);
 
   const loadUsers = useCallback(async () => {
     if (!canManageUsers) return;

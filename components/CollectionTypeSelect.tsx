@@ -15,7 +15,7 @@ type Props = {
  * Opcional: "Sem tipo" cobre coleções pontuais que não são uma temporada —
  * só coleções com tipo entram no alternador de ano do mapa.
  */
-export function CollectionTypeSelect({ label = 'TIPO', types, value, onChange }: Props) {
+export function CollectionTypeSelect({ label = 'Tipo', types, value, onChange }: Props) {
   const options: { id: string | null; label: string }[] = [
     { id: null, label: 'Sem tipo' },
     ...types.map((t) => ({ id: t.id, label: t.name })),
@@ -48,10 +48,9 @@ export function CollectionTypeSelect({ label = 'TIPO', types, value, onChange }:
 const styles = StyleSheet.create({
   field: { gap: SPACING.sm },
   label: {
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    letterSpacing: 0.6,
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '500',
   },
   row: {
     flexDirection: 'row',

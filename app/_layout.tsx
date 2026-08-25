@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../hooks/useAuth';
 import { CollectionsProvider } from '../hooks/useCollections';
 import { PurchasesProvider } from '../hooks/usePurchases';
+import { DesktopPanelProvider } from '../contexts/DesktopPanel';
 import { NOTION_MODAL_OPTIONS } from '../constants/navigation';
 import { COLORS } from '../constants/colors';
 
@@ -82,6 +83,14 @@ export default function RootLayout() {
         <AuthProvider>
           <CollectionsProvider>
           <PurchasesProvider>
+          {/*
+            As telas de detalhe e formulario sao rotas irmas de (tabs): no
+            celular o expo-router as monta neste Stack, fora do layout das
+            abas. Com o provider so la dentro, usePanelNav lancava ao abrir
+            um cliente no celular. Aqui ele cobre a arvore inteira — no
+            celular fica inerte, ja que nada usa o painel.
+          */}
+          <DesktopPanelProvider>
           <StatusBar style="dark" />
           <AuthGate>
             <Stack screenOptions={{ headerShown: false }}>
@@ -98,6 +107,7 @@ export default function RootLayout() {
               <Stack.Screen name="user/profile" options={NOTION_MODAL_OPTIONS} />
             </Stack>
           </AuthGate>
+          </DesktopPanelProvider>
           </PurchasesProvider>
           </CollectionsProvider>
         </AuthProvider>

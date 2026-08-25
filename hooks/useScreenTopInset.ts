@@ -21,5 +21,7 @@ export function useScreenTopInset(kind: 'tab' | 'modal' = 'tab'): number {
   const isDesktop = useIsDesktop();
 
   if (isDesktop) return PANEL_TOP_INSET;
-  return kind === 'tab' ? getTopBarInset(insets) : getScreenTopInset(insets);
+  // No celular não há barra por cima em nenhum dos dois casos: as abas têm a
+  // dock embaixo, e as telas de detalhe são página cheia.
+  return getScreenTopInset(insets);
 }

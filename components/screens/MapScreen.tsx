@@ -31,13 +31,13 @@ import {
 } from '../../utils/categoryFilter';
 import { isCollectionClosed } from '../../utils/collectionStatus';
 import { getScreenBottomInset } from '../../utils/safeArea';
-import { getTopBarInset } from '../TopTabBar';
 import { getVigenteCollectionId } from '../../utils/collectionVigente';
 import { CategoryPickerPill } from '../CategoryPickerPill';
 
 import { CityPolygon } from '../MapView/CityPolygon';
 import { PiauiFocusMask } from '../MapView/PiauiFocusMask';
 import { SearchBar } from '../SearchBar';
+import { getTabBarBottomInset } from '../CustomTabBar';
 import { CitySheet } from '../BottomSheet/CitySheet';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -83,7 +83,7 @@ export default function MapScreen() {
   const locateInFlightRef = useRef(false);
 
   const { theme: mapTheme } = useMapTheme();
-  const { can: canDo } = useAuth();
+  const { user, can: canDo } = useAuth();
   const {
     categories: userCategories,
     filter: categoryFilter,
@@ -427,8 +427,18 @@ export default function MapScreen() {
     : [];
   const selectedCityStatus = selectedCity ? getCityStatus(selectedCity.code) : 'no-clients';
   const hasCities = cities.length > 0;
-  const headerTop = getTopBarInset(insets);
+  /**
+   * Logo abaixo da status bar, como em producao. getTopBarInset reservava
+   * ainda a altura da TopTabBar — 44 px de uma barra que no celular nao
+   * existe mais, e que empurrava a busca para baixo.
+   */
+  const headerTop = insets.top + 4;
   const bottomOffset = getScreenBottomInset(insets, SPACING.sm);
+  /**
+   * A dock flutua sobre o mapa: sem reservar a altura dela, os controles ficam
+   * por baixo. bottomUIHeight sozinho so conhecia o que o proprio mapa desenha.
+   */
+  const tabBarOffset = getTabBarBottomInset(insets, SPACING.sm);
   const mapCustomStyle = mapTheme === 'dark' ? DARK_MAP_STYLE : LIGHT_MAP_STYLE;
 
   return (
@@ -494,6 +504,23 @@ export default function MapScreen() {
           pointerEvents="box-none"
           onLayout={(e) => setTopUIHeight(e.nativeEvent.layout.height)}
         >
+          {/*
+            Busca no topo, como em produção: é o primeiro alcance da tela e
+            carrega o atalho da conta. Os filtros do mapa vêm logo abaixo.
+          */}
+          <View style={styles.searchContainer}>
+            <SearchBar
+              variant="map"
+              value={search}
+              onChangeText={setSearch}
+              onClear={handleSearchClear}
+              placeholder="Pesquisar cidade ou cliente..."
+              onProfilePress={() => router.push('/(tabs)/settings')}
+              profileInitial={user?.name.charAt(0).toUpperCase()}
+              profileImageUri={user?.photoUri}
+            />
+          </View>
+
           {activeCollection && (
             <View style={styles.collectionContainer}>
               <View style={styles.pillRow}>
@@ -530,7 +557,7 @@ export default function MapScreen() {
 
         {!selectedCity && (
           <View
-            style={[styles.bottomControls, { paddingBottom: bottomUIHeight + SPACING.sm }]}
+            style={[styles.bottomControls, { paddingBottom: tabBarOffset + bottomUIHeight }]}
             pointerEvents="box-none"
           >
             <TouchableOpacity
@@ -634,13 +661,6 @@ export default function MapScreen() {
               </View>
             )}
 
-            <SearchBar
-              variant="map"
-              value={search}
-              onChangeText={setSearch}
-              onClear={handleSearchClear}
-              placeholder="Pesquisar cidade ou cliente..."
-            />
           </View>
         </View>
 
@@ -723,6 +743,9 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  searchContainer: {
+    marginHorizontal: SPACING.md,
   },
   topUI: {
     position: 'absolute',
@@ -827,7 +850,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'flex-start',
     gap: 6,
-    backgroundColor: COLORS.surface,
+    backgroundColor: MATERIALS.regular.background,
     borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.md,
     paddingVertical: 6,
@@ -904,7 +927,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    backgroundColor: 'rgba(255,255,255,0.97)',
+    backgroundColor: MATERIALS.thick.background,
     borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
@@ -927,7 +950,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    backgroundColor: 'rgba(255,255,255,0.97)',
+    backgroundColor: MATERIALS.thick.background,
     borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.md,
     paddingVertical: 6,
@@ -960,7 +983,10 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: MATERIALS.regular.background,
+    // Mais opaco que na web: sem backdropFilter, o material fino sobre um mapa
+    // claro quase nao se ve — no nativo a superficie precisa se sustentar
+    // sozinha.
+    backgroundColor: MATERIALS.thick.background,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
