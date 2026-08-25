@@ -20,20 +20,17 @@ import { useAuth } from '../../hooks/useAuth';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
 import { usePanelNav } from '../../hooks/usePanelNav';
 import { CategoryPickerPill } from '../../components/CategoryPickerPill';
-import { CategoryPill } from '../../components/CategoryPill';
 import {
   filterClientsByCategory,
   filterCollectionsByCategory,
   categoryLabel,
 } from '../../utils/categoryFilter';
 import { Collection } from '../../types';
-import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
-import { getTopBarInset } from '../../components/TopTabBar';
-import { NotionHeader } from '../../components/NotionHeader';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../../constants/colors';
 import { PullToRefresh } from '../../components/PullToRefresh';
 import { formatPeriodBR } from '../../utils/dates';
 import { formatBRL } from '../../utils/money';
-import { getCollectionProgress, progressColor, progressColorOnTintedBg } from '../../utils/collectionStats';
+import { getCollectionProgress, progressColor } from '../../utils/collectionStats';
 import {
   filterCollectionsByYear,
   getAvailableCollectionYears,
@@ -44,6 +41,7 @@ import { isCollectionClosed } from '../../utils/collectionStatus';
 import CollectionDetailScreen from '../collection/[id]';
 import NewCollectionScreen from '../collection/new';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
+import { useScreenTopInset } from '../../hooks/useScreenTopInset';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -51,6 +49,7 @@ export default function CollectionsScreen() {
   const nav = usePanelNav();
   const insets = useSafeAreaInsets();
   const isDesktop = useIsDesktop();
+  const topInset = useScreenTopInset('tab');
   const { can: canDo, isAdmin } = useAuth();
   const {
     categories: userCategories,
@@ -152,12 +151,39 @@ export default function CollectionsScreen() {
 
   const showCategoryBadges = userCategories.length > 1;
 
-  const renderCollection = ({ item, index }: { item: Collection; index: number }) => {
-    const progress = getProgress(item.id);
+  /**
+   * O estado da coleção passa a ser a seção onde ela está, em vez de faixa
+   * colorida + fundo tintado + badge + ícone trocado + opacidade — cinco
+   * codificações do mesmo bit. Encerradas descem para o fim em vez de serem
+   * esmaecidas, que derrubava o contraste do texto junto.
+   */
+  const collectionSections = useMemo(() => {
+    const vigente: Collection[] = [];
+    const abertas: Collection[] = [];
+    const encerradas: Collection[] = [];
+
+    for (const collection of filteredCollections) {
+      if (isCollectionClosed(collection)) encerradas.push(collection);
+      else if (collection.id === vigenteCollectionId) vigente.push(collection);
+      else abertas.push(collection);
+    }
+
+    return [
+      { title: 'Vigente', data: vigente },
+      { title: 'Abertas', data: abertas },
+      { title: 'Encerradas', data: encerradas },
+    ].filter((section) => section.data.length > 0);
+  }, [filteredCollections, vigenteCollectionId]);
+
+  /**
+   * Título e uma linha de apoio. Meta, faltam, clientes e cidades saíram para a
+   * tela de detalhe, que já mostra tudo isso — na lista eram sete níveis de
+   * informação empilhados numa linha de ~200 px.
+   */
+  const renderCollection = (item: Collection, index: number) => {
     const soldAmount = item.mySoldAmount ?? 0;
     const goalAmount = item.myGoalAmount ?? 0;
     const hasGoal = goalAmount > 0;
-    const remaining = Math.max(0, goalAmount - soldAmount);
     const salesPercent = hasGoal
       ? Math.min(100, Math.round((soldAmount / goalAmount) * 100))
       : 0;
@@ -165,121 +191,81 @@ export default function CollectionsScreen() {
       item.startDate && item.endDate
         ? formatPeriodBR(item.startDate, item.endDate)
         : null;
-    const isClosed = isCollectionClosed(item);
-    const isVigente = !isClosed && item.id === vigenteCollectionId;
-    const resolveProgressColor = (percent: number) =>
-      isVigente ? progressColorOnTintedBg(percent) : progressColor(percent);
-    const salesFillColor = resolveProgressColor(salesPercent);
+    const subtitle = [period, showCategoryBadges ? categoryLabel(item.categoryId) : '']
+      .filter(Boolean)
+      .join(' · ');
 
     return (
       <TouchableOpacity
         key={item.id}
-        style={[
-          styles.row,
-          index > 0 && styles.rowBorder,
-          isVigente && styles.rowVigente,
-          isVigente && styles.rowVigenteClip,
-          isClosed && styles.rowClosed,
-        ]}
+        style={[styles.row, index > 0 && styles.rowBorder]}
         onPress={() => openCollection(item)}
         activeOpacity={0.7}
       >
-        {isVigente ? <View style={styles.vigenteAccent} pointerEvents="none" /> : null}
-
         <View style={styles.rowIcon}>
-          <Ionicons
-            name={isVigente ? 'albums' : isClosed ? 'lock-closed-outline' : 'albums-outline'}
-            size={20}
-            color={isVigente ? COLORS.success : isClosed ? COLORS.textMuted : COLORS.textSecondary}
-          />
+          <Ionicons name="albums-outline" size={20} color={COLORS.textSecondary} />
         </View>
 
         <View style={styles.rowBody}>
-          <View style={styles.rowTop}>
-            <View style={styles.rowTitleWrap}>
-              <Text style={styles.rowTitle} numberOfLines={1}>{item.name}</Text>
-              {isVigente ? (
-                <View style={styles.vigenteBadge}>
-                  <Text style={styles.vigenteBadgeText}>Vigente</Text>
-                </View>
-              ) : isClosed ? (
-                <View style={styles.closedBadge}>
-                  <Text style={styles.closedBadgeText}>Fechada</Text>
-                </View>
-              ) : null}
-            </View>
-          </View>
-
-          {period ? <Text style={styles.rowPeriod}>{period}</Text> : null}
-
-          {showCategoryBadges ? (
-            <CategoryPill
-              label={categoryLabel(item.categoryId)}
-              slug={item.categoryId?.replace('cat_', '')}
-              compact
-            />
+          <Text style={styles.rowTitle} numberOfLines={1}>{item.name}</Text>
+          {subtitle ? (
+            <Text style={styles.rowSubtitle} numberOfLines={1}>{subtitle}</Text>
           ) : null}
-
-          {item.myGoalAmount != null && item.myGoalAmount > 0 ? (
-            <Text style={styles.rowGoal}>Meta: {formatBRL(item.myGoalAmount)}</Text>
-          ) : !isAdmin ? (
-            <Text style={styles.rowGoalMuted}>Definir meta</Text>
-          ) : null}
-
-          {hasGoal ? (
-            <Text style={styles.rowSales}>
-              Vendido: {formatBRL(soldAmount)} · Faltam: {formatBRL(remaining)}
-            </Text>
-          ) : soldAmount > 0 ? (
-            <Text style={styles.rowSales}>Vendido: {formatBRL(soldAmount)}</Text>
-          ) : null}
-
-          <Text style={styles.rowMeta}>
-            {progress.bought}/{progress.total} clientes · {progress.cities}/{progress.totalCities} cidades
-          </Text>
 
           {hasGoal ? (
             <View style={styles.progressRow}>
-              <View style={[styles.progressTrack, isVigente && styles.progressTrackVigente]}>
+              <View style={styles.progressTrack}>
                 <View
                   style={[
                     styles.progressFill,
-                    { width: `${salesPercent}%`, backgroundColor: salesFillColor },
+                    { width: `${salesPercent}%`, backgroundColor: progressColor(salesPercent) },
                   ]}
                 />
               </View>
-              <Text style={[styles.progressPct, { color: salesFillColor }]}>
-                Meta {salesPercent}%
-              </Text>
+              {/* A largura da barra já codifica o avanço; o número evita que a
+                  leitura dependa de distinguir a cor. */}
+              <Text style={styles.progressPct}>{salesPercent}% da meta</Text>
             </View>
           ) : null}
         </View>
 
-        <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+        <View style={styles.rowTrailing}>
+          {soldAmount > 0 ? (
+            <Text style={styles.rowAmount}>{formatBRL(soldAmount)}</Text>
+          ) : null}
+          <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+        </View>
       </TouchableOpacity>
     );
   };
 
   return (
     <View style={[styles.container, isDesktop && styles.containerDesktop]}>
-      <View style={{ paddingTop: getTopBarInset(insets) }}>
-        <NotionHeader
-          title="Coleções"
-          showBorder
-          compact
-          rightAction={
-            canManageCollections ? (
-              <TouchableOpacity
-                style={styles.newButton}
-                onPress={openCreateScreen}
-                activeOpacity={0.7}
-                hitSlop={8}
-              >
-                <Text style={styles.newButtonText}>Adicionar</Text>
-              </TouchableOpacity>
-            ) : undefined
-          }
-        />
+      {/*
+        Mesmo cabeçalho do painel de cidade: nome da tela em corpo grande, a
+        contagem como linha de apoio e a ação num botão circular no canto.
+      */}
+      <View style={[styles.titleRow, { paddingTop: topInset }]}>
+        <View style={styles.titleBlock}>
+          <Text style={styles.title}>Coleções</Text>
+          <Text style={styles.subtitle}>
+            {filteredCollections.length}{' '}
+            {filteredCollections.length === 1 ? 'coleção' : 'coleções'} em {selectedYear}
+          </Text>
+        </View>
+        {canManageCollections ? (
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={openCreateScreen}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Nova coleção"
+          >
+            <View style={styles.addCircle}>
+              <Ionicons name="add" size={22} color={COLORS.primary} />
+            </View>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       {loading ? (
@@ -335,10 +321,6 @@ export default function CollectionsScreen() {
                 onChange={setCategoryFilter}
               />
             </View>
-            <Text style={styles.sectionLabel}>
-              {filteredCollections.length}{' '}
-              {filteredCollections.length === 1 ? 'coleção' : 'coleções'}
-            </Text>
           </View>
 
           {filteredCollections.length === 0 ? (
@@ -351,11 +333,14 @@ export default function CollectionsScreen() {
               </Text>
             </View>
           ) : (
-            <View style={styles.cardList}>
-              {filteredCollections.map((item, index) =>
-                renderCollection({ item, index })
-              )}
-            </View>
+            collectionSections.map((section) => (
+              <View key={section.title} style={styles.section}>
+                <Text style={styles.sectionHeaderText}>{section.title}</Text>
+                <View style={styles.cardList}>
+                  {section.data.map((item, index) => renderCollection(item, index))}
+                </View>
+              </View>
+            ))
           )}
         </ScrollView>
         </PullToRefresh>
@@ -409,6 +394,41 @@ const styles = StyleSheet.create({
   // as opacidades e o vidro acaba quase opaco de novo.
   containerDesktop: {
     backgroundColor: 'transparent',
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.sm,
+  },
+  titleBlock: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  title: {
+    ...FONTS.text.largeTitle,
+    color: COLORS.textPrimary,
+  },
+  subtitle: {
+    ...FONTS.tabular,
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.md,
+  },
+  addButton: {
+    minWidth: HIT_TARGET,
+    minHeight: HIT_TARGET,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  addCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   newButton: {
     paddingVertical: 6,
@@ -468,12 +488,6 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sizes.sm,
     fontWeight: '600',
   },
-  sectionLabel: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    letterSpacing: 0.6,
-  },
   yearEmptyState: {
     alignItems: 'center',
     paddingHorizontal: SPACING.xxl,
@@ -510,24 +524,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     position: 'relative',
   },
-  rowVigente: {
-    backgroundColor: COLORS.successBg,
-  },
-  rowVigenteClip: {
-    overflow: 'hidden',
-  },
-  rowClosed: {
-    opacity: 0.72,
-  },
-  vigenteAccent: {
-    position: 'absolute',
-    left: 0,
-    top: SPACING.md,
-    bottom: SPACING.md,
-    width: 3,
-    borderRadius: 2,
-    backgroundColor: COLORS.success,
-  },
   rowBorder: {
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: COLORS.surfaceBorder,
@@ -538,75 +534,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rowBody: { flex: 1, gap: SPACING.xs },
-  rowTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: SPACING.sm,
-  },
-  rowTitleWrap: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-    minWidth: 0,
-  },
   rowTitle: {
     flexShrink: 1,
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.lg,
+    fontWeight: '600',
+  },
+  rowSubtitle: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.md,
+  },
+  rowTrailing: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  rowAmount: {
+    ...FONTS.tabular,
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.md,
     fontWeight: '600',
   },
-  vigenteBadge: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.full,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.success,
+  section: {
+    gap: SPACING.sm,
+    marginBottom: SPACING.lg,
   },
-  vigenteBadgeText: {
-    color: COLORS.success,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '700',
-    letterSpacing: 0.2,
-  },
-  closedBadge: {
-    backgroundColor: COLORS.backgroundSubtle,
-    borderRadius: RADIUS.full,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorderStrong,
-  },
-  closedBadgeText: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '700',
-    letterSpacing: 0.2,
-  },
-  rowPeriod: {
+  sectionHeaderText: {
+    ...FONTS.text.sectionHeader,
     color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.sm,
-  },
-  rowGoal: {
-    color: COLORS.primary,
-    fontSize: FONTS.sizes.sm,
-    fontWeight: '500',
-  },
-  rowGoalMuted: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.sm,
-    fontWeight: '500',
-  },
-  rowSales: {
-    color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.sm,
-    fontWeight: '500',
-  },
-  rowMeta: {
-    color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.sm,
+    paddingHorizontal: SPACING.lg,
   },
   progressRow: {
     flexDirection: 'row',
@@ -621,21 +577,16 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     overflow: 'hidden',
   },
-  progressTrackVigente: {
-    height: 5,
-    backgroundColor: COLORS.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(47, 107, 79, 0.35)',
-  },
   progressFill: {
     height: '100%',
     borderRadius: 2,
     minWidth: 0,
   },
   progressPct: {
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    minWidth: 32,
+    ...FONTS.tabular,
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
+    minWidth: 88,
     textAlign: 'right',
   },
   pickerOverlay: {

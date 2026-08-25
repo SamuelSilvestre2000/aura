@@ -4,7 +4,7 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, FONTS, RADIUS, SPACING } from '../constants/colors';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../constants/colors';
 import { useAuth } from '../hooks/useAuth';
 import { useIsDesktop } from '../hooks/useIsDesktop';
 import { useTopBarSlots } from '../contexts/TopBarSlots';
@@ -12,10 +12,13 @@ import { useDesktopPanel, PANEL_WIDTH } from '../contexts/DesktopPanel';
 import { getScreenTopInset } from '../utils/safeArea';
 import { Avatar } from './Avatar';
 
-/** Altura interna da barra (área dos ícones). */
-export const TOP_BAR_CONTENT_HEIGHT = 40;
+/** Altura interna da barra — é também o alvo de toque dos pills, daí os 44. */
+export const TOP_BAR_CONTENT_HEIGHT = HIT_TARGET;
 
 const WRAPPER_PADDING_BOTTOM = 8;
+
+/** O avatar desenha 34 px, mas a área que responde ao dedo é o pill de 44. */
+const AVATAR_SIZE = 34;
 
 type NavRoute = {
   name: string;
@@ -141,6 +144,8 @@ const styles = StyleSheet.create({
   avatarPill: {
     width: TOP_BAR_CONTENT_HEIGHT,
     height: TOP_BAR_CONTENT_HEIGHT,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: RADIUS.full,
     backgroundColor: COLORS.surface,
     borderWidth: StyleSheet.hairlineWidth,
@@ -152,13 +157,13 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   avatarImage: {
-    width: TOP_BAR_CONTENT_HEIGHT,
-    height: TOP_BAR_CONTENT_HEIGHT,
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
     borderRadius: RADIUS.full,
   },
   avatarFallback: {
-    width: TOP_BAR_CONTENT_HEIGHT,
-    height: TOP_BAR_CONTENT_HEIGHT,
+    width: AVATAR_SIZE,
+    height: AVATAR_SIZE,
     borderRadius: RADIUS.full,
     alignItems: 'center',
     justifyContent: 'center',
@@ -190,7 +195,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   navPillActive: {
-    backgroundColor: '#E9E9E7',
+    backgroundColor: COLORS.fill,
   },
   desktopTogglesSlot: {
     flexDirection: 'row',

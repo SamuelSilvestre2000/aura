@@ -1,16 +1,16 @@
 import React from 'react';
 import { Animated, StyleSheet } from 'react-native';
 import { useIsDesktop } from '../hooks/useIsDesktop';
-import { useDesktopPanel, PANEL_WIDTH } from '../contexts/DesktopPanel';
-import { COLORS, RADIUS, SPACING } from '../constants/colors';
+import { useDesktopPanel, useDesktopPanelContent, PANEL_WIDTH } from '../contexts/DesktopPanel';
+import { COLORS, MATERIALS, RADIUS, SPACING } from '../constants/colors';
 import ClientsScreen from '../app/(tabs)/clients';
 import CollectionsScreen from '../app/(tabs)/collections';
 import SettingsScreen from '../app/(tabs)/settings';
 
 /** `backdropFilter` não existe no ViewStyle do React Native — só roda na web (isDesktop já exige Platform.OS === 'web'), então nativo nunca chega a montar isto. */
 const WEB_BLUR = {
-  backdropFilter: 'blur(24px) saturate(1.6)',
-  WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+  backdropFilter: MATERIALS.thick.blur,
+  WebkitBackdropFilter: MATERIALS.thick.blur,
 } as any;
 
 /**
@@ -23,7 +23,8 @@ const WEB_BLUR = {
  */
 export function DesktopSidePanel() {
   const isDesktop = useIsDesktop();
-  const { panel, cityContent, searchContent, stack, railWidthAnim } = useDesktopPanel();
+  const { panel, stack, railWidthAnim } = useDesktopPanel();
+  const { cityContent, searchContent } = useDesktopPanelContent();
 
   if (!isDesktop || (!panel && stack.length === 0)) return null;
 
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
     width: PANEL_WIDTH,
     maxWidth: '45%',
-    backgroundColor: COLORS.floatingPanelBg,
+    backgroundColor: MATERIALS.thick.background,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.floatingBorder,
     borderRadius: RADIUS.xxl,

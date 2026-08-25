@@ -25,6 +25,24 @@ if (Platform.OS === 'web' && typeof document !== 'undefined' && !document.getEle
     html, body, #root, input, textarea, select, button {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
+
+    /*
+      O navegador desenha um retângulo preto em volta do campo focado. Nos
+      formulários em lista, onde o campo não tem caixa própria, esse retângulo
+      aparece solto no meio da linha. O cursor piscando já diz onde se digita —
+      é o que o campo de um app nativo mostra.
+
+      Vale só para campo de texto: botões e links mantêm o foco visível, que é
+      o que permite navegar a tela pelo teclado.
+    */
+    input:focus,
+    textarea:focus {
+      outline: none;
+    }
+
+    input, textarea {
+      caret-color: #007AFF;
+    }
   `;
   document.head.appendChild(style);
 }

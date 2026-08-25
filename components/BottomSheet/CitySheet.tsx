@@ -3,9 +3,18 @@ import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { Ionicons } from '@expo/vector-icons';
 import { CityGeoData, Client, CityStatus, Collection, Sale } from '../../types';
-import { STATUS_COLORS, COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import {
+  STATUS_COLORS,
+  STATUS_ICONS,
+  STATUS_TEXT_COLORS,
+  COLORS,
+  FONTS,
+  HIT_TARGET,
+  RADIUS,
+  SPACING,
+} from '../../constants/colors';
 import { isCollectionClosed } from '../../utils/collectionStatus';
-import { NotionHeader } from '../NotionHeader';
+import { formatBRL } from '../../utils/money';
 import { ClientCard } from './ClientCard';
 
 type Props = {
@@ -51,66 +60,122 @@ export function CitySheet({
   highlightedClientId = null,
 }: Props) {
   const snapPoints = useMemo(() => ['40%', '70%', '100%'], []);
-  const statusColor = STATUS_COLORS[cityStatus];
+  const statusColor = STATUS_TEXT_COLORS[cityStatus];
+  const statusIcon = STATUS_ICONS[cityStatus];
 
   const countLabel =
     clients.length === 0
       ? 'Nenhum cliente'
       : `${clients.length} cliente${clients.length !== 1 ? 's' : ''}`;
 
+  /** Mesmos números do painel do desktop (CityDetailsPanel). */
+  const { boughtCount, totalSold } = useMemo(() => {
+    if (!activeCollection) return { boughtCount: 0, totalSold: 0 };
+    let bought = 0;
+    let sold = 0;
+    for (const client of clients) {
+      if (getPurchaseStatus(client.id, activeCollection.id)) bought += 1;
+      sold += getSaleForClientCollection(client.id, activeCollection.id)?.amount ?? 0;
+    }
+    return { boughtCount: bought, totalSold: sold };
+  }, [activeCollection, clients, getPurchaseStatus, getSaleForClientCollection]);
+
+  const collectionEndLabel = useMemo(() => {
+    if (!activeCollection?.endDate) return null;
+    const date = new Date(activeCollection.endDate);
+    if (Number.isNaN(date.getTime())) return null;
+    const label = date.toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' });
+    return `até ${label.replace('.', '')}`;
+  }, [activeCollection]);
+
+  /**
+   * Mesmo cabeçalho do painel do desktop (CityDetailsPanel): título da praça
+   * em corpo grande, status, coleção e o progresso num cartão. Aqui não há X —
+   * a folha fecha arrastando, que é o gesto da própria folha.
+   */
   const renderHeader = useCallback(() => {
     if (!selectedCity) return null;
     return (
       <View style={styles.header}>
-        <NotionHeader
-          title={selectedCity.name}
-          showBorder
-          rightAction={
-            canManageClients ? (
-              <TouchableOpacity
-                onPress={onAddClient}
-                style={styles.newButton}
-                activeOpacity={0.7}
-                hitSlop={8}
-              >
-                <Text style={styles.newButtonText}>Adicionar</Text>
-              </TouchableOpacity>
-            ) : undefined
-          }
-        />
-
-        <View style={styles.metaRow}>
-          <View style={[styles.statusPill, { borderColor: `${statusColor}55` }]}>
-            <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
-            <Text style={[styles.statusText, { color: statusColor }]}>
-              {STATUS_LABELS[cityStatus]}
-            </Text>
-          </View>
-          {activeCollection && (
-            <View style={styles.collectionPill}>
-              <Ionicons name="albums-outline" size={13} color={COLORS.textMuted} />
-              <Text style={styles.collectionPillText} numberOfLines={1}>
-                {activeCollection.name}
-              </Text>
-            </View>
-          )}
+        <View style={styles.titleBlock}>
+          <Text style={styles.title} numberOfLines={1}>
+            {selectedCity.name}
+          </Text>
+          <Text style={styles.subtitle}>Piauí · {countLabel}</Text>
         </View>
 
-        {clients.length > 0 && (
-          <Text style={styles.sectionLabel}>{countLabel}</Text>
-        )}
+        <View
+          style={[
+            styles.statusChip,
+            { backgroundColor: `${STATUS_COLORS[cityStatus]}28` },
+          ]}
+        >
+          <Ionicons name={statusIcon} size={14} color={statusColor} />
+          <Text style={[styles.statusText, { color: statusColor }]}>
+            {STATUS_LABELS[cityStatus]}
+          </Text>
+        </View>
+
+        {activeCollection ? (
+          <View style={styles.collectionRow}>
+            <Ionicons name="albums-outline" size={17} color={COLORS.primary} />
+            <Text style={styles.collectionName} numberOfLines={1}>
+              {activeCollection.name}
+            </Text>
+            {collectionEndLabel ? (
+              <Text style={styles.collectionPeriod}>{collectionEndLabel}</Text>
+            ) : null}
+          </View>
+        ) : null}
+
+        {activeCollection && clients.length > 0 ? (
+          <View style={styles.progressCard}>
+            <View style={styles.progressTop}>
+              <Text style={styles.progressCount}>
+                <Text style={styles.progressCountStrong}>{boughtCount}</Text>
+                {' de '}
+                {clients.length} compraram
+              </Text>
+              <Text style={styles.progressAmount}>{formatBRL(totalSold)}</Text>
+            </View>
+            <View style={styles.progressTrack}>
+              {boughtCount > 0 ? (
+                <View style={[styles.progressFill, { flex: boughtCount }]} />
+              ) : null}
+              {clients.length - boughtCount > 0 ? (
+                <View style={[styles.progressRest, { flex: clients.length - boughtCount }]} />
+              ) : null}
+            </View>
+          </View>
+        ) : null}
+
+        {clients.length > 0 ? <Text style={styles.sectionLabel}>Clientes</Text> : null}
       </View>
     );
   }, [
     selectedCity,
     cityStatus,
     statusColor,
+    statusIcon,
     countLabel,
-    canManageClients,
-    onAddClient,
     activeCollection,
+    collectionEndLabel,
+    boughtCount,
+    totalSold,
     clients.length,
   ]);
+
+  const renderFooter = useCallback(() => {
+    if (!canManageClients || clients.length === 0) return null;
+    return (
+      <TouchableOpacity style={styles.addCard} onPress={onAddClient} activeOpacity={0.7}>
+        <View style={styles.addIcon}>
+          <Ionicons name="add" size={17} color={COLORS.primary} />
+        </View>
+        <Text style={styles.addCardText}>Novo cliente em {selectedCity?.name}</Text>
+      </TouchableOpacity>
+    );
+  }, [canManageClients, clients.length, onAddClient, selectedCity?.name]);
 
   const renderEmpty = useCallback(() => {
     if (clients.length > 0) return null;
@@ -185,6 +250,7 @@ export function CitySheet({
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         ListHeaderComponent={renderHeader}
+        ListFooterComponent={renderFooter}
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
@@ -215,58 +281,115 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
     backgroundColor: COLORS.backgroundSubtle,
   },
-  newButton: {
-    paddingVertical: 6,
-    paddingHorizontal: SPACING.xs,
-    backgroundColor: 'transparent',
+  titleBlock: {
+    gap: 2,
   },
-  newButtonText: {
-    color: COLORS.primary,
-    fontWeight: '600',
-    fontSize: FONTS.sizes.sm,
+  title: {
+    ...FONTS.text.largeTitle,
+    color: COLORS.textPrimary,
   },
-  metaRow: {
+  subtitle: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.md,
+  },
+  statusChip: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 5,
+    height: 26,
+    paddingLeft: SPACING.sm,
+    paddingRight: SPACING.md,
+    borderRadius: RADIUS.full,
+  },
+  collectionRow: {
+    flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    paddingHorizontal: SPACING.lg,
+    minHeight: 24,
   },
-  statusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 4,
-    borderRadius: RADIUS.full,
-    borderWidth: StyleSheet.hairlineWidth,
+  collectionName: {
+    flex: 1,
+    minWidth: 0,
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.lg,
+    fontWeight: '600',
+  },
+  collectionPeriod: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
+  },
+  progressCard: {
+    gap: SPACING.sm,
+    padding: SPACING.md,
+    borderRadius: RADIUS.xl,
     backgroundColor: COLORS.surface,
-  },
-  statusDot: { width: 6, height: 6, borderRadius: 3 },
-  statusText: { fontSize: FONTS.sizes.xs, fontWeight: '600' },
-  collectionPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 4,
-    borderRadius: RADIUS.full,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
-    backgroundColor: COLORS.surface,
-    maxWidth: 160,
   },
-  collectionPillText: {
+  progressTop: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: SPACING.sm,
+  },
+  progressCount: {
+    ...FONTS.tabular,
     color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '500',
-    flexShrink: 1,
+    fontSize: FONTS.sizes.md,
   },
-  sectionLabel: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
+  progressCountStrong: {
+    ...FONTS.text.title1,
+    color: COLORS.textPrimary,
+  },
+  progressAmount: {
+    ...FONTS.tabular,
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.lg,
     fontWeight: '600',
-    letterSpacing: 0.6,
+  },
+  progressTrack: {
+    flexDirection: 'row',
+    gap: 3,
+    height: 6,
+  },
+  progressFill: {
+    borderRadius: 3,
+    backgroundColor: STATUS_COLORS.all,
+  },
+  progressRest: {
+    borderRadius: 3,
+    backgroundColor: COLORS.fillStrong,
+  },
+  addCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+    minHeight: HIT_TARGET + 16,
+    marginTop: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.surface,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: COLORS.surfaceBorder,
+  },
+  addIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addCardText: {
+    color: COLORS.primary,
+    fontSize: FONTS.sizes.lg,
+  },
+  statusText: { fontSize: FONTS.sizes.md, fontWeight: '600' },
+  // Cabeçalho de seção da lista, no mesmo estilo das outras telas.
+  sectionLabel: {
+    ...FONTS.text.sectionHeader,
+    color: COLORS.textSecondary,
     paddingHorizontal: SPACING.lg,
     marginTop: SPACING.xs,
   },
@@ -299,22 +422,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
-  emptySubtitle: {
-    color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.sm,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
+  // Usados no estado vazio (renderEmpty), quando a cidade nao tem cliente.
   addRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
     marginTop: SPACING.lg,
+    minHeight: HIT_TARGET,
     paddingVertical: SPACING.md,
   },
   addRowText: {
-    color: COLORS.textMuted,
+    color: COLORS.primary,
+    fontSize: FONTS.sizes.lg,
+  },
+  emptySubtitle: {
+    color: COLORS.textSecondary,
     fontSize: FONTS.sizes.sm,
-    fontWeight: '500',
+    textAlign: 'center',
+    lineHeight: 20,
   },
 });

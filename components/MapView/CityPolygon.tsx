@@ -2,7 +2,12 @@ import React, { memo } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import MapView, { Polygon } from 'react-native-maps';
 import { CityGeoData, CityStatus } from '../../types';
-import { STATUS_COLORS, STATUS_FILL_OPACITY, COLORS } from '../../constants/colors';
+import {
+  STATUS_COLORS,
+  STATUS_FILL_OPACITY,
+  STATUS_STROKE,
+  COLORS,
+} from '../../constants/colors';
 
 type Props = {
   city: CityGeoData;
@@ -13,6 +18,7 @@ type Props = {
 function CityPolygonComponent({ city, status, onPress }: Props) {
   const color = STATUS_COLORS[status];
   const opacity = STATUS_FILL_OPACITY[status];
+  const stroke = STATUS_STROKE[status];
 
   // Converter coordenadas GeoJSON [lng, lat] → {latitude, longitude}
   const coordinates = city.coordinates[0].map(([lng, lat]: number[]) => ({
@@ -28,7 +34,8 @@ function CityPolygonComponent({ city, status, onPress }: Props) {
       coordinates={coordinates}
       fillColor={`${color}${Math.round(opacity * 255).toString(16).padStart(2, '0')}`}
       strokeColor={`${color}CC`}
-      strokeWidth={status === 'no-clients' ? 0.5 : 1.5}
+      strokeWidth={stroke.width}
+      lineDashPattern={stroke.dash}
       tappable
       zIndex={2}
       onPress={() => onPress(city)}

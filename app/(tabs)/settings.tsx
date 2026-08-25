@@ -21,14 +21,13 @@ import { User } from '../../types';
 import { ROLE_LABELS } from '../../constants/permissions';
 import { formatCategoryNames } from '../../constants/userCategories';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
-import { getTopBarInset } from '../../components/TopTabBar';
-import { NotionHeader } from '../../components/NotionHeader';
 import { PullToRefresh } from '../../components/PullToRefresh';
 import { Avatar } from '../../components/Avatar';
 import EditUserScreen from '../user/edit';
 import ProfileScreen from '../user/profile';
 import NewRepresentativeScreen from '../representative/new';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
+import { useScreenTopInset } from '../../hooks/useScreenTopInset';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
@@ -37,6 +36,7 @@ export default function SettingsScreen() {
   const nav = usePanelNav();
   const insets = useSafeAreaInsets();
   const isDesktop = useIsDesktop();
+  const topInset = useScreenTopInset('tab');
   const { user, logout, can: canDo, isAdmin } = useAuth();
 
   const [users, setUsers] = useState<User[]>([]);
@@ -144,8 +144,12 @@ export default function SettingsScreen() {
 
   return (
     <View style={[styles.container, isDesktop && styles.containerDesktop]}>
-      <View style={{ paddingTop: getTopBarInset(insets) }}>
-        <NotionHeader title="Configurações" showBorder />
+      {/*
+        Mesmo cabeçalho das outras telas: nome em corpo grande, alinhado à
+        esquerda. Sem ação no canto — esta tela nao cria nada.
+      */}
+      <View style={[styles.titleRow, { paddingTop: topInset }]}>
+        <Text style={styles.title}>Conta</Text>
       </View>
 
       <PullToRefresh refreshing={refreshing} onRefresh={handleRefresh}>
@@ -155,7 +159,6 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Conta</Text>
           <View style={styles.card}>
             <TouchableOpacity
               style={styles.accountRow}
@@ -413,11 +416,18 @@ const styles = StyleSheet.create({
     gap: SPACING.xl,
   },
   section: { gap: SPACING.sm },
+  titleRow: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.sm,
+  },
+  title: {
+    ...FONTS.text.largeTitle,
+    color: COLORS.textPrimary,
+  },
+  // Cabecalho de secao no mesmo estilo do resto do app.
   sectionTitle: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    letterSpacing: 0.6,
+    ...FONTS.text.sectionHeader,
+    color: COLORS.textSecondary,
     paddingHorizontal: SPACING.xs,
   },
   card: {

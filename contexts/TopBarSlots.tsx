@@ -1,24 +1,25 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext } from 'react';
 import { useIsFocused } from '@react-navigation/native';
+import { NodeSlot, useNodeSlot, useNodeSlotRef, usePublishNodeSlot } from './nodeSlot';
 
-type TopBarSlotsValue = {
-  toggles: React.ReactNode;
-  setToggles: (node: React.ReactNode) => void;
-};
+const TopBarSlotsContext = createContext<NodeSlot | null>(null);
 
-const TopBarSlotsContext = createContext<TopBarSlotsValue | null>(null);
+function useTogglesSlot(hookName: string): NodeSlot {
+  const slot = useContext(TopBarSlotsContext);
+  if (!slot) throw new Error(`${hookName} deve ser usado dentro de TopBarSlotsProvider`);
+  return slot;
+}
 
 export function TopBarSlotsProvider({ children }: { children: React.ReactNode }) {
-  const [toggles, setToggles] = useState<React.ReactNode>(null);
-  const value = useMemo(() => ({ toggles, setToggles }), [toggles]);
-  return <TopBarSlotsContext.Provider value={value}>{children}</TopBarSlotsContext.Provider>;
+  // O slot é estável, então publicar toggles nunca re-renderiza esta árvore.
+  const slot = useNodeSlotRef();
+  return <TopBarSlotsContext.Provider value={slot}>{children}</TopBarSlotsContext.Provider>;
 }
 
 /** Consumido pela TopTabBar para renderizar o que a tela focada registrou. */
 export function useTopBarSlots() {
-  const ctx = useContext(TopBarSlotsContext);
-  if (!ctx) throw new Error('useTopBarSlots deve ser usado dentro de TopBarSlotsProvider');
-  return { toggles: ctx.toggles };
+  const slot = useTogglesSlot('useTopBarSlots');
+  return { toggles: useNodeSlot(slot) };
 }
 
 /**
@@ -29,17 +30,7 @@ export function useTopBarSlots() {
  * outra aba.
  */
 export function useSetTopBarSlots(toggles: React.ReactNode) {
-  const ctx = useContext(TopBarSlotsContext);
-  if (!ctx) throw new Error('useSetTopBarSlots deve ser usado dentro de TopBarSlotsProvider');
-  const { setToggles } = ctx;
+  const slot = useTogglesSlot('useSetTopBarSlots');
   const isFocused = useIsFocused();
-
-  useEffect(() => {
-    if (!isFocused) return;
-    setToggles(toggles);
-    return () => {
-      setToggles(null);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFocused, toggles]);
+  usePublishNodeSlot(slot, toggles, isFocused);
 }

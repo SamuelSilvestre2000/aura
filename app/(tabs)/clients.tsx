@@ -1,9 +1,9 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   StyleSheet,
   View,
   Text,
-  FlatList,
+  SectionList,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
@@ -18,23 +18,22 @@ import { usePanelNav } from '../../hooks/usePanelNav';
 import { Client } from '../../types';
 import ClientDetailScreen from '../client/[id]';
 import NewClientScreen from '../client/new';
-import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../../constants/colors';
 import { SearchBar } from '../../components/SearchBar';
 import { CategoryPickerPill } from '../../components/CategoryPickerPill';
-import { getTopBarInset } from '../../components/TopTabBar';
-import { CategoryPillRow } from '../../components/CategoryPill';
 import { labelsFromCategoryIds } from '../../constants/categoryPills';
-import { NotionHeader } from '../../components/NotionHeader';
 import { PullToRefresh } from '../../components/PullToRefresh';
-import { displayClientName } from '../../utils/clientName';
+import { clientInitials, displayClientName, nameIndexLetter } from '../../utils/clientName';
 import { filterClientsByCategory } from '../../utils/categoryFilter';
 import { getAvatarColor } from '../../utils/avatarColor';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
+import { useScreenTopInset } from '../../hooks/useScreenTopInset';
 
 export default function ClientsScreen() {
   const nav = usePanelNav();
   const insets = useSafeAreaInsets();
   const isDesktop = useIsDesktop();
+  const topInset = useScreenTopInset('tab');
   const { can: canDo } = useAuth();
   const {
     categories: userCategories,
@@ -88,10 +87,63 @@ export default function ClientsScreen() {
 
   const showCategoryBadges = userCategories.length > 1;
 
-  const renderClient = ({ item, index }: { item: Client; index: number }) => {
-    const { labels, slugs } = labelsFromCategoryIds(item.categoryIds);
+  /**
+   * Com centenas de clientes, uma lista plana obriga a rolar às cegas. Seções
+   * por letra + o índice A–Z ao lado é como Contatos resolve o mesmo problema.
+   * Durante uma busca não faz sentido seccionar: o resultado já é curto.
+   */
+  const isSearching = search.trim().length > 0;
+
+  const sections = useMemo(() => {
+    const byLetter = new Map<string, Client[]>();
+    for (const client of filteredClients) {
+      const letter = nameIndexLetter(displayClientName(client));
+      const bucket = byLetter.get(letter);
+      if (bucket) bucket.push(client);
+      else byLetter.set(letter, [client]);
+    }
+
+    const collator = new Intl.Collator('pt-BR');
+    return [...byLetter.entries()]
+      .sort(([a], [b]) => (a === '#' ? 1 : b === '#' ? -1 : collator.compare(a, b)))
+      .map(([title, data]) => ({
+        title,
+        data: data.sort((a, b) => collator.compare(displayClientName(a), displayClientName(b))),
+      }));
+  }, [filteredClients]);
+
+  const listSections = useMemo(
+    () => (isSearching ? [{ title: '', data: filteredClients }] : sections),
+    [isSearching, filteredClients, sections]
+  );
+
+  const listRef = useRef<SectionList<Client>>(null);
+
+  const jumpToSection = useCallback((sectionIndex: number) => {
+    listRef.current?.scrollToLocation({ sectionIndex, itemIndex: 0, animated: false });
+  }, []);
+
+  /**
+   * Título e uma linha de apoio, como em qualquer lista do sistema: o nome
+   * carrega a identificação e o resto cabe numa frase. Telefone saiu — é ação,
+   * não dado de lista, e mora na tela do cliente.
+   */
+  const renderClient = ({
+    item,
+    index,
+    section,
+  }: {
+    item: Client;
+    index: number;
+    section: { data: readonly Client[] };
+  }) => {
+    const { labels } = labelsFromCategoryIds(item.categoryIds);
     const name = displayClientName(item);
-    const isLast = index === filteredClients.length - 1;
+    const isLast = index === section.data.length - 1;
+    const subtitle = [`${item.city}, PI`, showCategoryBadges ? labels.join(', ') : '']
+      .filter(Boolean)
+      .join(' · ');
+
     return (
       <TouchableOpacity
         style={[
@@ -106,20 +158,11 @@ export default function ClientsScreen() {
         }
       >
         <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.id) }]}>
-          <Ionicons name="storefront" size={17} color="#FFFFFF" />
+          <Text style={styles.avatarText}>{clientInitials(name)}</Text>
         </View>
         <View style={styles.rowBody}>
           <Text style={styles.rowTitle} numberOfLines={1}>{name}</Text>
-          {showCategoryBadges && labels.length > 0 ? (
-            <CategoryPillRow labels={labels} slugs={slugs} />
-          ) : null}
-          <View style={styles.rowMeta}>
-            <Ionicons name="location-outline" size={12} color={COLORS.textMuted} />
-            <Text style={styles.rowMetaText} numberOfLines={1}>{item.city}, PI</Text>
-          </View>
-          {item.phone ? (
-            <Text style={styles.rowPhone} numberOfLines={1}>{item.phone}</Text>
-          ) : null}
+          <Text style={styles.rowSubtitle} numberOfLines={1}>{subtitle}</Text>
         </View>
         <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
       </TouchableOpacity>
@@ -132,23 +175,29 @@ export default function ClientsScreen() {
 
   return (
     <View style={[styles.container, isDesktop && styles.containerDesktop]}>
-      <View style={{ paddingTop: getTopBarInset(insets) }}>
-        <NotionHeader
-          title="Clientes"
-          showBorder
-          rightAction={
-            canManageClients ? (
-              <TouchableOpacity
-                style={styles.newButton}
-                onPress={() => nav.open('client-new', <NewClientScreen />, '/client/new')}
-                activeOpacity={0.7}
-                hitSlop={8}
-              >
-                <Text style={styles.newButtonText}>Adicionar</Text>
-              </TouchableOpacity>
-            ) : undefined
-          }
-        />
+      {/*
+        Mesmo cabeçalho do painel de cidade: o nome da tela em corpo grande, a
+        contagem como linha de apoio, e a ação num botão circular no canto — em
+        vez de barra de navegação com título centralizado.
+      */}
+      <View style={[styles.titleRow, { paddingTop: topInset }]}>
+        <View style={styles.titleBlock}>
+          <Text style={styles.title}>Clientes</Text>
+          <Text style={styles.subtitle}>{countLabel}</Text>
+        </View>
+        {canManageClients ? (
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={() => nav.open('client-new', <NewClientScreen />, '/client/new')}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Novo cliente"
+          >
+            <View style={styles.addCircle}>
+              <Ionicons name="add" size={22} color={COLORS.primary} />
+            </View>
+          </TouchableOpacity>
+        ) : null}
       </View>
 
       {loading ? (
@@ -175,10 +224,19 @@ export default function ClientsScreen() {
         </View>
       ) : (
         <PullToRefresh refreshing={refreshing} onRefresh={handleRefresh}>
-          <FlatList
-            data={filteredClients}
+          <SectionList
+            ref={listRef}
+            sections={listSections}
             keyExtractor={(item) => item.id}
             renderItem={renderClient}
+            renderSectionHeader={({ section }) =>
+              section.title ? (
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionHeaderText}>{section.title}</Text>
+                </View>
+              ) : null
+            }
+            stickySectionHeadersEnabled
             showsVerticalScrollIndicator={false}
             style={styles.listScroll}
             contentContainerStyle={{ paddingBottom: listBottom, flexGrow: 1 }}
@@ -198,9 +256,9 @@ export default function ClientsScreen() {
                     onChange={setCategoryFilter}
                   />
                 </View>
-                <Text style={styles.sectionLabel}>{countLabel}</Text>
               </>
             }
+            ListFooterComponent={<View style={styles.listFooterSpace} />}
             ListEmptyComponent={
               <View style={styles.emptyStateInline}>
                 <View style={styles.emptyIconWrap}>
@@ -221,6 +279,23 @@ export default function ClientsScreen() {
           />
         </PullToRefresh>
       )}
+
+      {!isSearching && sections.length > 1 ? (
+        <View style={styles.indexBar}>
+          {sections.map((section, sectionIndex) => (
+            <TouchableOpacity
+              key={section.title}
+              onPress={() => jumpToSection(sectionIndex)}
+              hitSlop={6}
+              style={styles.indexTouch}
+              accessibilityRole="button"
+              accessibilityLabel={`Ir para ${section.title}`}
+            >
+              <Text style={styles.indexLetter}>{section.title}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -237,15 +312,40 @@ const styles = StyleSheet.create({
   containerDesktop: {
     backgroundColor: 'transparent',
   },
-  newButton: {
-    paddingVertical: 6,
-    paddingHorizontal: SPACING.xs,
-    backgroundColor: 'transparent',
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.sm,
   },
-  newButtonText: {
-    color: COLORS.primary,
-    fontWeight: '600',
-    fontSize: FONTS.sizes.sm,
+  titleBlock: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  title: {
+    ...FONTS.text.largeTitle,
+    color: COLORS.textPrimary,
+  },
+  subtitle: {
+    ...FONTS.tabular,
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.md,
+  },
+  addButton: {
+    minWidth: HIT_TARGET,
+    minHeight: HIT_TARGET,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  addCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   searchWrap: {
     paddingHorizontal: SPACING.lg,
@@ -261,15 +361,6 @@ const styles = StyleSheet.create({
   },
   listScroll: {
     flex: 1,
-  },
-  sectionLabel: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    letterSpacing: 0.6,
-    marginBottom: SPACING.sm,
-    marginHorizontal: SPACING.lg,
-    paddingHorizontal: SPACING.xs,
   },
   row: {
     flexDirection: 'row',
@@ -293,14 +384,17 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: RADIUS.lg,
     borderBottomRightRadius: RADIUS.lg,
   },
+  // A divisória começa alinhada ao texto, não sob o avatar: é o que dá à lista
+  // o ritmo de coluna em vez de fatiar a linha inteira.
   rowBorder: {
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: COLORS.surfaceBorder,
+    marginLeft: 36 + SPACING.md,
   },
   avatar: {
     width: 36,
     height: 36,
-    borderRadius: RADIUS.lg,
+    borderRadius: 18,
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
@@ -310,24 +404,49 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 4,
   },
-  rowTitle: {
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
+  avatarText: {
+    color: '#FFFFFF',
+    fontSize: FONTS.sizes.sm,
     fontWeight: '600',
   },
-  rowMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+  rowTitle: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.lg,
+    fontWeight: '600',
   },
-  rowMetaText: {
+  rowSubtitle: {
     color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.sm,
-    flex: 1,
+    fontSize: FONTS.sizes.md,
   },
-  rowPhone: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.sm,
+  sectionHeader: {
+    backgroundColor: COLORS.backgroundSubtle,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: 3,
+  },
+  sectionHeaderText: {
+    ...FONTS.text.sectionHeader,
+    color: COLORS.textSecondary,
+  },
+  listFooterSpace: {
+    height: SPACING.lg,
+  },
+  indexBar: {
+    position: 'absolute',
+    right: 2,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: SPACING.xl,
+  },
+  indexTouch: {
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+  },
+  indexLetter: {
+    color: COLORS.primary,
+    fontSize: 11,
+    fontWeight: '600',
   },
   emptyState: {
     flex: 1,

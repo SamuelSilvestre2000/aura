@@ -42,7 +42,10 @@ import { CitySheet } from '../BottomSheet/CitySheet';
 import { Ionicons } from '@expo/vector-icons';
 
 import { CityGeoData } from '../../types';
-import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { COLORS,
+  HIT_TARGET, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { clientInitials, displayClientName } from '../../utils/clientName';
+import { getAvatarColor } from '../../utils/avatarColor';
 import { DARK_MAP_STYLE, LIGHT_MAP_STYLE } from '../../constants/mapStyles';
 import {
   clampMapRegion,
@@ -569,7 +572,9 @@ export default function MapScreen() {
                             onPress={() => handleSelectSearchCity(city)}
                             activeOpacity={0.7}
                           >
-                            <Ionicons name="location-outline" size={16} color={COLORS.textMuted} />
+                            <View style={styles.searchResultIcon}>
+                              <Ionicons name="location" size={17} color={COLORS.primary} />
+                            </View>
                             <Text style={styles.searchResultText} numberOfLines={1}>
                               {city.name}
                             </Text>
@@ -587,10 +592,19 @@ export default function MapScreen() {
                             onPress={() => handleSelectSearchClient(client)}
                             activeOpacity={0.7}
                           >
-                            <Ionicons name="storefront-outline" size={16} color={COLORS.textMuted} />
+                            <View
+                              style={[
+                                styles.searchResultAvatar,
+                                { backgroundColor: getAvatarColor(client.id) },
+                              ]}
+                            >
+                              <Text style={styles.searchResultAvatarText}>
+                                {clientInitials(displayClientName(client))}
+                              </Text>
+                            </View>
                             <View style={styles.searchResultBody}>
                               <Text style={styles.searchResultText} numberOfLines={1}>
-                                {client.name}
+                                {displayClientName(client)}
                               </Text>
                               <Text style={styles.searchResultSubtext} numberOfLines={1}>
                                 {client.city}
@@ -690,7 +704,7 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#E8EFF7',
+    backgroundColor: COLORS.mapBackground,
   },
   container: {
     flex: 1,
@@ -740,30 +754,48 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
   },
   searchResultsLabel: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
+    ...FONTS.text.sectionHeader,
+    color: COLORS.textSecondary,
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.sm,
+    paddingTop: SPACING.md,
     paddingBottom: 4,
   },
   searchResultRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
+    gap: SPACING.md,
+    minHeight: HIT_TARGET,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
   },
-  searchResultBody: { flex: 1 },
+  searchResultIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchResultAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchResultAvatarText: {
+    color: '#FFFFFF',
+    fontSize: FONTS.sizes.xs,
+    fontWeight: '600',
+  },
+  searchResultBody: { flex: 1, minWidth: 0 },
   searchResultText: {
     color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
+    fontSize: FONTS.sizes.lg,
   },
   searchResultSubtext: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
     marginTop: 1,
   },
   collectionContainer: {

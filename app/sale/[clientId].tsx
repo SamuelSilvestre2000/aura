@@ -12,24 +12,27 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Alert } from '../../utils/alert';
-import { getScreenTopInset } from '../../utils/safeArea';
 import { useClients } from '../../hooks/useClients';
 import { useCollections } from '../../hooks/useCollections';
 import { usePurchases } from '../../hooks/usePurchases';
 import { useAuth } from '../../hooks/useAuth';
 import { usePanelNav } from '../../hooks/usePanelNav';
-import { getTopBarInset } from '../../components/TopTabBar';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
+import { useScreenTopInset } from '../../hooks/useScreenTopInset';
 import { NotionHeader } from '../../components/NotionHeader';
 import { HeaderBackButton } from '../../components/HeaderBackButton';
 import { MoneyInput } from '../../components/MoneyInput';
 import { PullToRefresh } from '../../components/PullToRefresh';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { formatBRL } from '../../utils/money';
+import { displayClientName } from '../../utils/clientName';
 
 type Props = { clientId?: string; collectionId?: string };
 
 export default function SaleScreen(props: Props = {}) {
   const nav = usePanelNav();
+  const isDesktop = useIsDesktop();
+  const topInset = useScreenTopInset('modal');
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{
     clientId: string;
@@ -132,18 +135,19 @@ export default function SaleScreen(props: Props = {}) {
 
   if (!client || !collection) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.center, isDesktop && styles.containerDesktop]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDesktop && styles.containerDesktop]}>
       <View
         style={[
           styles.headerSafe,
-          { paddingTop: nav.isDesktop ? getTopBarInset(insets) : getScreenTopInset(insets) },
+          isDesktop && styles.containerDesktop,
+          { paddingTop: topInset },
         ]}
       >
         <NotionHeader
@@ -165,7 +169,7 @@ export default function SaleScreen(props: Props = {}) {
         >
           <View style={styles.card}>
             <Text style={styles.cardLabel}>CLIENTE</Text>
-            <Text style={styles.cardValue}>{client.name}</Text>
+            <Text style={styles.cardValue}>{displayClientName(client)}</Text>
           </View>
 
           <View style={styles.card}>
@@ -231,6 +235,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
+  },
+  // No painel flutuante do desktop, deixa o vidro do painel (DesktopSidePanel)
+  // aparecer em vez de cobrir tudo com fundo opaco. Totalmente transparente
+  // (não translúcido) — empilhar duas camadas translúcidas soma opacidade.
+  containerDesktop: {
+    backgroundColor: 'transparent',
   },
   headerSafe: {
     backgroundColor: COLORS.backgroundSubtle,

@@ -14,7 +14,7 @@ import { useIsDesktop } from '../hooks/useIsDesktop';
 import { NotionHeader } from './NotionHeader';
 import { HeaderBackButton } from './HeaderBackButton';
 import { PullToRefresh } from './PullToRefresh';
-import { getTopBarInset } from './TopTabBar';
+import { useScreenTopInset } from '../hooks/useScreenTopInset';
 
 type Props = {
   title: string;
@@ -39,12 +39,10 @@ export function FormScreen({
   const insets = useSafeAreaInsets();
   const isDesktop = useIsDesktop();
   /**
-   * No desktop esta tela é empilhada dentro da sidebar, ao lado dos painéis
-   * base (Clientes/Coleções/Conta) — o header precisa reservar o mesmo
-   * espaço do topo que eles (getTopBarInset) para os títulos alinharem na
-   * mesma altura. No mobile ela ainda é página cheia sem barra por cima.
+   * Mesma regra de todas as telas: dentro do painel do desktop a moldura do
+   * painel já é a margem; no mobile isto é página cheia, sem barra por cima.
    */
-  const headerTopInset = isDesktop ? getTopBarInset(insets) : getScreenTopInset(insets);
+  const headerTopInset = useScreenTopInset('modal');
 
   const scrollView = (
     <ScrollView
@@ -57,7 +55,7 @@ export function FormScreen({
   );
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isDesktop && styles.containerDesktop]}>
       <View style={{ paddingTop: headerTopInset }}>
         <NotionHeader
           title={title}
@@ -86,6 +84,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
+  },
+  // No painel flutuante do desktop, deixa o vidro do painel (DesktopSidePanel)
+  // aparecer em vez de cobrir tudo com fundo opaco. Totalmente transparente
+  // (não translúcido) — empilhar duas camadas translúcidas soma opacidade.
+  containerDesktop: {
+    backgroundColor: 'transparent',
   },
   flex: { flex: 1 },
   content: {

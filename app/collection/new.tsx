@@ -8,12 +8,13 @@ import { useAuth } from '../../hooks/useAuth';
 import { usePanelNav } from '../../hooks/usePanelNav';
 import { FormScreen } from '../../components/FormScreen';
 import { FormSection } from '../../components/FormSection';
+import { FormRow } from '../../components/FormRow';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
 import { DateField } from '../../components/DateField';
 import { CategorySelect } from '../../components/CategorySelect';
 import { CollectionTypeSelect } from '../../components/CollectionTypeSelect';
 import { CollectionGoalsInput } from '../../components/CollectionGoalsInput';
-import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../../constants/colors';
 import { addMonths, toISODate } from '../../utils/dates';
 import { getAllowedCategoriesForUser } from '../../services/categories';
 import { listCollectionTypes } from '../../services/collectionTypes';
@@ -156,12 +157,9 @@ export default function NewCollectionScreen() {
       }
     >
       <FormSection title="Informações básicas">
-        <View style={styles.field}>
-          <Text style={styles.label}>
-            Nome <Text style={styles.required}>*</Text>
-          </Text>
+        <FormRow label="Nome" required first>
           <TextInput
-            style={styles.input}
+            style={styles.rowInput}
             placeholder="Ex: Verão 2026"
             placeholderTextColor={COLORS.textPlaceholder}
             value={name}
@@ -169,9 +167,15 @@ export default function NewCollectionScreen() {
             returnKeyType="next"
             autoFocus
           />
-        </View>
+        </FormRow>
+      </FormSection>
 
-        {categories.length > 1 && (
+      {/*
+        Seletores e campos de data trazem o próprio layout, então ficam em
+        seções `plain`, que preservam o respiro interno do cartão.
+      */}
+      {categories.length > 1 ? (
+        <FormSection title="Linha" variant="plain">
           <CategorySelect
             categories={categories}
             value={categoryId}
@@ -179,8 +183,10 @@ export default function NewCollectionScreen() {
             includeAll
             required
           />
-        )}
+        </FormSection>
+      ) : null}
 
+      <FormSection title="Temporada" variant="plain">
         <CollectionTypeSelect
           types={collectionTypes}
           value={collectionTypeId}
@@ -188,10 +194,10 @@ export default function NewCollectionScreen() {
         />
       </FormSection>
 
-      <FormSection title="Período">
-        <DateField label="DATA INICIAL" value={startDate} onChange={setStartDate} required />
+      <FormSection title="Período" variant="plain">
+        <DateField label="Data inicial" value={startDate} onChange={setStartDate} required />
         <DateField
-          label="DATA FINAL"
+          label="Data final"
           value={endDate}
           onChange={setEndDate}
           minimumDate={startDate}
@@ -217,8 +223,8 @@ export default function NewCollectionScreen() {
         </TouchableOpacity>
       </FormSection>
 
-      {goalCategories.length > 0 && (
-        <FormSection title="Metas">
+      {goalCategories.length > 0 ? (
+        <FormSection title="Metas" variant="plain">
           <CollectionGoalsInput
             categories={goalCategories}
             values={goalsByCategory}
@@ -226,31 +232,17 @@ export default function NewCollectionScreen() {
             sectionLabel=""
           />
         </FormSection>
-      )}
+      ) : null}
     </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  field: { gap: SPACING.sm },
-  label: {
+  rowInput: {
     color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    letterSpacing: 0.6,
-  },
-  required: {
-    color: COLORS.error,
-  },
-  input: {
-    backgroundColor: COLORS.backgroundSubtle,
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
+    fontSize: FONTS.sizes.lg,
+    paddingVertical: 0,
+    textAlign: 'right',
   },
   checkboxRow: {
     flexDirection: 'row',

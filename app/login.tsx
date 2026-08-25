@@ -10,7 +10,7 @@ import { useAuth } from '../hooks/useAuth';
 import { Alert } from '../utils/alert';
 import { requestPasswordReset } from '../services/auth';
 import { isSupabaseConfigured } from '../services/supabase/client';
-import { COLORS, FONTS, RADIUS, SPACING } from '../constants/colors';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../constants/colors';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -203,12 +203,13 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    backgroundColor: COLORS.surface,
+    minHeight: HIT_TARGET,
+    backgroundColor: COLORS.fill,
     borderRadius: RADIUS.xl,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
+    fontSize: FONTS.sizes.lg,
     borderWidth: 1,
     borderColor: COLORS.surfaceBorder,
   },

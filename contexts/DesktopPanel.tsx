@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { Animated } from 'react-native';
+import { NodeSlot, useNodeSlot, useNodeSlotRef, usePublishNodeSlot } from './nodeSlot';
 
 export type DesktopPanelName = 'search' | 'clients' | 'collections' | 'settings' | 'city';
 
@@ -12,12 +13,13 @@ type StackEntry = { key: string; node: React.ReactNode };
 
 type DesktopPanelValue = {
   panel: DesktopPanelName | null;
-  /** Conteúdo do painel de cidade, publicado pelo mapa (dados/estado ficam lá). */
-  cityContent: React.ReactNode;
-  setCityContent: (node: React.ReactNode) => void;
-  /** Conteúdo do painel de busca, publicado pelo mapa (mesma lógica de busca do mapa). */
-  searchContent: React.ReactNode;
-  setSearchContent: (node: React.ReactNode) => void;
+  /**
+   * Conteúdo dos painéis de cidade e de busca, publicado pelo mapa (dados e
+   * estado ficam lá). Ficam em slots fora do state — ver contexts/nodeSlot.ts
+   * para o porquê. Prefira os hooks no fim deste arquivo a mexer nos slots.
+   */
+  citySlot: NodeSlot;
+  searchSlot: NodeSlot;
   openPanel: (name: DesktopPanelName) => void;
   closePanel: () => void;
   togglePanel: (name: DesktopPanelName) => void;
@@ -37,8 +39,8 @@ const DesktopPanelContext = createContext<DesktopPanelValue | null>(null);
 
 export function DesktopPanelProvider({ children }: { children: React.ReactNode }) {
   const [panel, setPanel] = useState<DesktopPanelName | null>(null);
-  const [cityContent, setCityContent] = useState<React.ReactNode>(null);
-  const [searchContent, setSearchContent] = useState<React.ReactNode>(null);
+  const citySlot = useNodeSlotRef();
+  const searchSlot = useNodeSlotRef();
   const [stack, setStack] = useState<StackEntry[]>([]);
   const railWidthAnim = useRef(new Animated.Value(RAIL_WIDTH)).current;
 
@@ -71,10 +73,8 @@ export function DesktopPanelProvider({ children }: { children: React.ReactNode }
   const value = useMemo(
     () => ({
       panel,
-      cityContent,
-      setCityContent,
-      searchContent,
-      setSearchContent,
+      citySlot,
+      searchSlot,
       openPanel,
       closePanel,
       togglePanel,
@@ -85,8 +85,8 @@ export function DesktopPanelProvider({ children }: { children: React.ReactNode }
     }),
     [
       panel,
-      cityContent,
-      searchContent,
+      citySlot,
+      searchSlot,
       openPanel,
       closePanel,
       togglePanel,
@@ -104,4 +104,24 @@ export function useDesktopPanel() {
   const ctx = useContext(DesktopPanelContext);
   if (!ctx) throw new Error('useDesktopPanel deve ser usado dentro de DesktopPanelProvider');
   return ctx;
+}
+
+/** Lado que renderiza os painéis (DesktopSidePanel). */
+export function useDesktopPanelContent() {
+  const { citySlot, searchSlot } = useDesktopPanel();
+  return {
+    cityContent: useNodeSlot(citySlot),
+    searchContent: useNodeSlot(searchSlot),
+  };
+}
+
+/** Lado que publica: o mapa passa o node e se está no layout desktop. */
+export function usePublishCityContent(node: React.ReactNode, active: boolean) {
+  const { citySlot } = useDesktopPanel();
+  usePublishNodeSlot(citySlot, node, active);
+}
+
+export function usePublishSearchContent(node: React.ReactNode, active: boolean) {
+  const { searchSlot } = useDesktopPanel();
+  usePublishNodeSlot(searchSlot, node, active);
 }

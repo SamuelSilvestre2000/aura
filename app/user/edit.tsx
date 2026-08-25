@@ -20,9 +20,11 @@ import { User, Category } from '../../types';
 import { ROLE_LABELS } from '../../constants/permissions';
 import { CategoryMultiSelect } from '../../components/CategoryMultiSelect';
 import { FormScreen } from '../../components/FormScreen';
+import { FormSection } from '../../components/FormSection';
+import { FormRow } from '../../components/FormRow';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
 import { RepresentativePinField } from '../../components/RepresentativePinField';
-import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../../constants/colors';
 
 type Props = { id?: string };
 
@@ -222,45 +224,45 @@ export default function EditUserScreen({ id: propId }: Props = {}) {
         </View>
       </View>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>NOME COMPLETO</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Nome completo"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={name}
-          onChangeText={setName}
-          autoCapitalize="words"
-        />
-      </View>
+      <FormSection title="Identificação">
+        <FormRow label="Nome" required first>
+          <TextInput
+            style={styles.rowInput}
+            placeholder="Nome completo"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={name}
+            onChangeText={setName}
+            autoCapitalize="words"
+          />
+        </FormRow>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>
-          E-MAIL{isRepresentative ? '' : ' (OPCIONAL)'}
-        </Text>
-        <TextInput
-          style={styles.input}
-          placeholder="nome@empresa.com"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-      </View>
+        <FormRow label="E-mail" required={isRepresentative}>
+          <TextInput
+            style={styles.rowInput}
+            placeholder="nome@empresa.com"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+        </FormRow>
+      </FormSection>
 
-      {isRepresentative && (
-        <View style={styles.field}>
-          <Text style={styles.label}>CATEGORIAS</Text>
-          <Text style={styles.hint}>Linhas que este representante atende</Text>
+      {isRepresentative ? (
+        <FormSection
+          title="Categorias"
+          footer="Linhas que este representante atende."
+          variant="plain"
+        >
           <CategoryMultiSelect
             categories={categories}
             selectedIds={selectedCategoryIds}
             onChange={setSelectedCategoryIds}
           />
-        </View>
-      )}
+        </FormSection>
+      ) : null}
 
       {isRepresentative ? (
         <RepresentativePinField
@@ -270,25 +272,35 @@ export default function EditUserScreen({ id: propId }: Props = {}) {
           onCancelReset={() => setResetPinPending(false)}
         />
       ) : (
-        <View style={styles.field}>
-          <Text style={styles.label}>ALTERAR PIN</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Novo PIN"
-            placeholderTextColor={COLORS.textPlaceholder}
-            value={pin}
-            onChangeText={setPin}
-            keyboardType="number-pad"
-            secureTextEntry
-            maxLength={8}
-          />
-        </View>
+        <FormSection title="Acesso">
+          <FormRow label="Alterar PIN" first>
+            <TextInput
+              style={[styles.rowInput, styles.rowInputNumeric]}
+              placeholder="Novo PIN"
+              placeholderTextColor={COLORS.textPlaceholder}
+              value={pin}
+              onChangeText={setPin}
+              keyboardType="number-pad"
+              secureTextEntry
+              maxLength={8}
+            />
+          </FormRow>
+        </FormSection>
       )}
     </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  rowInput: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.lg,
+    paddingVertical: 0,
+    textAlign: 'right',
+  },
+  rowInputNumeric: {
+    ...FONTS.tabular,
+  },
   center: {
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
@@ -333,27 +345,5 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     fontSize: FONTS.sizes.sm,
     fontWeight: '500',
-  },
-  field: { gap: SPACING.sm },
-  label: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    letterSpacing: 0.6,
-  },
-  hint: {
-    color: COLORS.textPlaceholder,
-    fontSize: FONTS.sizes.xs,
-    marginBottom: 2,
-  },
-  input: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
   },
 });

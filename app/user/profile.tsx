@@ -19,8 +19,10 @@ import { formatCategoryNames, isValidAccessPin, MAX_ACCESS_PIN_LENGTH } from '..
 import { isValidAuthPassword } from '../../services/users';
 import { ROLE_LABELS } from '../../constants/permissions';
 import { FormScreen } from '../../components/FormScreen';
+import { FormSection } from '../../components/FormSection';
+import { FormRow } from '../../components/FormRow';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
-import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../../constants/colors';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -185,29 +187,38 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>NOME</Text>
-        <TextInput
-          style={styles.nameInput}
-          value={name}
-          onChangeText={setName}
-          placeholder="Seu nome"
-          placeholderTextColor={COLORS.textPlaceholder}
-          autoCapitalize="words"
-          returnKeyType="done"
-        />
-      </View>
+      <FormSection title="Perfil">
+        <FormRow label="Nome" first>
+          <TextInput
+            style={styles.rowInput}
+            value={name}
+            onChangeText={setName}
+            placeholder="Seu nome"
+            placeholderTextColor={COLORS.textPlaceholder}
+            autoCapitalize="words"
+            returnKeyType="done"
+          />
+        </FormRow>
 
-      <View style={styles.readOnlyCard}>
-        <Text style={styles.readOnlyMeta}>{ROLE_LABELS[user.role]}</Text>
-        {user.email ? <Text style={styles.readOnlyMeta}>{user.email}</Text> : null}
-        {user.categories.length > 0 ? (
-          <Text style={styles.readOnlyCategory}>{formatCategoryNames(user.categories)}</Text>
+        {/* Dados que o representante nao edita entram como linha de leitura. */}
+        <FormRow label="Perfil">
+          <Text style={styles.staticValue}>{ROLE_LABELS[user.role]}</Text>
+        </FormRow>
+
+        {user.email ? (
+          <FormRow label="E-mail">
+            <Text style={styles.staticValue}>{user.email}</Text>
+          </FormRow>
         ) : null}
-      </View>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>{usesSupabase ? 'SENHA' : 'PIN DE ACESSO'}</Text>
+        {user.categories.length > 0 ? (
+          <FormRow label="Categorias">
+            <Text style={styles.staticValue}>{formatCategoryNames(user.categories)}</Text>
+          </FormRow>
+        ) : null}
+      </FormSection>
+
+      <FormSection title={usesSupabase ? 'Senha' : 'PIN de acesso'} variant="plain">
         {!changePin ? (
           <View style={styles.pinCard}>
             <Text style={styles.pinHint}>
@@ -274,12 +285,34 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
         )}
-      </View>
+      </FormSection>
     </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  // Campos da troca de senha: ficam num cartao proprio, com caixa, porque nao
+  // sao linha de lista — sao uma acao com dois passos.
+  input: {
+    minHeight: HIT_TARGET,
+    backgroundColor: COLORS.fill,
+    borderRadius: RADIUS.lg,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.lg,
+  },
+  rowInput: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.lg,
+    paddingVertical: 0,
+    textAlign: 'right',
+  },
+  staticValue: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.lg,
+    textAlign: 'right',
+  },
   center: {
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
@@ -325,31 +358,6 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sizes.sm,
     fontWeight: '500',
   },
-  readOnlyCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    padding: SPACING.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
-    gap: 4,
-  },
-  readOnlyMeta: {
-    color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.sm,
-  },
-  readOnlyCategory: {
-    color: COLORS.primary,
-    fontSize: FONTS.sizes.sm,
-    fontWeight: '500',
-    marginTop: 2,
-  },
-  field: { gap: SPACING.sm },
-  label: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    letterSpacing: 0.6,
-  },
   pinCard: {
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
@@ -380,28 +388,6 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     fontSize: FONTS.sizes.sm,
     fontWeight: '500',
-  },
-  input: {
-    backgroundColor: COLORS.backgroundSubtle,
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
-    letterSpacing: 4,
-    textAlign: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
-  },
-  nameInput: {
-    backgroundColor: COLORS.backgroundSubtle,
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
   },
   inputInvalid: {
     borderColor: COLORS.error,

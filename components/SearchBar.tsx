@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, TextInput, TouchableOpacity, type TextStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, FONTS, RADIUS, SPACING } from '../constants/colors';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../constants/colors';
 
 /** Remove o contorno azul de foco que o navegador desenha em <input> na web (RNW-only). */
 const NO_OUTLINE_STYLE = { outlineStyle: 'none' } as unknown as TextStyle;
@@ -52,13 +52,17 @@ export function SearchBar({
 }
 
 const styles = StyleSheet.create({
+  // A altura mora aqui, no container: com o minHeight no input ela somava ao
+  // padding e o campo virava 60 px. O fundo e o raio seguem o campo de busca
+  // do sistema — preenchimento neutro, sem borda.
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.backgroundSubtle,
-    borderRadius: RADIUS.xl,
+    minHeight: HIT_TARGET,
+    backgroundColor: COLORS.fill,
+    borderRadius: RADIUS.lg,
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
+    paddingVertical: 0,
     gap: SPACING.sm,
   },
   containerMap: {
@@ -80,7 +84,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
+    fontSize: FONTS.sizes.lg,
     paddingVertical: 0,
   },
 });

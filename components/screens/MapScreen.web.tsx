@@ -8,7 +8,7 @@ import { MapContainer, TileLayer, Polygon, CircleMarker, useMap } from 'react-le
 import type { Map as LeafletMapInstance } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-import { getScreenBottomInset } from '../../utils/safeArea';
+import { getScreenBottomInset, PANEL_TOP_INSET } from '../../utils/safeArea';
 import { getTopBarInset, TOP_BAR_CONTENT_HEIGHT } from '../TopTabBar';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useClients } from '../../hooks/useClients';
@@ -20,7 +20,11 @@ import { useCategoryFilter } from '../../hooks/useCategoryFilter';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { usePanelNav } from '../../hooks/usePanelNav';
 import { useSetTopBarSlots } from '../../contexts/TopBarSlots';
-import { useDesktopPanel } from '../../contexts/DesktopPanel';
+import {
+  useDesktopPanel,
+  usePublishCityContent,
+  usePublishSearchContent,
+} from '../../contexts/DesktopPanel';
 import {
   filterClientsByCategory,
   filterCollectionsByCategory,
@@ -33,7 +37,6 @@ import {
   getCollectionYear,
 } from '../../utils/collectionYears';
 import { CategoryPickerPill } from '../CategoryPickerPill';
-import { NotionHeader } from '../NotionHeader';
 
 import { SearchBar } from '../SearchBar';
 import { CitySheet } from '../BottomSheet/CitySheet';
@@ -43,13 +46,26 @@ import SaleScreen from '../../app/sale/[clientId]';
 import NewClientScreen from '../../app/client/new';
 
 import { CityGeoData } from '../../types';
-import { COLORS, FONTS, RADIUS, SPACING, STATUS_COLORS, STATUS_FILL_OPACITY, PIAUI_REGION } from '../../constants/colors';
+import {
+  COLORS,
+  FONTS,
+  HIT_TARGET,
+  MATERIALS,
+  RADIUS,
+  SPACING,
+  STATUS_COLORS,
+  STATUS_FILL_OPACITY,
+  STATUS_STROKE,
+  PIAUI_REGION,
+} from '../../constants/colors';
+import { clientInitials, displayClientName } from '../../utils/clientName';
+import { getAvatarColor } from '../../utils/avatarColor';
 import { OUTER_BOUNDS } from '../../constants/mapBounds';
 
 /** `backdropFilter` não existe no ViewStyle do React Native — só roda na web (isDesktop já exige Platform.OS === 'web'), então nativo nunca chega a montar isto. */
 const WEB_BLUR = {
-  backdropFilter: 'blur(24px) saturate(1.6)',
-  WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+  backdropFilter: MATERIALS.thin.blur,
+  WebkitBackdropFilter: MATERIALS.thin.blur,
 } as any;
 
 const MAP_CENTER: [number, number] = [PIAUI_REGION.latitude, PIAUI_REGION.longitude];
@@ -79,7 +95,7 @@ export default function MapScreenWeb() {
   const insets = useSafeAreaInsets();
   const isDesktop = useIsDesktop();
   const nav = usePanelNav();
-  const { panel, openPanel, closePanel, setCityContent, setSearchContent } = useDesktopPanel();
+  const { panel, openPanel, closePanel } = useDesktopPanel();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const mapRef = useRef<LeafletMapInstance | null>(null);
   const [search, setSearch] = useState('');
@@ -376,10 +392,7 @@ export default function MapScreenWeb() {
     />
   );
 
-  useEffect(() => {
-    setCityContent(isDesktop ? cityPanelNode : null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDesktop, cityPanelNode]);
+  usePublishCityContent(cityPanelNode, isDesktop);
 
   const searchResultsContent = !showSearchResults ? null : citySearchResults.length === 0 &&
     clientSearchResults.length === 0 ? (
@@ -396,7 +409,9 @@ export default function MapScreenWeb() {
               onPress={() => handleSelectSearchCity(city)}
               activeOpacity={0.7}
             >
-              <Ionicons name="location-outline" size={16} color={COLORS.textMuted} />
+              <View style={styles.searchResultIcon}>
+                <Ionicons name="location" size={17} color={COLORS.primary} />
+              </View>
               <Text style={styles.searchResultText} numberOfLines={1}>
                 {city.name}
               </Text>
@@ -414,13 +429,22 @@ export default function MapScreenWeb() {
               onPress={() => handleSelectSearchClient(client)}
               activeOpacity={0.7}
             >
-              <Ionicons name="storefront-outline" size={16} color={COLORS.textMuted} />
+              <View
+                style={[
+                  styles.searchResultAvatar,
+                  { backgroundColor: getAvatarColor(client.id) },
+                ]}
+              >
+                <Text style={styles.searchResultAvatarText}>
+                  {clientInitials(displayClientName(client))}
+                </Text>
+              </View>
               <View style={styles.searchResultBody}>
                 <Text style={styles.searchResultText} numberOfLines={1}>
-                  {client.name}
+                  {displayClientName(client)}
                 </Text>
                 <Text style={styles.searchResultSubtext} numberOfLines={1}>
-                  {client.city}
+                  {client.city}, PI
                 </Text>
               </View>
             </TouchableOpacity>
@@ -432,8 +456,12 @@ export default function MapScreenWeb() {
 
   const searchPanelNode = (
     <View style={styles.searchPanel}>
-      <View style={{ paddingTop: getTopBarInset(insets) }}>
-        <NotionHeader title="Buscar" showBorder />
+      {/*
+        Mesmo cabeçalho do painel de cidade: nome da tela em corpo grande,
+        alinhado à esquerda, sem barra de navegação.
+      */}
+      <View style={[styles.searchPanelTitleRow, { paddingTop: PANEL_TOP_INSET }]}>
+        <Text style={styles.searchPanelTitle}>Buscar</Text>
       </View>
       <View style={styles.searchPanelInputWrap}>
         <SearchBar
@@ -453,10 +481,7 @@ export default function MapScreenWeb() {
     </View>
   );
 
-  useEffect(() => {
-    setSearchContent(isDesktop ? searchPanelNode : null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDesktop, searchPanelNode]);
+  usePublishSearchContent(searchPanelNode, isDesktop);
 
   const collectionPillNode = !activeCollection ? null : visibleCollections.length > 1 ? (
     <TouchableOpacity
@@ -549,9 +574,16 @@ export default function MapScreenWeb() {
             zoomControl={false}
             style={{ width: '100%', height: '100%' }}
           >
+            {/*
+              Basemap claro e dessaturado: o dado desta tela sao os poligonos de
+              status, e o tile padrao do OSM (verdes e beges saturados) disputa
+              atencao com eles. Servico externo de uso justo, atribuicao abaixo.
+            */}
             <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+              subdomains={['a', 'b', 'c', 'd']}
+              maxZoom={20}
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             />
             {hasCities &&
               filteredCities.map((city) => {
@@ -565,7 +597,8 @@ export default function MapScreenWeb() {
                     positions={positions}
                     pathOptions={{
                       color: `${STATUS_COLORS[status]}CC`,
-                      weight: status === 'no-clients' ? 1 : 1.5,
+                      weight: STATUS_STROKE[status].width,
+                      dashArray: STATUS_STROKE[status].dash?.join(' '),
                       fillColor: hexAlpha(STATUS_COLORS[status], STATUS_FILL_OPACITY[status]),
                       fillOpacity: 1,
                     }}
@@ -739,7 +772,7 @@ export default function MapScreenWeb() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#E8EFF7' },
+  root: { flex: 1, backgroundColor: COLORS.mapBackground },
   container: { flex: 1 },
   topUI: {
     position: 'absolute',
@@ -786,48 +819,74 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.xxl,
     overflow: 'hidden',
   },
+  searchPanelTitleRow: {
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.sm,
+  },
+  searchPanelTitle: {
+    ...FONTS.text.largeTitle,
+    color: COLORS.textPrimary,
+  },
   searchPanelInputWrap: {
     paddingHorizontal: SPACING.lg,
     paddingBottom: SPACING.sm,
   },
   searchPanelHint: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.sm,
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.md,
     textAlign: 'center',
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.xl,
   },
   searchResultsEmpty: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.sm,
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.md,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
   },
   searchResultsLabel: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
+    ...FONTS.text.sectionHeader,
+    color: COLORS.textSecondary,
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.sm,
+    paddingTop: SPACING.md,
     paddingBottom: 4,
   },
   searchResultRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
+    gap: SPACING.md,
+    minHeight: HIT_TARGET,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
   },
-  searchResultBody: { flex: 1 },
+  searchResultIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchResultAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchResultAvatarText: {
+    color: '#FFFFFF',
+    fontSize: FONTS.sizes.xs,
+    fontWeight: '600',
+  },
+  searchResultBody: { flex: 1, minWidth: 0 },
   searchResultText: {
     color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
+    fontSize: FONTS.sizes.lg,
   },
   searchResultSubtext: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
     marginTop: 1,
   },
   collectionContainer: { marginTop: 6, marginHorizontal: 12 },
@@ -835,7 +894,7 @@ const styles = StyleSheet.create({
   // Só no desktop: mesmo material de vidro da rail/painel (translúcido + blur),
   // no lugar do branco opaco — substitui backgroundColor/borderColor do pill.
   pillGlass: {
-    backgroundColor: COLORS.floatingBg,
+    backgroundColor: MATERIALS.thin.background,
     borderColor: COLORS.floatingBorder,
     ...WEB_BLUR,
   },
@@ -896,7 +955,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.full,
   },
   yearToggleSegmentActive: {
-    backgroundColor: '#E9E9E7',
+    backgroundColor: COLORS.fill,
   },
   yearToggleSegmentText: {
     color: COLORS.textMuted,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, RADIUS, SPACING } from '../constants/colors';
+import { COLORS, HIT_TARGET, MATERIALS, RADIUS, SPACING } from '../constants/colors';
 import { useIsDesktop } from '../hooks/useIsDesktop';
 import { useDesktopPanel, DesktopPanelName } from '../contexts/DesktopPanel';
 import { useAuth } from '../hooks/useAuth';
@@ -9,12 +9,13 @@ import { Avatar } from './Avatar';
 import { PersonRailIcon, CollectionsRailIcon } from './icons/RailIcons';
 
 const AVATAR_SIZE = 34;
-const BTN_SIZE = 40;
+/** O avatar continua desenhando 34 px — o que precisa medir 44 é o alvo. */
+const BTN_SIZE = HIT_TARGET;
 
 /** `backdropFilter` não existe no ViewStyle do React Native — só roda na web (isDesktop já exige Platform.OS === 'web'), então nativo nunca chega a montar isto. */
 const WEB_BLUR = {
-  backdropFilter: 'blur(24px) saturate(1.6)',
-  WebkitBackdropFilter: 'blur(24px) saturate(1.6)',
+  backdropFilter: MATERIALS.regular.blur,
+  WebkitBackdropFilter: MATERIALS.regular.blur,
 } as any;
 
 type RailItem = {
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
     left: SPACING.md,
     top: SPACING.md,
     zIndex: 20,
-    backgroundColor: COLORS.floatingBg,
+    backgroundColor: MATERIALS.regular.background,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.floatingBorder,
     borderRadius: BTN_SIZE / 2 + SPACING.sm,
