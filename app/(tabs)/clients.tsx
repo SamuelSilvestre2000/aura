@@ -30,6 +30,10 @@ import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { useScreenTopInset } from '../../hooks/useScreenTopInset';
 import { PanelCloseButton } from '../../components/PanelCloseButton';
 
+/** Altura da linha e do cabeçalho de seção — ver itemLayouts. */
+const ROW_HEIGHT = 64;
+const SECTION_HEADER_HEIGHT = 26;
+
 export default function ClientsScreen() {
   const nav = usePanelNav();
   const insets = useSafeAreaInsets();
@@ -119,6 +123,42 @@ export default function ClientsScreen() {
   );
 
   const listRef = useRef<SectionList<Client>>(null);
+
+  /**
+   * Saltar para uma letra exige saber a altura de tudo que vem antes: sem
+   * getItemLayout, scrollToLocation não tem como calcular a posição de uma
+   * seção que ainda não foi renderizada — e no react-native-web ele lança.
+   *
+   * A lista alterna cabeçalho de seção, linhas e um rodapé por seção (o
+   * VirtualizedSectionList reserva o índice do rodapé mesmo sem renderizá-lo),
+   * então o offset de cada índice é pré-calculado uma vez por lista.
+   */
+  const itemLayouts = useMemo(() => {
+    const layouts: { length: number; offset: number; index: number }[] = [];
+    let offset = 0;
+    let index = 0;
+
+    for (const section of listSections) {
+      const headerHeight = section.title ? SECTION_HEADER_HEIGHT : 0;
+      layouts.push({ length: headerHeight, offset, index: index++ });
+      offset += headerHeight;
+
+      for (let i = 0; i < section.data.length; i += 1) {
+        layouts.push({ length: ROW_HEIGHT, offset, index: index++ });
+        offset += ROW_HEIGHT;
+      }
+
+      layouts.push({ length: 0, offset, index: index++ });
+    }
+
+    return layouts;
+  }, [listSections]);
+
+  const getItemLayout = useCallback(
+    (_data: unknown, index: number) =>
+      itemLayouts[index] ?? { length: ROW_HEIGHT, offset: ROW_HEIGHT * index, index },
+    [itemLayouts]
+  );
 
   const jumpToSection = useCallback((sectionIndex: number) => {
     listRef.current?.scrollToLocation({ sectionIndex, itemIndex: 0, animated: false });
@@ -242,6 +282,15 @@ export default function ClientsScreen() {
               ) : null
             }
             stickySectionHeadersEnabled
+            getItemLayout={getItemLayout}
+            onScrollToIndexFailed={({ averageItemLength, index }) => {
+              // Rede de segurança: se um salto ainda escapar, aproxima em vez
+              // de derrubar a tela.
+              listRef.current?.getScrollResponder()?.scrollTo({
+                y: averageItemLength * index,
+                animated: false,
+              });
+            }}
             showsVerticalScrollIndicator={false}
             style={styles.listScroll}
             contentContainerStyle={{ paddingBottom: listBottom, flexGrow: 1 }}
@@ -371,7 +420,10 @@ const styles = StyleSheet.create({
   listScroll: {
     flex: 1,
   },
+  // Altura fixa: é o que permite ao índice A–Z saltar para a letra certa
+  // (ver itemLayouts). Mudar aqui pede mudar ROW_HEIGHT junto.
   row: {
+    height: ROW_HEIGHT,
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.md,
@@ -422,15 +474,18 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.lg,
     fontWeight: '600',
+    lineHeight: 22,
   },
   rowSubtitle: {
     color: COLORS.textSecondary,
     fontSize: FONTS.sizes.md,
+    lineHeight: 18,
   },
   sectionHeader: {
+    height: SECTION_HEADER_HEIGHT,
+    justifyContent: 'center',
     backgroundColor: COLORS.backgroundSubtle,
     paddingHorizontal: SPACING.lg,
-    paddingVertical: 3,
   },
   sectionHeaderText: {
     ...FONTS.text.sectionHeader,

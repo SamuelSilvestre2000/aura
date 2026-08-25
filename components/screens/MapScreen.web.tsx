@@ -64,6 +64,10 @@ import { getAvatarColor } from '../../utils/avatarColor';
 import { OUTER_BOUNDS } from '../../constants/mapBounds';
 
 /** `backdropFilter` não existe no ViewStyle do React Native — só roda na web (isDesktop já exige Platform.OS === 'web'), então nativo nunca chega a montar isto. */
+/** Os controles do mapa compartilham medida e curvatura. */
+const MAP_CONTROL_SIZE = 44;
+const MAP_CONTROL_RADIUS = 14;
+
 const WEB_BLUR = {
   backdropFilter: MATERIALS.thin.blur,
   WebkitBackdropFilter: MATERIALS.thin.blur,
@@ -653,7 +657,7 @@ export default function MapScreenWeb() {
             style={[styles.bottomControls, { paddingBottom: bottomUIHeight + SPACING.sm }]}
             pointerEvents="box-none"
           >
-            <View style={styles.zoomControl}>
+            <View style={[styles.zoomControl, WEB_BLUR]}>
               <TouchableOpacity style={styles.zoomButton} onPress={handleZoomIn} activeOpacity={0.7}>
                 <Ionicons name="add" size={20} color={COLORS.primary} />
               </TouchableOpacity>
@@ -662,18 +666,36 @@ export default function MapScreenWeb() {
                 <Ionicons name="remove" size={20} color={COLORS.primary} />
               </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.mapActionBtn} onPress={handleRefreshMap} activeOpacity={0.7}>
-              {refreshingMap ? (
-                <ActivityIndicator size="small" color={COLORS.primary} />
-              ) : (
-                <Ionicons name="refresh-outline" size={22} color={COLORS.primary} />
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.mapActionBtn} onPress={handleLocateMe} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={[styles.mapActionBtn, WEB_BLUR]}
+              onPress={handleLocateMe}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Centralizar no meu local"
+            >
               {locating ? (
                 <ActivityIndicator size="small" color={COLORS.primary} />
               ) : (
-                <Ionicons name="locate-outline" size={22} color={COLORS.primary} />
+                <Ionicons name="navigate" size={20} color={COLORS.primary} />
+              )}
+            </TouchableOpacity>
+
+            {/*
+              Atualizar é ação de dados, não de mapa — fica separado do par
+              zoom/localizar por um respiro maior, para não ler como se fosse
+              da mesma família.
+            */}
+            <TouchableOpacity
+              style={[styles.mapActionBtn, styles.mapActionBtnDetached, WEB_BLUR]}
+              onPress={handleRefreshMap}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Atualizar dados"
+            >
+              {refreshingMap ? (
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              ) : (
+                <Ionicons name="refresh" size={20} color={COLORS.primary} />
               )}
             </TouchableOpacity>
           </View>
@@ -1015,28 +1037,48 @@ const styles = StyleSheet.create({
     zIndex: 5,
     pointerEvents: 'box-none',
   },
+  /**
+   * Controles do mapa: mesmo material da cápsula de navegação, porque flutuam
+   * sobre o mesmo mapa. Branco opaco os fazia parecer grudados no fundo, e
+   * destoava da rail e do painel, que já são de vidro.
+   *
+   * Largura e raio iguais nos três, para lerem como uma família.
+   */
   mapActionBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: RADIUS.full,
-    backgroundColor: COLORS.surface,
+    width: MAP_CONTROL_SIZE,
+    height: MAP_CONTROL_SIZE,
+    borderRadius: MAP_CONTROL_RADIUS,
+    backgroundColor: MATERIALS.regular.background,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
+    borderColor: COLORS.floatingBorder,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    elevation: 6,
   },
-  /** Pill único (+ em cima, − embaixo) estilo Apple Maps, nas cores do app. */
+  mapActionBtnDetached: {
+    marginTop: SPACING.md,
+  },
+  /** Pill único (+ em cima, − embaixo), como o zoom do Apple Maps. */
   zoomControl: {
-    width: 44,
-    borderRadius: 14,
-    backgroundColor: COLORS.surface,
+    width: MAP_CONTROL_SIZE,
+    borderRadius: MAP_CONTROL_RADIUS,
+    backgroundColor: MATERIALS.regular.background,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
+    borderColor: COLORS.floatingBorder,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    elevation: 6,
   },
   zoomButton: {
-    width: 44,
-    height: 44,
+    width: MAP_CONTROL_SIZE,
+    height: MAP_CONTROL_SIZE,
     justifyContent: 'center',
     alignItems: 'center',
   },

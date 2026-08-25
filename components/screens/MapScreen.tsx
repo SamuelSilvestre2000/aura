@@ -43,6 +43,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { CityGeoData } from '../../types';
 import { COLORS,
+  MATERIALS,
   HIT_TARGET, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { clientInitials, displayClientName } from '../../utils/clientName';
 import { getAvatarColor } from '../../utils/avatarColor';
@@ -532,15 +533,29 @@ export default function MapScreen() {
             style={[styles.bottomControls, { paddingBottom: bottomUIHeight + SPACING.sm }]}
             pointerEvents="box-none"
           >
-            <TouchableOpacity style={styles.mapActionBtn} onPress={handleRefreshMap} activeOpacity={0.7}>
+            <TouchableOpacity
+              style={styles.mapActionBtn}
+              onPress={handleCenterMap}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Centralizar no mapa"
+            >
+              <Ionicons name="navigate" size={20} color={COLORS.primary} />
+            </TouchableOpacity>
+
+            {/* Atualizar é ação de dados: separado do controle de mapa. */}
+            <TouchableOpacity
+              style={[styles.mapActionBtn, styles.mapActionBtnDetached]}
+              onPress={handleRefreshMap}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Atualizar dados"
+            >
               {refreshingMap ? (
                 <ActivityIndicator size="small" color={COLORS.primary} />
               ) : (
-                <Ionicons name="refresh-outline" size={22} color={COLORS.primary} />
+                <Ionicons name="refresh" size={20} color={COLORS.primary} />
               )}
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.mapActionBtn} onPress={handleCenterMap} activeOpacity={0.7}>
-              <Ionicons name="locate-outline" size={22} color={COLORS.primary} />
             </TouchableOpacity>
             {/* {canManageClients && (
               <TouchableOpacity style={styles.mapActionBtn} onPress={() => openNewClient()} activeOpacity={0.7}>
@@ -937,20 +952,27 @@ const styles = StyleSheet.create({
     zIndex: 5,
     pointerEvents: 'box-none',
   },
+  /**
+   * Sem backdropFilter no nativo, o material vira a cor translúcida sozinha —
+   * a sombra é o que descola o botão do mapa.
+   */
   mapActionBtn: {
     width: 44,
     height: 44,
-    borderRadius: RADIUS.full,
-    backgroundColor: COLORS.surface,
+    borderRadius: 14,
+    backgroundColor: MATERIALS.regular.background,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
+    borderColor: COLORS.floatingBorder,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    elevation: 6,
+  },
+  mapActionBtnDetached: {
+    marginTop: SPACING.md,
   },
   errorContainer: {
     flex: 1,
