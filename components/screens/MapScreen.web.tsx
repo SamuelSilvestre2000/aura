@@ -1,8 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, ActivityIndicator, Modal, Pressable, ScrollView } from 'react-native';
+import {
+  ActivityIndicator,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapContainer, TileLayer, Polygon, CircleMarker, useMap } from 'react-leaflet';
 import type { Map as LeafletMapInstance } from 'leaflet';
@@ -27,7 +37,7 @@ if (typeof document !== 'undefined' && !document.getElementById('aura-map-tiles-
   document.head.appendChild(style);
 }
 
-import { getScreenBottomInset, PANEL_TOP_INSET } from '../../utils/safeArea';
+import { PANEL_TOP_INSET } from '../../utils/safeArea';
 import { getTopBarInset, TOP_BAR_CONTENT_HEIGHT } from '../TopTabBar';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useClients } from '../../hooks/useClients';
@@ -36,6 +46,8 @@ import { usePurchases } from '../../hooks/usePurchases';
 import { useCityStatus } from '../../hooks/useCityStatus';
 import { useCityExclusions } from '../../hooks/useCityExclusions';
 import { useAuth } from '../../hooks/useAuth';
+import { useKeyboardOverlap } from '../../hooks/useKeyboardOverlap';
+import { getTabBarBottomInset } from '../CustomTabBar';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { usePanelNav } from '../../hooks/usePanelNav';
@@ -120,8 +132,11 @@ function FlyToUser({ target }: { target: [number, number] | null }) {
  */
 export default function MapScreenWeb() {
   const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const keyboardOverlap = useKeyboardOverlap();
   const isDesktop = useIsDesktop();
   const nav = usePanelNav();
+  const router = useRouter();
   const { panel, openPanel, closePanel } = useDesktopPanel();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const mapRef = useRef<LeafletMapInstance | null>(null);
@@ -134,7 +149,8 @@ export default function MapScreenWeb() {
   const [locating, setLocating] = useState(false);
   const [refreshingMap, setRefreshingMap] = useState(false);
   const [topUIHeight, setTopUIHeight] = useState(0);
-  const [bottomUIHeight, setBottomUIHeight] = useState(0);
+  /** Altura da barra de busca: e dela para baixo que os resultados crescem. */
+  const [searchBarHeight, setSearchBarHeight] = useState(0);
 
   /**
    * O Leaflet não percebe sozinho quando o container dele muda de tamanho
@@ -153,7 +169,7 @@ export default function MapScreenWeb() {
     return () => observer.disconnect();
   }, []);
 
-  const { can: canDo } = useAuth();
+  const { can: canDo, user } = useAuth();
   const {
     categories: userCategories,
     filter: categoryFilter,
@@ -396,7 +412,22 @@ export default function MapScreenWeb() {
   }, [refreshingMap, refreshClients, refreshCollections, refreshPurchases, refreshCities, effectiveFilter]);
 
   const headerTop = getTopBarInset(insets);
-  const bottomOffset = getScreenBottomInset(insets, SPACING.sm);
+  const tabBarOffset = getTabBarBottomInset(insets, SPACING.sm);
+
+  /**
+   * Os resultados vao da busca ate a dock, sem passar por baixo dela nem do
+   * teclado. O keyboardOverlap e 0 fora do iOS, onde a janela ja encolhe.
+   */
+  const resultsMaxHeight = Math.max(
+    120,
+    windowHeight - (headerTop + searchBarHeight + 6) - Math.max(keyboardOverlap, tabBarOffset) - SPACING.md
+  );
+
+  /** Buscar e trocar de contexto: a folha da cidade aberta sai da frente. */
+  const handleSearchFocus = useCallback(() => {
+    bottomSheetRef.current?.close();
+    setSelectedCity(null);
+  }, []);
   const selectedCityClients = selectedCity
     ? filteredClients.filter((c) => c.cityCode === selectedCity.code)
     : [];
@@ -674,6 +705,39 @@ export default function MapScreenWeb() {
           pointerEvents="box-none"
           onLayout={(e) => setTopUIHeight(e.nativeEvent.layout.height)}
         >
+          {/*
+            Busca no topo, igual ao MapScreen nativo. Ficou no rodape por
+            engano: quando a busca subiu para o topo no arquivo nativo, este
+            gemeo nao acompanhou, e na web em tela estreita ela seguia embaixo.
+          */}
+          {!isDesktop && (
+            <View
+              style={styles.searchContainer}
+              onLayout={(e) => setSearchBarHeight(e.nativeEvent.layout.height)}
+            >
+              <SearchBar
+                variant="map"
+                value={search}
+                onChangeText={setSearch}
+                onClear={() => setSearch('')}
+                placeholder="Pesquisar cidade ou cliente..."
+                onFocus={handleSearchFocus}
+                onProfilePress={() => router.push('/(tabs)/settings')}
+                profileInitial={user?.name.charAt(0).toUpperCase()}
+                profileImageUri={user?.photoUri}
+              />
+              {showSearchResults && (
+                <ScrollView
+                  style={[styles.searchResults, { maxHeight: resultsMaxHeight }]}
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                >
+                  {searchResultsContent}
+                </ScrollView>
+              )}
+            </View>
+          )}
+
           {!isDesktop && activeCollection && (
             <View style={styles.collectionContainer}>
               <View style={styles.pillRow}>
@@ -686,7 +750,7 @@ export default function MapScreenWeb() {
 
         {!selectedCity && (
           <View
-            style={[styles.bottomControls, { paddingBottom: bottomUIHeight + SPACING.sm }]}
+            style={[styles.bottomControls, { paddingBottom: tabBarOffset }]}
             pointerEvents="box-none"
           >
             <View style={[styles.zoomControl, WEB_BLUR]}>
@@ -730,30 +794,6 @@ export default function MapScreenWeb() {
                 <Ionicons name="refresh" size={20} color={COLORS.primary} />
               )}
             </TouchableOpacity>
-          </View>
-        )}
-
-        {!isDesktop && (
-          <View
-            style={[styles.bottomSearchWrapper, { paddingBottom: bottomOffset }]}
-            pointerEvents="box-none"
-            onLayout={(e) => setBottomUIHeight(e.nativeEvent.layout.height)}
-          >
-            <View style={styles.searchAnchor}>
-              {showSearchResults && (
-                <View style={styles.searchResults} pointerEvents="auto">
-                  {searchResultsContent}
-                </View>
-              )}
-
-              <SearchBar
-                variant="map"
-                value={search}
-                onChangeText={setSearch}
-                onClear={() => setSearch('')}
-                placeholder="Pesquisar cidade ou cliente..."
-              />
-            </View>
           </View>
         )}
 
@@ -837,28 +877,23 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 10,
   },
-  bottomSearchWrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 12,
-    paddingTop: SPACING.sm,
-    zIndex: 10,
+  searchContainer: {
+    marginHorizontal: SPACING.md,
+    // As pills sao irmas posteriores no topUI, e no React Native o irmao
+    // posterior pinta em cima — sem zIndex o dropdown nasce atras delas.
+    zIndex: 30,
   },
-  searchAnchor: { position: 'relative' },
   searchResults: {
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: '100%',
-    marginBottom: 6,
+    top: '100%',
+    marginTop: 6,
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
     paddingVertical: SPACING.xs,
-    maxHeight: 320,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
