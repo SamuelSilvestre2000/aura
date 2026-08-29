@@ -1,14 +1,16 @@
 import React, { useRef, useState, useCallback, useMemo, useEffect } from 'react';
 import {
+  ActivityIndicator,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StatusBar,
   StyleSheet,
-  View,
   Text,
   TouchableOpacity,
-  ActivityIndicator,
-  Platform,
-  StatusBar,
-  Modal,
-  Pressable,
+  View,
+  useWindowDimensions,
 } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import BottomSheet from '@gorhom/bottom-sheet';
@@ -22,6 +24,7 @@ import { useClients } from '../../hooks/useClients';
 import { useCollections } from '../../hooks/useCollections';
 import { usePurchases } from '../../hooks/usePurchases';
 import { useCityStatus } from '../../hooks/useCityStatus';
+import { useCityExclusions } from '../../hooks/useCityExclusions';
 import { useMapTheme } from '../../hooks/useMapTheme';
 import { useAuth } from '../../hooks/useAuth';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
@@ -30,18 +33,27 @@ import {
   filterCollectionsByCategory,
 } from '../../utils/categoryFilter';
 import { isCollectionClosed } from '../../utils/collectionStatus';
+import { useKeyboardOverlap } from '../../hooks/useKeyboardOverlap';
 import { getVigenteCollectionId } from '../../utils/collectionVigente';
 import { CategoryPickerPill } from '../CategoryPickerPill';
 
 import { CityPolygon } from '../MapView/CityPolygon';
 import { PiauiFocusMask } from '../MapView/PiauiFocusMask';
 import { SearchBar } from '../SearchBar';
+import { getTabBarBottomInset } from '../CustomTabBar';
 import { CitySheet } from '../BottomSheet/CitySheet';
 import { Ionicons } from '@expo/vector-icons';
 
-import { getTabBarBottomInset } from '../CustomTabBar';
 import { CityGeoData } from '../../types';
-import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import {
+  COLORS,
+  HIT_TARGET,
+  FONTS,
+  RADIUS,
+  SPACING,
+} from '../../constants/colors';
+import { clientInitials, displayClientName } from '../../utils/clientName';
+import { getAvatarColor } from '../../utils/avatarColor';
 import { DARK_MAP_STYLE, LIGHT_MAP_STYLE } from '../../constants/mapStyles';
 import {
   clampMapRegion,
@@ -68,6 +80,8 @@ export default function MapScreen() {
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
   const [topUIHeight, setTopUIHeight] = useState(0);
+  /** Altura da barra de busca: é dela para baixo que os resultados crescem. */
+  const [searchBarHeight, setSearchBarHeight] = useState(0);
   const [refreshingMap, setRefreshingMap] = useState(false);
   const didInitialLocate = useRef(false);
   const mapRegionRef = useRef<Region>(DEFAULT_MAP_REGION);
@@ -148,6 +162,7 @@ export default function MapScreen() {
   const activeCollection = visibleCollections.find((c) => c.id === activeCollectionId) || null;
 
   const { getCityStatus } = useCityStatus(filteredClients, purchases, activeCollectionId);
+  const { isCityExcluded } = useCityExclusions();
 
   const searchQuery = search.trim().toLowerCase();
 
@@ -404,6 +419,17 @@ export default function MapScreen() {
 
   const handleSearchClear = useCallback(() => setSearch(''), []);
 
+  /**
+   * Buscar é trocar de contexto: a folha da cidade que estava aberta sai da
+   * frente, senão os resultados nascem por cima de um painel que ninguém mais
+   * está lendo.
+   */
+  const handleSearchFocus = useCallback(() => {
+    bottomSheetRef.current?.close();
+    setSelectedCity(null);
+    setHighlightedClientId(null);
+  }, []);
+
   const citySheetTopInset = topUIHeight ? topUIHeight + SPACING.lg : 0;
 
   if (geoError && cities.length === 0) {
@@ -421,8 +447,29 @@ export default function MapScreen() {
     : [];
   const selectedCityStatus = selectedCity ? getCityStatus(selectedCity.code) : 'no-clients';
   const hasCities = cities.length > 0;
+  /**
+   * Logo abaixo da status bar, como em producao. getTopBarInset reservava
+   * ainda a altura da TopTabBar — 44 px de uma barra que no celular nao
+   * existe mais, e que empurrava a busca para baixo.
+   */
   const headerTop = insets.top + 4;
+  /**
+   * A dock flutua sobre o mapa: sem reservar a altura dela, os controles ficam
+   * por baixo.
+   */
+  const { height: windowHeight } = useWindowDimensions();
+  const keyboardOverlap = useKeyboardOverlap();
   const tabBarOffset = getTabBarBottomInset(insets, SPACING.sm);
+
+  /**
+   * Os resultados vão da busca até a dock, sem passar por baixo dela nem do
+   * teclado. Com o teclado aberto é ele o limite; fechado, é a dock. O
+   * `keyboardOverlap` é 0 no Android, onde a janela já encolhe sozinha.
+   */
+  const resultsMaxHeight = Math.max(
+    120,
+    windowHeight - (headerTop + searchBarHeight + 6) - Math.max(keyboardOverlap, tabBarOffset) - SPACING.md
+  );
   const mapCustomStyle = mapTheme === 'dark' ? DARK_MAP_STYLE : LIGHT_MAP_STYLE;
 
   return (
@@ -462,6 +509,7 @@ export default function MapScreen() {
                   key={city.code}
                   city={city}
                   status={getCityStatus(city.code)}
+                  excluded={isCityExcluded(city.code)}
                   onPress={handleCityPress}
                 />
               ))}
@@ -470,14 +518,14 @@ export default function MapScreen() {
         </MapView>
 
         {geoLoading && !hasCities && (
-          <View style={[styles.initialLoadingBanner, { top: headerTop + 56 }]}>
+          <View style={[styles.initialLoadingBanner, { top: Math.max(topUIHeight, headerTop) + SPACING.sm }]}>
             <ActivityIndicator size="small" color={COLORS.primary} />
             <Text style={styles.initialLoadingText}>Baixando mapa do Piauí...</Text>
           </View>
         )}
 
         {geoRefreshing && hasCities && (
-          <View style={[styles.refreshBanner, { top: headerTop + 56 }]}>
+          <View style={[styles.refreshBanner, { top: Math.max(topUIHeight, headerTop) + SPACING.sm }]}>
             <ActivityIndicator size="small" color={COLORS.primary} />
             <Text style={styles.refreshBannerText}>Atualizando dados...</Text>
           </View>
@@ -488,7 +536,14 @@ export default function MapScreen() {
           pointerEvents="box-none"
           onLayout={(e) => setTopUIHeight(e.nativeEvent.layout.height)}
         >
-          <View style={styles.searchContainer}>
+          {/*
+            Busca no topo, como em produção: é o primeiro alcance da tela e
+            carrega o atalho da conta. Os filtros do mapa vêm logo abaixo.
+          */}
+          <View
+            style={styles.searchContainer}
+            onLayout={(e) => setSearchBarHeight(e.nativeEvent.layout.height)}
+          >
             <SearchBar
               variant="map"
               value={search}
@@ -498,10 +553,14 @@ export default function MapScreen() {
               onProfilePress={() => router.push('/(tabs)/settings')}
               profileInitial={user?.name.charAt(0).toUpperCase()}
               profileImageUri={user?.photoUri}
+              onFocus={handleSearchFocus}
             />
-
             {showSearchResults && (
-              <View style={styles.searchResults}>
+              <ScrollView
+                style={[styles.searchResults, { maxHeight: resultsMaxHeight }]}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
                 {citySearchResults.length === 0 && clientSearchResults.length === 0 ? (
                   <Text style={styles.searchResultsEmpty}>Nenhum resultado encontrado</Text>
                 ) : (
@@ -516,7 +575,9 @@ export default function MapScreen() {
                             onPress={() => handleSelectSearchCity(city)}
                             activeOpacity={0.7}
                           >
-                            <Ionicons name="location-outline" size={16} color={COLORS.textMuted} />
+                            <View style={styles.searchResultIcon}>
+                              <Ionicons name="location" size={17} color={COLORS.primary} />
+                            </View>
                             <Text style={styles.searchResultText} numberOfLines={1}>
                               {city.name}
                             </Text>
@@ -534,10 +595,19 @@ export default function MapScreen() {
                             onPress={() => handleSelectSearchClient(client)}
                             activeOpacity={0.7}
                           >
-                            <Ionicons name="storefront-outline" size={16} color={COLORS.textMuted} />
+                            <View
+                              style={[
+                                styles.searchResultAvatar,
+                                { backgroundColor: getAvatarColor(client.id) },
+                              ]}
+                            >
+                              <Text style={styles.searchResultAvatarText}>
+                                {clientInitials(displayClientName(client))}
+                              </Text>
+                            </View>
                             <View style={styles.searchResultBody}>
                               <Text style={styles.searchResultText} numberOfLines={1}>
-                                {client.name}
+                                {displayClientName(client)}
                               </Text>
                               <Text style={styles.searchResultSubtext} numberOfLines={1}>
                                 {client.city}
@@ -549,7 +619,7 @@ export default function MapScreen() {
                     )}
                   </>
                 )}
-              </View>
+              </ScrollView>
             )}
           </View>
 
@@ -588,16 +658,33 @@ export default function MapScreen() {
         </View>
 
         {!selectedCity && (
-          <View style={[styles.bottomControls, { paddingBottom: tabBarOffset + 8 }]} pointerEvents="box-none">
-            <TouchableOpacity style={styles.mapActionBtn} onPress={handleRefreshMap} activeOpacity={0.7}>
+          <View
+            style={[styles.bottomControls, { paddingBottom: tabBarOffset }]}
+            pointerEvents="box-none"
+          >
+            <TouchableOpacity
+              style={styles.mapActionBtn}
+              onPress={handleCenterMap}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Centralizar no mapa"
+            >
+              <Ionicons name="navigate" size={20} color={COLORS.primary} />
+            </TouchableOpacity>
+
+            {/* Atualizar é ação de dados: separado do controle de mapa. */}
+            <TouchableOpacity
+              style={[styles.mapActionBtn, styles.mapActionBtnDetached]}
+              onPress={handleRefreshMap}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Atualizar dados"
+            >
               {refreshingMap ? (
                 <ActivityIndicator size="small" color={COLORS.primary} />
               ) : (
-                <Ionicons name="refresh-outline" size={22} color={COLORS.primary} />
+                <Ionicons name="refresh" size={20} color={COLORS.primary} />
               )}
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.mapActionBtn} onPress={handleCenterMap} activeOpacity={0.7}>
-              <Ionicons name="locate-outline" size={22} color={COLORS.primary} />
             </TouchableOpacity>
             {/* {canManageClients && (
               <TouchableOpacity style={styles.mapActionBtn} onPress={() => openNewClient()} activeOpacity={0.7}>
@@ -606,6 +693,7 @@ export default function MapScreen() {
             )} */}
           </View>
         )}
+
 
         {/* Modal seleção de coleção */}
         <Modal
@@ -682,10 +770,17 @@ export default function MapScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#E8EFF7',
+    backgroundColor: COLORS.mapBackground,
   },
   container: {
     flex: 1,
+  },
+  searchContainer: {
+    marginHorizontal: SPACING.md,
+    // Âncora dos resultados. O zIndex é necessário porque as pills de filtro são
+    // irmãs posteriores no topUI, e no React Native o irmão posterior pinta em
+    // cima — sem isto o dropdown nasceria atrás delas.
+    zIndex: 30,
   },
   topUI: {
     position: 'absolute',
@@ -694,17 +789,17 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 10,
   },
-  searchContainer: {
-    marginHorizontal: 12,
-  },
   searchResults: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: '100%',
     marginTop: 6,
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
     paddingVertical: SPACING.xs,
-    maxHeight: 320,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -719,30 +814,48 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
   },
   searchResultsLabel: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '700',
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
+    ...FONTS.text.sectionHeader,
+    color: COLORS.textSecondary,
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.sm,
+    paddingTop: SPACING.md,
     paddingBottom: 4,
   },
   searchResultRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
+    gap: SPACING.md,
+    minHeight: HIT_TARGET,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
   },
-  searchResultBody: { flex: 1 },
+  searchResultIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchResultAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchResultAvatarText: {
+    color: '#FFFFFF',
+    fontSize: FONTS.sizes.xs,
+    fontWeight: '600',
+  },
+  searchResultBody: { flex: 1, minWidth: 0 },
   searchResultText: {
     color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
+    fontSize: FONTS.sizes.lg,
   },
   searchResultSubtext: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
     marginTop: 1,
   },
   collectionContainer: {
@@ -836,7 +949,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    backgroundColor: 'rgba(255,255,255,0.97)',
+    backgroundColor: COLORS.surface,
     borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
@@ -859,7 +972,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    backgroundColor: 'rgba(255,255,255,0.97)',
+    backgroundColor: COLORS.surface,
     borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.md,
     paddingVertical: 6,
@@ -884,20 +997,27 @@ const styles = StyleSheet.create({
     zIndex: 5,
     pointerEvents: 'box-none',
   },
+  /**
+   * Sem backdropFilter no nativo, o material vira a cor translúcida sozinha —
+   * a sombra é o que descola o botão do mapa.
+   */
   mapActionBtn: {
     width: 44,
     height: 44,
-    borderRadius: RADIUS.full,
+    borderRadius: 14,
     backgroundColor: COLORS.surface,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
+    borderColor: COLORS.floatingBorder,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    elevation: 6,
+  },
+  mapActionBtnDetached: {
+    marginTop: SPACING.md,
   },
   errorContainer: {
     flex: 1,

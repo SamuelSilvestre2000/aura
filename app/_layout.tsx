@@ -7,6 +7,8 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../hooks/useAuth';
 import { CollectionsProvider } from '../hooks/useCollections';
 import { PurchasesProvider } from '../hooks/usePurchases';
+import { CityExclusionsProvider } from '../hooks/useCityExclusions';
+import { DesktopPanelProvider } from '../contexts/DesktopPanel';
 import { NOTION_MODAL_OPTIONS } from '../constants/navigation';
 import { COLORS } from '../constants/colors';
 
@@ -24,6 +26,24 @@ if (Platform.OS === 'web' && typeof document !== 'undefined' && !document.getEle
   style.textContent = `
     html, body, #root, input, textarea, select, button {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    /*
+      O navegador desenha um retângulo preto em volta do campo focado. Nos
+      formulários em lista, onde o campo não tem caixa própria, esse retângulo
+      aparece solto no meio da linha. O cursor piscando já diz onde se digita —
+      é o que o campo de um app nativo mostra.
+
+      Vale só para campo de texto: botões e links mantêm o foco visível, que é
+      o que permite navegar a tela pelo teclado.
+    */
+    input:focus,
+    textarea:focus {
+      outline: none;
+    }
+
+    input, textarea {
+      caret-color: #007AFF;
     }
   `;
   document.head.appendChild(style);
@@ -64,6 +84,15 @@ export default function RootLayout() {
         <AuthProvider>
           <CollectionsProvider>
           <PurchasesProvider>
+          <CityExclusionsProvider>
+          {/*
+            As telas de detalhe e formulario sao rotas irmas de (tabs): no
+            celular o expo-router as monta neste Stack, fora do layout das
+            abas. Com o provider so la dentro, usePanelNav lancava ao abrir
+            um cliente no celular. Aqui ele cobre a arvore inteira — no
+            celular fica inerte, ja que nada usa o painel.
+          */}
+          <DesktopPanelProvider>
           <StatusBar style="dark" />
           <AuthGate>
             <Stack screenOptions={{ headerShown: false }}>
@@ -80,6 +109,8 @@ export default function RootLayout() {
               <Stack.Screen name="user/profile" options={NOTION_MODAL_OPTIONS} />
             </Stack>
           </AuthGate>
+          </DesktopPanelProvider>
+          </CityExclusionsProvider>
           </PurchasesProvider>
           </CollectionsProvider>
         </AuthProvider>

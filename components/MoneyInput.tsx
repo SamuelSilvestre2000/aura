@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
-import { COLORS, FONTS, RADIUS, SPACING } from '../constants/colors';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../constants/colors';
 import { formatMoneyInput, parseMoneyInput } from '../utils/money';
 
 type Props = {
@@ -66,9 +66,10 @@ const styles = StyleSheet.create({
     marginRight: SPACING.sm,
   },
   input: {
+    minHeight: HIT_TARGET,
     flex: 1,
     paddingVertical: SPACING.md,
     color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
+    fontSize: FONTS.sizes.lg,
   },
 });

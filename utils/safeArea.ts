@@ -14,3 +14,15 @@ export function getScreenTopInset(insets: { top: number }, extra = 0): number {
   const top = Platform.OS === 'web' ? Math.max(insets.top, WEB_MIN_TOP_INSET) : insets.top;
   return top + extra;
 }
+
+/**
+ * Margem superior do conteúdo dentro do painel flutuante do desktop, onde a
+ * borda arredondada do painel já faz o papel de moldura. Use via
+ * `useScreenTopInset`, que escolhe entre isto e o espaço da TopTabBar.
+ */
+export const PANEL_TOP_INSET: number = SPACING.lg;
+
+/** Espaço reservado embaixo (home indicator / gesture bar), sem dock flutuante. */
+export function getScreenBottomInset(insets: { bottom: number }, extra: number = SPACING.lg): number {
+  return Math.max(insets.bottom, 6) + extra;
+}

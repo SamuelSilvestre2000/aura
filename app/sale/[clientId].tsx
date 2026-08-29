@@ -10,28 +10,36 @@ import {
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { Alert } from '../../utils/alert';
-import { goBack } from '../../utils/navigation';
-import { getScreenTopInset } from '../../utils/safeArea';
 import { useClients } from '../../hooks/useClients';
 import { useCollections } from '../../hooks/useCollections';
 import { usePurchases } from '../../hooks/usePurchases';
 import { useAuth } from '../../hooks/useAuth';
+import { usePanelNav } from '../../hooks/usePanelNav';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
+import { useScreenTopInset } from '../../hooks/useScreenTopInset';
 import { NotionHeader } from '../../components/NotionHeader';
 import { HeaderBackButton } from '../../components/HeaderBackButton';
 import { MoneyInput } from '../../components/MoneyInput';
 import { PullToRefresh } from '../../components/PullToRefresh';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { formatBRL } from '../../utils/money';
+import { displayClientName } from '../../utils/clientName';
 
-export default function SaleScreen() {
-  const router = useRouter();
+type Props = { clientId?: string; collectionId?: string };
+
+export default function SaleScreen(props: Props = {}) {
+  const nav = usePanelNav();
+  const isDesktop = useIsDesktop();
+  const topInset = useScreenTopInset('modal');
   const insets = useSafeAreaInsets();
-  const { clientId, collectionId } = useLocalSearchParams<{
+  const params = useLocalSearchParams<{
     clientId: string;
     collectionId: string;
   }>();
+  const clientId = props.clientId ?? params.clientId;
+  const collectionId = props.collectionId ?? params.collectionId;
 
   const { user } = useAuth();
   const { clients, refresh: refreshClients } = useClients();
@@ -84,7 +92,7 @@ export default function SaleScreen() {
     try {
       await recordSale(clientId, collectionId, user.id, amount);
       await refreshCollections();
-      goBack(router);
+      nav.back();
     } catch (err) {
       Alert.alert(
         'Erro',
@@ -110,7 +118,7 @@ export default function SaleScreen() {
             try {
               await clearSale(clientId, collectionId);
               await refreshCollections();
-              goBack(router);
+              nav.back();
             } catch (err) {
               Alert.alert(
                 'Erro',
@@ -127,19 +135,25 @@ export default function SaleScreen() {
 
   if (!client || !collection) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.center, isDesktop && styles.containerDesktop]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.headerSafe, { paddingTop: getScreenTopInset(insets) }]}>
+    <View style={[styles.container, isDesktop && styles.containerDesktop]}>
+      <View
+        style={[
+          styles.headerSafe,
+          isDesktop && styles.containerDesktop,
+          { paddingTop: topInset },
+        ]}
+      >
         <NotionHeader
           title={purchased ? 'Venda registrada' : 'Registrar venda'}
           showBorder
-          leftAction={<HeaderBackButton onPress={() => goBack(router)} />}
+          leftAction={<HeaderBackButton onPress={() => nav.back()} />}
         />
       </View>
 
@@ -155,7 +169,7 @@ export default function SaleScreen() {
         >
           <View style={styles.card}>
             <Text style={styles.cardLabel}>CLIENTE</Text>
-            <Text style={styles.cardValue}>{client.name}</Text>
+            <Text style={styles.cardValue}>{displayClientName(client)}</Text>
           </View>
 
           <View style={styles.card}>
@@ -191,7 +205,7 @@ export default function SaleScreen() {
           ) : (
             <TouchableOpacity
               style={styles.cancelBtn}
-              onPress={() => goBack(router)}
+              onPress={() => nav.back()}
               activeOpacity={0.7}
             >
               <Text style={styles.cancelText}>Cancelar</Text>
@@ -221,6 +235,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
+  },
+  // No painel flutuante do desktop, deixa o vidro do painel (DesktopSidePanel)
+  // aparecer em vez de cobrir tudo com fundo opaco. Totalmente transparente
+  // (não translúcido) — empilhar duas camadas translúcidas soma opacidade.
+  containerDesktop: {
+    backgroundColor: 'transparent',
   },
   headerSafe: {
     backgroundColor: COLORS.backgroundSubtle,

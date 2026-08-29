@@ -10,17 +10,18 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
-import { goBack } from '../../utils/navigation';
 import { useClients } from '../../hooks/useClients';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useAuth } from '../../hooks/useAuth';
+import { usePanelNav } from '../../hooks/usePanelNav';
 import { getAllowedCategoriesForUser } from '../../services/categories';
 import { Category } from '../../types';
 import { CategoryMultiSelect } from '../../components/CategoryMultiSelect';
 import { FormScreen } from '../../components/FormScreen';
 import { FormSection } from '../../components/FormSection';
+import { FormRow } from '../../components/FormRow';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
-import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../../constants/colors';
 import { formatCnpj, isValidCnpj, maskCnpjInput } from '../../utils/cnpj';
 
 function maskCepInput(value: string): string {
@@ -47,8 +48,16 @@ export type InitialCity = {
   lng: number;
 };
 
-export default function NewClientScreen() {
+type Props = {
+  city?: string;
+  cityCode?: string;
+  lat?: string;
+  lng?: string;
+};
+
+export default function NewClientScreen(props: Props = {}) {
   const router = useRouter();
+  const nav = usePanelNav();
   const { user, can: canDo } = useAuth();
   const params = useLocalSearchParams<{
     city?: string;
@@ -56,19 +65,23 @@ export default function NewClientScreen() {
     lat?: string;
     lng?: string;
   }>();
+  const city = props.city ?? params.city;
+  const cityCode = props.cityCode ?? params.cityCode;
+  const lat = props.lat ?? params.lat;
+  const lng = props.lng ?? params.lng;
 
   const { createClient } = useClients();
   const { cities, loading: geoLoading, refresh: refreshCities } = useGeoJSON();
 
   const initialCity = useMemo<InitialCity | null>(() => {
-    if (!params.cityCode) return null;
+    if (!cityCode) return null;
     return {
-      code: params.cityCode,
-      name: params.city || '',
-      lat: parseFloat(params.lat || '0'),
-      lng: parseFloat(params.lng || '0'),
+      code: cityCode,
+      name: city || '',
+      lat: parseFloat(lat || '0'),
+      lng: parseFloat(lng || '0'),
     };
-  }, [params.city, params.cityCode, params.lat, params.lng]);
+  }, [city, cityCode, lat, lng]);
 
   const [name, setName] = useState('');
   const [tradeName, setTradeName] = useState('');
@@ -94,7 +107,13 @@ export default function NewClientScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (!canDo('manage_clients')) router.replace('/(tabs)');
+    if (canDo('manage_clients')) return;
+    if (nav.isDesktop) {
+      nav.back();
+      return;
+    }
+    router.replace('/(tabs)');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canDo, router]);
 
   const loadCategories = useCallback(async () => {
@@ -173,7 +192,7 @@ export default function NewClientScreen() {
         notes: notes.trim() || undefined,
         categoryIds,
       });
-      goBack(router);
+      nav.back();
     } catch {
       Alert.alert('Erro', 'Não foi possível cadastrar o cliente.');
     } finally {
@@ -184,7 +203,7 @@ export default function NewClientScreen() {
   return (
     <FormScreen
       title="Novo cliente"
-      onBack={() => goBack(router)}
+      onBack={() => nav.back()}
       onRefresh={handleRefresh}
       refreshing={refreshing}
       headerRight={
@@ -197,12 +216,9 @@ export default function NewClientScreen() {
       }
     >
       <FormSection title="Informações básicas">
-        <View style={styles.field}>
-          <Text style={styles.label}>
-            Nome <Text style={styles.required}>*</Text>
-          </Text>
+        <FormRow label="Nome" required first>
           <TextInput
-            style={styles.input}
+            style={styles.rowInput}
             placeholder="Ex: Boutique Moda Piauí"
             placeholderTextColor={COLORS.textPlaceholder}
             value={name}
@@ -210,38 +226,35 @@ export default function NewClientScreen() {
             returnKeyType="next"
             autoFocus
           />
-        </View>
+        </FormRow>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>Nome fantasia</Text>
+        <FormRow label="Nome fantasia">
           <TextInput
-            style={styles.input}
-            placeholder="Nome usado no dia a dia da loja"
+            style={styles.rowInput}
+            placeholder="Usado no dia a dia"
             placeholderTextColor={COLORS.textPlaceholder}
             value={tradeName}
             onChangeText={setTradeName}
             returnKeyType="next"
           />
-        </View>
+        </FormRow>
       </FormSection>
 
       <FormSection title="Identificação">
-        <View style={styles.field}>
-          <Text style={styles.label}>Código</Text>
+        <FormRow label="Código" first>
           <TextInput
-            style={styles.input}
+            style={[styles.rowInput, styles.rowInputNumeric]}
             placeholder="0000000"
             placeholderTextColor={COLORS.textPlaceholder}
             value={externalCode}
             onChangeText={setExternalCode}
             returnKeyType="next"
           />
-        </View>
+        </FormRow>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>CNPJ</Text>
+        <FormRow label="CNPJ">
           <TextInput
-            style={styles.input}
+            style={[styles.rowInput, styles.rowInputNumeric]}
             placeholder="00.000.000/0000-00"
             placeholderTextColor={COLORS.textPlaceholder}
             value={cnpj}
@@ -249,12 +262,11 @@ export default function NewClientScreen() {
             keyboardType="number-pad"
             returnKeyType="next"
           />
-        </View>
+        </FormRow>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>Inscrição Municipal</Text>
+        <FormRow label="Inscr. municipal">
           <TextInput
-            style={styles.input}
+            style={[styles.rowInput, styles.rowInputNumeric]}
             placeholder="000000000"
             placeholderTextColor={COLORS.textPlaceholder}
             value={municipalRegistration}
@@ -263,24 +275,23 @@ export default function NewClientScreen() {
             maxLength={20}
             returnKeyType="next"
           />
-        </View>
+        </FormRow>
       </FormSection>
 
-      <FormSection title="Endereço">
-        <View style={styles.field}>
-          <Text style={styles.label}>
-            Cidade no Piauí <Text style={styles.required}>*</Text>
-          </Text>
-          <Text style={styles.hint}>O cliente aparece no mapa na cidade selecionada.</Text>
+      <FormSection
+        title="Endereço"
+        footer="O cliente aparece no mapa na cidade selecionada."
+      >
+        <FormRow label="Cidade" required first alignTop={showCityList && !selectedCity}>
           {cityLocked && selectedCity ? (
-            <View style={[styles.input, styles.inputLocked]}>
+            <View style={styles.lockedRow}>
               <Ionicons name="location" size={16} color={COLORS.primary} />
-              <Text style={styles.lockedCityText}>{selectedCity.name}</Text>
+              <Text style={styles.lockedText}>{selectedCity.name}</Text>
             </View>
           ) : (
-            <>
+            <View style={styles.cityControl}>
               <TextInput
-                style={[styles.input, selectedCity && styles.inputSelected]}
+                style={styles.rowInput}
                 placeholder={geoLoading ? 'Carregando cidades...' : 'Buscar cidade...'}
                 placeholderTextColor={COLORS.textPlaceholder}
                 value={citySearch}
@@ -293,13 +304,13 @@ export default function NewClientScreen() {
                 editable={!geoLoading}
                 returnKeyType="search"
               />
-              {selectedCity && (
+              {selectedCity ? (
                 <View style={styles.cityBadge}>
                   <Ionicons name="checkmark-circle" size={14} color={COLORS.success} />
                   <Text style={styles.cityBadgeText}>{selectedCity.name} — PI</Text>
                 </View>
-              )}
-              {showCityList && filteredCities.length > 0 && !selectedCity && (
+              ) : null}
+              {showCityList && filteredCities.length > 0 && !selectedCity ? (
                 <View style={styles.cityList}>
                   {filteredCities.map((city, index) => (
                     <TouchableOpacity
@@ -308,52 +319,41 @@ export default function NewClientScreen() {
                       onPress={() => handleSelectCity(city)}
                       activeOpacity={0.7}
                     >
-                      <Ionicons name="location-outline" size={16} color={COLORS.textMuted} />
+                      <Ionicons name="location-outline" size={16} color={COLORS.textSecondary} />
                       <Text style={styles.cityRowText}>{city.name}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
-              )}
-            </>
+              ) : null}
+            </View>
           )}
-        </View>
+        </FormRow>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>Logradouro</Text>
+        <FormRow label="Logradouro">
           <TextInput
-            style={styles.input}
+            style={styles.rowInput}
             placeholder="Rua, avenida, número..."
             placeholderTextColor={COLORS.textPlaceholder}
             value={street}
             onChangeText={setStreet}
             returnKeyType="next"
           />
-        </View>
+        </FormRow>
 
-        <View style={styles.row}>
-          <View style={[styles.field, styles.rowItemGrow]}>
-            <Text style={styles.label}>Bairro</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Bairro"
-              placeholderTextColor={COLORS.textPlaceholder}
-              value={neighborhood}
-              onChangeText={setNeighborhood}
-              returnKeyType="next"
-            />
-          </View>
-          <View style={[styles.field, styles.rowItemSmall]}>
-            <Text style={styles.label}>UF</Text>
-            <View style={[styles.input, styles.inputLocked]}>
-              <Text style={styles.lockedCityText}>PI</Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.field}>
-          <Text style={styles.label}>CEP</Text>
+        <FormRow label="Bairro">
           <TextInput
-            style={styles.input}
+            style={styles.rowInput}
+            placeholder="Bairro"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={neighborhood}
+            onChangeText={setNeighborhood}
+            returnKeyType="next"
+          />
+        </FormRow>
+
+        <FormRow label="CEP">
+          <TextInput
+            style={[styles.rowInput, styles.rowInputNumeric]}
             placeholder="00000-000"
             placeholderTextColor={COLORS.textPlaceholder}
             value={zipCode}
@@ -361,14 +361,18 @@ export default function NewClientScreen() {
             keyboardType="number-pad"
             returnKeyType="next"
           />
-        </View>
+        </FormRow>
+
+        <FormRow label="UF">
+          <Text style={styles.staticValue}>PI</Text>
+        </FormRow>
       </FormSection>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>
-          Categoria <Text style={styles.required}>*</Text>
-        </Text>
-        <Text style={styles.hint}>Linha de produto atendida nesta loja.</Text>
+      <FormSection
+        title="Categoria"
+        footer="Linha de produto atendida nesta loja."
+        variant="plain"
+      >
         {loadingCategories ? (
           <ActivityIndicator size="small" color={COLORS.primary} style={styles.catLoading} />
         ) : (
@@ -378,13 +382,12 @@ export default function NewClientScreen() {
             onChange={setCategoryIds}
           />
         )}
-      </View>
+      </FormSection>
 
       <FormSection title="Contato">
-        <View style={styles.field}>
-          <Text style={styles.label}>Telefone</Text>
+        <FormRow label="Telefone" first>
           <TextInput
-            style={styles.input}
+            style={[styles.rowInput, styles.rowInputNumeric]}
             placeholder="(86) 3000-0000"
             placeholderTextColor={COLORS.textPlaceholder}
             value={phone}
@@ -393,12 +396,11 @@ export default function NewClientScreen() {
             maxLength={15}
             returnKeyType="next"
           />
-        </View>
+        </FormRow>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>Celular</Text>
+        <FormRow label="Celular">
           <TextInput
-            style={styles.input}
+            style={[styles.rowInput, styles.rowInputNumeric]}
             placeholder="(86) 99999-9999"
             placeholderTextColor={COLORS.textPlaceholder}
             value={mobile}
@@ -407,12 +409,11 @@ export default function NewClientScreen() {
             maxLength={15}
             returnKeyType="next"
           />
-        </View>
+        </FormRow>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>Email</Text>
+        <FormRow label="Email">
           <TextInput
-            style={styles.input}
+            style={styles.rowInput}
             placeholder="contato@loja.com.br"
             placeholderTextColor={COLORS.textPlaceholder}
             value={email}
@@ -422,14 +423,13 @@ export default function NewClientScreen() {
             autoCorrect={false}
             returnKeyType="next"
           />
-        </View>
+        </FormRow>
       </FormSection>
 
       <FormSection title="Redes sociais">
-        <View style={styles.field}>
-          <Text style={styles.label}>Instagram</Text>
+        <FormRow label="Instagram" first>
           <TextInput
-            style={styles.input}
+            style={styles.rowInput}
             placeholder="@usuario"
             placeholderTextColor={COLORS.textPlaceholder}
             value={instagram}
@@ -438,12 +438,11 @@ export default function NewClientScreen() {
             autoCorrect={false}
             returnKeyType="next"
           />
-        </View>
+        </FormRow>
 
-        <View style={styles.field}>
-          <Text style={styles.label}>Facebook</Text>
+        <FormRow label="Facebook">
           <TextInput
-            style={styles.input}
+            style={styles.rowInput}
             placeholder="facebook.com/loja"
             placeholderTextColor={COLORS.textPlaceholder}
             value={facebook}
@@ -452,81 +451,64 @@ export default function NewClientScreen() {
             autoCorrect={false}
             returnKeyType="next"
           />
-        </View>
+        </FormRow>
       </FormSection>
 
-      <FormSection title="Observações">
-        <View style={styles.field}>
-          <TextInput
-            style={[styles.input, styles.inputMultiline]}
-            placeholder="Horário, contato na loja, referências..."
-            placeholderTextColor={COLORS.textPlaceholder}
-            value={notes}
-            onChangeText={setNotes}
-            multiline
-            numberOfLines={3}
-            textAlignVertical="top"
-            returnKeyType="done"
-          />
-        </View>
+      <FormSection title="Observações" variant="plain">
+        <TextInput
+          style={styles.notesInput}
+          placeholder="Horário, contato na loja, referências..."
+          placeholderTextColor={COLORS.textPlaceholder}
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+          numberOfLines={3}
+          textAlignVertical="top"
+          returnKeyType="done"
+        />
       </FormSection>
     </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  field: { gap: SPACING.sm },
-  row: {
-    flexDirection: 'row',
-    gap: SPACING.md,
-  },
-  rowItemGrow: { flex: 1 },
-  rowItemSmall: { width: 72 },
-  label: {
+  /**
+   * O campo não tem mais caixa própria: ele é o controle dentro da linha, e o
+   * cartão da seção é que desenha a superfície. Sem padding vertical aqui — a
+   * altura e o respiro vêm da FormRow.
+   */
+  rowInput: {
     color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    letterSpacing: 0.4,
+    fontSize: FONTS.sizes.lg,
+    paddingVertical: 0,
+    textAlign: 'right',
   },
-  required: {
-    color: COLORS.error,
+  rowInputNumeric: {
+    ...FONTS.tabular,
   },
-  hint: {
-    color: COLORS.textPlaceholder,
-    fontSize: FONTS.sizes.xs,
-    marginTop: -2,
-    marginBottom: 2,
+  staticValue: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.lg,
+    textAlign: 'right',
   },
-  input: {
-    backgroundColor: COLORS.backgroundSubtle,
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
-  },
-  inputSelected: { borderColor: COLORS.primary },
-  inputLocked: {
+  lockedRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.sm,
-    backgroundColor: COLORS.primaryBg,
-    borderColor: COLORS.primary,
+    justifyContent: 'flex-end',
+    gap: 6,
   },
-  lockedCityText: {
+  lockedText: {
     color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
-    fontWeight: '600',
-    flex: 1,
+    fontSize: FONTS.sizes.lg,
   },
-  inputMultiline: { minHeight: 80, paddingTop: SPACING.md },
+  cityControl: {
+    gap: SPACING.sm,
+  },
   cityBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
+    justifyContent: 'flex-end',
+    gap: 5,
   },
   cityBadgeText: {
     color: COLORS.success,
@@ -534,19 +516,16 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   cityList: {
-    backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
+    backgroundColor: COLORS.fill,
     overflow: 'hidden',
-    marginTop: 4,
   },
   cityRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
+    minHeight: HIT_TARGET,
+    paddingHorizontal: SPACING.md,
   },
   cityRowBorder: {
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -556,8 +535,14 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.md,
   },
+  notesInput: {
+    minHeight: 88,
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.lg,
+    padding: 0,
+    textAlignVertical: 'top',
+  },
   catLoading: {
     alignSelf: 'flex-start',
-    marginVertical: SPACING.sm,
   },
 });

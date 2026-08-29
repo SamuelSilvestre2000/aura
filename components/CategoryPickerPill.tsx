@@ -3,6 +3,7 @@ import {
   Modal,
   Pressable,
   StyleSheet,
+  StyleProp,
   Text,
   TouchableOpacity,
   View,
@@ -21,7 +22,7 @@ type Props = {
   value: CategoryFilterValue;
   onChange: (value: CategoryFilterValue) => void;
   allLabel?: string;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 };
 
 export function CategoryPickerPill({

@@ -59,11 +59,15 @@ export function StackedBarChart({ title, segments, height = 14 }: Props) {
 
 const styles = StyleSheet.create({
   wrap: { gap: SPACING.sm },
+  /**
+   * Rotulo de conteudo, nao cabecalho: a secao que contem o grafico ja tem o
+   * seu (em caixa alta pequena). Dois cabecalhos empilhados criavam um nivel
+   * de hierarquia a mais do que a tela precisa.
+   */
   title: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.md,
     fontWeight: '600',
-    letterSpacing: 0.6,
   },
   track: {
     flexDirection: 'row',

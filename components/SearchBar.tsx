@@ -1,7 +1,7 @@
 import React from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, Image, type TextStyle } from 'react-native';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View, type TextStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, FONTS, RADIUS, SPACING } from '../constants/colors';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../constants/colors';
 
 /** Remove o contorno azul de foco que o navegador desenha em <input> na web (RNW-only). */
 const NO_OUTLINE_STYLE = { outlineStyle: 'none' } as unknown as TextStyle;
@@ -12,9 +12,12 @@ type Props = {
   onClear: () => void;
   placeholder?: string;
   variant?: 'default' | 'map';
+  /** No mapa a busca carrega o atalho da conta, como no campo de busca do sistema. */
   onProfilePress?: () => void;
   profileImageUri?: string | null;
   profileInitial?: string;
+  /** Focar a busca é entrar em outro contexto: quem chama aproveita para fechar o que estava aberto. */
+  onFocus?: () => void;
 };
 
 export function SearchBar({
@@ -26,11 +29,14 @@ export function SearchBar({
   onProfilePress,
   profileImageUri,
   profileInitial,
+  onFocus,
 }: Props) {
   const isMap = variant === 'map';
 
-  return (
-    <View style={[styles.container, isMap && styles.containerMap]}>
+  const rootStyle = [styles.container, isMap && styles.containerMap];
+
+  const content = (
+    <>
       <Ionicons
         name="search-outline"
         size={18}
@@ -46,6 +52,7 @@ export function SearchBar({
         onChangeText={onChangeText}
         returnKeyType="search"
         clearButtonMode="never"
+        onFocus={onFocus}
       />
 
       {value.length > 0 && (
@@ -53,11 +60,16 @@ export function SearchBar({
           <Ionicons name="close-circle" size={18} color={COLORS.textMuted} />
         </TouchableOpacity>
       )}
-
-      {isMap && onProfilePress && (
+      {isMap && onProfilePress ? (
         <>
           <View style={styles.divider} />
-          <TouchableOpacity onPress={onProfilePress} style={styles.profileBtn} activeOpacity={0.7} hitSlop={4}>
+          <TouchableOpacity
+            onPress={onProfilePress}
+            style={styles.profileBtn}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Minha conta"
+          >
             {profileImageUri ? (
               <Image source={{ uri: profileImageUri }} style={styles.profileImg} />
             ) : (
@@ -67,21 +79,25 @@ export function SearchBar({
             )}
           </TouchableOpacity>
         </>
-      )}
-    </View>
+      ) : null}
+    </>
   );
+
+  return <View style={rootStyle}>{content}</View>;
 }
 
 const styles = StyleSheet.create({
+  // A altura mora aqui, no container: com o minHeight no input ela somava ao
+  // padding e o campo virava 60 px. O fundo e o raio seguem o campo de busca
+  // do sistema — preenchimento neutro, sem borda.
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
+    minHeight: HIT_TARGET,
+    backgroundColor: COLORS.fill,
     borderRadius: RADIUS.lg,
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.sm,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
+    paddingVertical: 0,
     gap: SPACING.sm,
   },
   containerMap: {
@@ -91,20 +107,15 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     minHeight: 44,
     backgroundColor: COLORS.surface,
+    borderColor: COLORS.floatingBorder,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    elevation: 6,
   },
   searchIcon: {
     marginRight: 2,
-  },
-  input: {
-    flex: 1,
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
-    paddingVertical: 0,
   },
   divider: {
     width: StyleSheet.hairlineWidth,
@@ -112,19 +123,31 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surfaceBorder,
     marginHorizontal: 2,
   },
-  profileBtn: { padding: 2 },
-  profileImg: { width: 32, height: 32, borderRadius: 16 },
+  profileBtn: {
+    padding: 2,
+  },
+  profileImg: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+  },
   profilePlaceholder: {
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: COLORS.primaryBg,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   profileInitial: {
-    fontSize: 13,
-    fontWeight: '700',
     color: COLORS.primary,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '700',
+  },
+  input: {
+    flex: 1,
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.lg,
+    paddingVertical: 0,
   },
 });

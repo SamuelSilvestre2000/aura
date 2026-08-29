@@ -26,6 +26,8 @@ export type CreateCollectionInput = {
   startDate: string;
   endDate: string;
   categoryId?: string | null;
+  /** Tipo/temporada (Alto Verão, Outono/Inverno, Primavera, ...); null/undefined = sem tipo. */
+  collectionTypeId?: string | null;
   /** Metas do usuário que está criando, uma por categoria. */
   goals?: GoalInput[];
   userId?: string;
@@ -44,6 +46,7 @@ const ROW_TO_COLLECTION = (row: any): Collection => ({
   startDate: row.start_date ?? undefined,
   endDate: row.end_date ?? undefined,
   categoryId: row.category_id ?? null,
+  collectionTypeId: row.collection_type_id ?? null,
   isVigente: !!row.is_vigente,
 });
 
@@ -90,6 +93,7 @@ export async function createCollection(input: CreateCollectionInput): Promise<Co
   const organizationId = await getDefaultOrganizationId();
   const brandId = await getDefaultBrandId();
   const categoryId = input.categoryId ?? null;
+  const collectionTypeId = input.collectionTypeId ?? null;
 
   if (input.userId) {
     const role: UserRole = input.userRole ?? 'representative';
@@ -113,9 +117,9 @@ export async function createCollection(input: CreateCollectionInput): Promise<Co
 
   await db.runAsync(
     `INSERT INTO collections (
-      id, name, created_at, is_active, organization_id, brand_id, start_date, end_date, category_id, is_vigente
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [id, name, now, 1, organizationId, brandId, input.startDate, input.endDate, categoryId, isVigente ? 1 : 0]
+      id, name, created_at, is_active, organization_id, brand_id, start_date, end_date, category_id, collection_type_id, is_vigente
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [id, name, now, 1, organizationId, brandId, input.startDate, input.endDate, categoryId, collectionTypeId, isVigente ? 1 : 0]
   );
 
   if (input.userId && input.goals?.length) {
@@ -132,6 +136,7 @@ export async function createCollection(input: CreateCollectionInput): Promise<Co
     startDate: input.startDate,
     endDate: input.endDate,
     categoryId,
+    collectionTypeId,
     isVigente,
     myGoalAmount: null,
     mySoldAmount: 0,

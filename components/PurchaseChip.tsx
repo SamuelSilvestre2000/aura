@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, FONTS, RADIUS, SPACING, STATUS_COLORS } from '../constants/colors';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../constants/colors';
 
 type Props = {
   purchased: boolean;
@@ -9,7 +9,11 @@ type Props = {
   disabled?: boolean;
 };
 
-/** Chip pastel estilo tag Notion para status de compra. */
+/**
+ * Status de compra: sempre símbolo + palavra, nunca cor sozinha. A cor do texto
+ * é o verde escuro de COLORS.success, não o verde puro do mapa — este último não
+ * tem contraste suficiente sobre fundo claro.
+ */
 export function PurchaseChip({ purchased, onPress, disabled }: Props) {
   return (
     <TouchableOpacity
@@ -24,12 +28,12 @@ export function PurchaseChip({ purchased, onPress, disabled }: Props) {
       }}
       disabled={disabled || !onPress}
       activeOpacity={onPress ? 0.7 : 1}
-      hitSlop={8}
+      hitSlop={(HIT_TARGET - 26) / 2}
     >
       <Ionicons
         name={purchased ? 'checkmark' : 'time-outline'}
         size={12}
-        color={purchased ? STATUS_COLORS.all : COLORS.textMuted}
+        color={purchased ? COLORS.success : COLORS.textSecondary}
       />
       <Text style={[styles.text, purchased ? styles.textPurchased : styles.textPending]}>
         {purchased ? 'Comprou' : 'Pendente'}
@@ -45,13 +49,13 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: SPACING.sm,
     paddingVertical: 5,
-    borderRadius: RADIUS.sm,
+    borderRadius: RADIUS.full,
   },
   chipPurchased: {
     backgroundColor: COLORS.successBg,
   },
   chipPending: {
-    backgroundColor: '#F1F1EF',
+    backgroundColor: COLORS.fill,
   },
   chipDisabled: {
     opacity: 0.7,
@@ -61,7 +65,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   textPurchased: {
-    color: STATUS_COLORS.all,
+    color: COLORS.success,
   },
   textPending: {
     color: COLORS.textSecondary,

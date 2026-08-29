@@ -14,6 +14,8 @@ export type CreateCollectionRemoteInput = {
   startDate: string;
   endDate: string;
   categoryId?: string | null;
+  /** Tipo/temporada (Alto Verão, Outono/Inverno, Primavera, ...); null/undefined = sem tipo. */
+  collectionTypeId?: string | null;
   goals?: GoalInput[];
   userId?: string;
   userRole?: UserRole;
@@ -31,6 +33,7 @@ const ROW_TO_COLLECTION = (row: any): Collection => ({
   startDate: row.start_date ?? undefined,
   endDate: row.end_date ?? undefined,
   categoryId: row.category_id ?? null,
+  collectionTypeId: row.collection_type_id ?? null,
   isVigente: !!row.is_vigente,
 });
 
@@ -73,6 +76,7 @@ export async function createCollectionRemote(
   const organizationId = await getDefaultOrganizationIdRemote();
   const brandId = await getDefaultBrandIdRemote();
   const categoryId = input.categoryId ?? null;
+  const collectionTypeId = input.collectionTypeId ?? null;
 
   if (input.userId) {
     const role: UserRole = input.userRole ?? 'representative';
@@ -106,6 +110,7 @@ export async function createCollectionRemote(
     start_date: input.startDate,
     end_date: input.endDate,
     category_id: categoryId,
+    collection_type_id: collectionTypeId,
     is_vigente: isVigente,
   });
   if (error) throw new Error(error.message);
@@ -124,6 +129,7 @@ export async function createCollectionRemote(
     startDate: input.startDate,
     endDate: input.endDate,
     categoryId,
+    collectionTypeId,
     isVigente,
     myGoalAmount: null,
     mySoldAmount: 0,

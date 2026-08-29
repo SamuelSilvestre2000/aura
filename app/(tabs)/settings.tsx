@@ -11,25 +11,34 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
-import { getScreenTopInset } from '../../utils/safeArea';
+import { getScreenBottomInset } from '../../utils/safeArea';
+import { getTabBarBottomInset } from '../../components/CustomTabBar';
 import { clearGeoCache } from '../../services/ibge';
 import { getDatabase } from '../../services/database';
 import { deleteUser, listUsers } from '../../services/users';
 import { useAuth } from '../../hooks/useAuth';
+import { usePanelNav } from '../../hooks/usePanelNav';
 import { User } from '../../types';
 import { ROLE_LABELS } from '../../constants/permissions';
 import { formatCategoryNames } from '../../constants/userCategories';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
-import { getTabBarBottomInset } from '../../components/CustomTabBar';
-import { NotionHeader } from '../../components/NotionHeader';
 import { PullToRefresh } from '../../components/PullToRefresh';
 import { Avatar } from '../../components/Avatar';
+import EditUserScreen from '../user/edit';
+import ProfileScreen from '../user/profile';
+import NewRepresentativeScreen from '../representative/new';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
+import { useScreenTopInset } from '../../hooks/useScreenTopInset';
+import { PanelCloseButton } from '../../components/PanelCloseButton';
 
 type IoniconName = ComponentProps<typeof Ionicons>['name'];
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const nav = usePanelNav();
   const insets = useSafeAreaInsets();
+  const isDesktop = useIsDesktop();
+  const topInset = useScreenTopInset('tab');
   const { user, logout, can: canDo, isAdmin } = useAuth();
 
   const [users, setUsers] = useState<User[]>([]);
@@ -39,7 +48,7 @@ export default function SettingsScreen() {
   const canManageUsers = canDo('manage_users');
   const canResetDb = canDo('reset_database');
   const canClearCache = canDo('clear_geo_cache');
-  const scrollBottom = getTabBarBottomInset(insets);
+  const scrollBottom = isDesktop ? getScreenBottomInset(insets) : getTabBarBottomInset(insets);
 
   const loadUsers = useCallback(async () => {
     if (!canManageUsers) return;
@@ -136,9 +145,14 @@ export default function SettingsScreen() {
   const representatives = users.filter((u) => u.role === 'representative');
 
   return (
-    <View style={styles.container}>
-      <View style={{ paddingTop: getScreenTopInset(insets) }}>
-        <NotionHeader title="Configurações" showBorder />
+    <View style={[styles.container, isDesktop && styles.containerDesktop]}>
+      {/*
+        Mesmo cabeçalho das outras telas: nome em corpo grande, alinhado à
+        esquerda. Sem ação no canto — esta tela nao cria nada.
+      */}
+      <View style={[styles.titleRow, { paddingTop: topInset }]}>
+        <Text style={styles.title}>Conta</Text>
+        <PanelCloseButton />
       </View>
 
       <PullToRefresh refreshing={refreshing} onRefresh={handleRefresh}>
@@ -148,16 +162,17 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Conta</Text>
           <View style={styles.card}>
             <TouchableOpacity
               style={styles.accountRow}
               onPress={() => {
                 if (!user) return;
                 if (isAdmin) {
-                  router.push(`/user/edit?id=${user.id}`);
+                  nav.open(`user-edit-${user.id}`, <EditUserScreen id={user.id} />, '/user/edit', {
+                    id: user.id,
+                  });
                 } else {
-                  router.push('/user/profile');
+                  nav.open('user-profile', <ProfileScreen />, '/user/profile');
                 }
               }}
               activeOpacity={0.7}
@@ -235,7 +250,11 @@ export default function SettingsScreen() {
                       </View>
                       <View style={styles.repActions}>
                         <TouchableOpacity
-                          onPress={() => router.push(`/user/edit?id=${rep.id}`)}
+                          onPress={() =>
+                            nav.open(`user-edit-${rep.id}`, <EditUserScreen id={rep.id} />, '/user/edit', {
+                              id: rep.id,
+                            })
+                          }
                           hitSlop={8}
                           style={styles.iconAction}
                           activeOpacity={0.6}
@@ -258,7 +277,9 @@ export default function SettingsScreen() {
             </View>
             <TouchableOpacity
               style={styles.addRow}
-              onPress={() => router.push('/representative/new')}
+              onPress={() =>
+                nav.open('representative-new', <NewRepresentativeScreen />, '/representative/new')
+              }
               activeOpacity={0.7}
             >
               <Ionicons name="add" size={18} color={COLORS.textMuted} />
@@ -382,6 +403,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
   },
+  // No painel flutuante do desktop, deixa o vidro do painel (DesktopSidePanel)
+  // aparecer nos vãos em vez de cobrir tudo com fundo opaco. Totalmente
+  // transparente (não translúcido) — empilhar duas camadas translúcidas soma
+  // as opacidades e o vidro acaba quase opaco de novo.
+  containerDesktop: {
+    backgroundColor: 'transparent',
+  },
   scroll: {
     flex: 1,
   },
@@ -391,11 +419,22 @@ const styles = StyleSheet.create({
     gap: SPACING.xl,
   },
   section: { gap: SPACING.sm },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    paddingBottom: SPACING.sm,
+  },
+  title: {
+    ...FONTS.text.largeTitle,
+    color: COLORS.textPrimary,
+  },
+  // Cabecalho de secao no mesmo estilo do resto do app.
   sectionTitle: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    letterSpacing: 0.6,
+    ...FONTS.text.sectionHeader,
+    color: COLORS.textSecondary,
     paddingHorizontal: SPACING.xs,
   },
   card: {

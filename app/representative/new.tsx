@@ -11,21 +11,24 @@ import {
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
-import { goBack } from '../../utils/navigation';
 import { useAuth } from '../../hooks/useAuth';
+import { usePanelNav } from '../../hooks/usePanelNav';
 import { createRepresentative } from '../../services/users';
 import { listCategories } from '../../services/categories';
 import { pickUserPhoto } from '../../services/userPhotos';
 import { Category } from '../../types';
 import { CategoryMultiSelect } from '../../components/CategoryMultiSelect';
 import { FormScreen } from '../../components/FormScreen';
+import { FormSection } from '../../components/FormSection';
+import { FormRow } from '../../components/FormRow';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
 import { RepresentativePinField } from '../../components/RepresentativePinField';
 import { DEFAULT_REP_PIN, isValidAccessPin } from '../../constants/userCategories';
-import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../../constants/colors';
 
 export default function NewRepresentativeScreen() {
   const router = useRouter();
+  const nav = usePanelNav();
   const { can: canDo } = useAuth();
 
   const [name, setName] = useState('');
@@ -41,7 +44,13 @@ export default function NewRepresentativeScreen() {
   const didInitCategoriesRef = useRef(false);
 
   useEffect(() => {
-    if (!canDo('manage_users')) router.replace('/(tabs)/settings');
+    if (canDo('manage_users')) return;
+    if (nav.isDesktop) {
+      nav.back();
+      return;
+    }
+    router.replace('/(tabs)/settings');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canDo, router]);
 
   const loadCategories = useCallback(async () => {
@@ -94,7 +103,7 @@ export default function NewRepresentativeScreen() {
         pin,
         photoUri,
       });
-      goBack(router);
+      nav.back();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Não foi possível cadastrar.';
       Alert.alert('Erro', msg.includes('UNIQUE') ? 'Já existe um usuário com este nome.' : msg);
@@ -106,7 +115,7 @@ export default function NewRepresentativeScreen() {
   return (
     <FormScreen
       title="Novo representante"
-      onBack={() => goBack(router)}
+      onBack={() => nav.back()}
       onRefresh={handleRefresh}
       refreshing={refreshing}
       headerRight={
@@ -144,42 +153,44 @@ export default function NewRepresentativeScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>NOME COMPLETO</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ex: Maria Silva Santos"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={name}
-          onChangeText={setName}
-          autoCapitalize="words"
-          autoFocus
-        />
-      </View>
+      <FormSection title="Identificação">
+        <FormRow label="Nome" required first>
+          <TextInput
+            style={styles.rowInput}
+            placeholder="Ex: Maria Silva Santos"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={name}
+            onChangeText={setName}
+            autoCapitalize="words"
+            autoFocus
+          />
+        </FormRow>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>E-MAIL</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="nome@empresa.com"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-      </View>
+        <FormRow label="E-mail" required>
+          <TextInput
+            style={styles.rowInput}
+            placeholder="nome@empresa.com"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+        </FormRow>
+      </FormSection>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>CATEGORIAS</Text>
-        <Text style={styles.hint}>Linhas que este representante atende</Text>
+      <FormSection
+        title="Categorias"
+        footer="Linhas que este representante atende."
+        variant="plain"
+      >
         <CategoryMultiSelect
           categories={categories}
           selectedIds={selectedCategoryIds}
           onChange={setSelectedCategoryIds}
         />
-      </View>
+      </FormSection>
 
       <RepresentativePinField
         mode="create"
@@ -193,6 +204,12 @@ export default function NewRepresentativeScreen() {
 }
 
 const styles = StyleSheet.create({
+  rowInput: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.lg,
+    paddingVertical: 0,
+    textAlign: 'right',
+  },
   photoSection: {
     alignItems: 'center',
     gap: SPACING.sm,
@@ -222,27 +239,5 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontSize: FONTS.sizes.sm,
     fontWeight: '600',
-  },
-  field: { gap: SPACING.sm },
-  label: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    letterSpacing: 0.6,
-  },
-  hint: {
-    color: COLORS.textPlaceholder,
-    fontSize: FONTS.sizes.xs,
-    marginBottom: 2,
-  },
-  input: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
   },
 });

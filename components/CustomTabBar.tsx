@@ -28,7 +28,7 @@ export const TAB_META: Record<TabName, TabMeta> = {
 };
 
 /** Espaço reservado acima do dock para listas e controles flutuantes. */
-export function getTabBarBottomInset(insets: { bottom: number }, extra = SPACING.lg): number {
+export function getTabBarBottomInset(insets: { bottom: number }, extra: number = SPACING.lg): number {
   return TAB_BAR_CONTENT_HEIGHT + DOCK_WRAPPER_PADDING_TOP + Math.max(insets.bottom, 6) + extra;
 }
 
@@ -121,12 +121,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.full,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
+    borderColor: COLORS.floatingBorder,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 20,
+    elevation: 8,
   },
   tabPill: {
     flex: 1,
@@ -136,6 +136,6 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.full,
   },
   tabPillActive: {
-    backgroundColor: '#E9E9E7',
+    backgroundColor: COLORS.fill,
   },
 });

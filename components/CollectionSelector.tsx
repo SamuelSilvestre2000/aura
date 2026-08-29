@@ -45,7 +45,7 @@ export function CollectionSelector({ collections, selectedId, onSelect, variant 
               styles.dot,
               {
                 backgroundColor: isSelected
-                  ? (isMap ? '#1A73E8' : '#fff')
+                  ? (isMap ? COLORS.primary : '#FFFFFF')
                   : COLORS.textMuted,
               },
             ]} />
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   },
   chipMap: {
     backgroundColor: '#FFFFFF',
-    borderColor: '#E8EAED',
+    borderColor: COLORS.surfaceBorder,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.12,
@@ -98,14 +98,14 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
   },
   chipSelectedMap: {
-    backgroundColor: '#E8F0FE',
-    borderColor: '#1A73E8',
+    backgroundColor: COLORS.primaryBg,
+    borderColor: COLORS.primary,
   },
   chipTextMap: {
-    color: '#3C4043',
+    color: COLORS.textPrimary,
   },
   chipTextSelectedMap: {
-    color: '#1A73E8',
+    color: COLORS.primary,
     fontWeight: '700',
   },
   dot: {

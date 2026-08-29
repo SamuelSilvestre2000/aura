@@ -15,7 +15,7 @@ type Props = {
 };
 
 export function CategorySelect({
-  label = 'CATEGORIA',
+  label = 'Categoria',
   categories,
   value,
   onChange,
@@ -31,7 +31,7 @@ export function CategorySelect({
     <View style={styles.field}>
       <Text style={styles.label}>
         {label}
-        {required && <Text style={styles.required}> *</Text>}
+        {required ? <Text style={styles.required}> · obrigatório</Text> : null}
       </Text>
       <View style={styles.row}>
         {options.map((opt) => {
@@ -63,13 +63,13 @@ export function CategorySelect({
 const styles = StyleSheet.create({
   field: { gap: SPACING.sm },
   label: {
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    letterSpacing: 0.6,
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '500',
   },
   required: {
-    color: COLORS.error,
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.sm,
   },
   row: {
     flexDirection: 'row',

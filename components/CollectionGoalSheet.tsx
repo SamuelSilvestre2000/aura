@@ -211,6 +211,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   statLine: {
+    ...FONTS.tabular,
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.md,
     fontWeight: '500',

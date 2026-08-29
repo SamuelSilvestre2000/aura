@@ -10,17 +10,17 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Alert } from '../../utils/alert';
-import { goBack } from '../../utils/navigation';
-import { getScreenTopInset } from '../../utils/safeArea';
 import { useAuth } from '../../hooks/useAuth';
 import { useCollections } from '../../hooks/useCollections';
 import { useClients } from '../../hooks/useClients';
 import { usePurchases } from '../../hooks/usePurchases';
+import { usePanelNav } from '../../hooks/usePanelNav';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
+import { useScreenTopInset } from '../../hooks/useScreenTopInset';
 import { CollectionGoalSheet } from '../../components/CollectionGoalSheet';
 import { PullToRefresh } from '../../components/PullToRefresh';
-import { CategoryPill } from '../../components/CategoryPill';
 import { categoryLabel, filterClientsByCategory } from '../../utils/categoryFilter';
 import { getAllowedCategoriesForUser } from '../../services/categories';
 import { Category } from '../../types';
@@ -28,8 +28,11 @@ import { NotionHeader } from '../../components/NotionHeader';
 import { HeaderBackButton } from '../../components/HeaderBackButton';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
 import { StackedBarChart } from '../../components/collection/StackedBarChart';
-import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
-import { formatDateTimeBR, formatPeriodBR } from '../../utils/dates';
+import ClientDetailScreen from '../client/[id]';
+import { COLORS, FONTS, RADIUS, SPACING, STATUS_COLORS } from '../../constants/colors';
+import { clientInitials, displayClientName } from '../../utils/clientName';
+import { getAvatarColor } from '../../utils/avatarColor';
+import { formatDateBR, formatPeriodBR } from '../../utils/dates';
 import { formatBRL } from '../../utils/money';
 import {
   getBoughtClientsForCollection,
@@ -44,7 +47,9 @@ function ProgressRow({ percent, meta }: { percent: number; meta: string }) {
     <View style={styles.progressBlock}>
       <View style={styles.progressMetaRow}>
         <Text style={styles.progressMeta}>{meta}</Text>
-        <Text style={[styles.progressPct, { color }]}>{percent}%</Text>
+        {/* O número fica neutro: a largura da barra já é o sinal, e a cor
+            deixa de ser a única codificação. */}
+        <Text style={styles.progressPct}>{percent}%</Text>
       </View>
       <View style={styles.progressTrack}>
         <View
@@ -55,9 +60,14 @@ function ProgressRow({ percent, meta }: { percent: number; meta: string }) {
   );
 }
 
-export default function CollectionDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
+type Props = { id?: string };
+
+export default function CollectionDetailScreen({ id: propId }: Props = {}) {
+  const params = useLocalSearchParams<{ id: string }>();
+  const id = propId ?? params.id;
+  const nav = usePanelNav();
+  const isDesktop = useIsDesktop();
+  const topInset = useScreenTopInset('modal');
   const insets = useSafeAreaInsets();
   const { user, isAdmin, can: canDo } = useAuth();
   const canManageCollections = canDo('manage_collections');
@@ -67,7 +77,6 @@ export default function CollectionDetailScreen() {
   const { clients, refresh: refreshClients } = useClients();
   const { purchases, sales, refresh: refreshPurchases } = usePurchases();
   const [showGoalSheet, setShowGoalSheet] = useState(false);
-  const [buyersExpanded, setBuyersExpanded] = useState(false);
   const [goalCategories, setGoalCategories] = useState<Category[]>(user?.categories ?? []);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -124,7 +133,7 @@ export default function CollectionDetailScreen() {
 
   if (loading && !collection) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.center, isDesktop && styles.containerDesktop]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
@@ -132,10 +141,10 @@ export default function CollectionDetailScreen() {
 
   if (!collection || !progress) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.center, isDesktop && styles.containerDesktop]}>
         <Ionicons name="albums-outline" size={40} color={COLORS.textMuted} />
         <Text style={styles.notFoundText}>Coleção não encontrada</Text>
-        <TouchableOpacity onPress={() => goBack(router)} style={styles.outlineButton}>
+        <TouchableOpacity onPress={() => nav.back()} style={styles.outlineButton}>
           <Ionicons name="arrow-back" size={16} color={COLORS.primary} />
           <Text style={styles.outlineButtonText}>Voltar</Text>
         </TouchableOpacity>
@@ -205,7 +214,7 @@ export default function CollectionDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             await deleteCollection(collection.id);
-            goBack(router);
+            nav.back();
           },
         },
       ]
@@ -213,13 +222,19 @@ export default function CollectionDetailScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.headerSafe, { paddingTop: getScreenTopInset(insets) }]}>
+    <View style={[styles.container, isDesktop && styles.containerDesktop]}>
+      <View
+        style={[
+          styles.headerSafe,
+          isDesktop && styles.containerDesktop,
+          { paddingTop: topInset },
+        ]}
+      >
         <NotionHeader
           title={collection.name}
           showBorder
           compact
-          leftAction={<HeaderBackButton onPress={() => goBack(router)} />}
+          leftAction={<HeaderBackButton onPress={() => nav.back()} />}
           rightAction={
             !isAdmin && !isClosed ? (
               <HeaderLinkButton
@@ -233,74 +248,53 @@ export default function CollectionDetailScreen() {
 
       <PullToRefresh refreshing={refreshing} onRefresh={handleRefresh}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={[styles.profileCard, isClosed && styles.profileCardClosed]}>
-          <View style={[styles.profileIcon, isClosed && styles.profileIconClosed]}>
+        {/*
+          O nome da coleção aparece aqui, não só na barra de navegação. Estado
+          e período viram uma linha de apoio — antes "fechada" era dita quatro
+          vezes: badge, fundo do cartão, fundo do ícone e cadeado.
+        */}
+        <View style={styles.profileCard}>
+          <View style={styles.profileIcon}>
             <Ionicons
               name={isClosed ? 'lock-closed-outline' : 'albums-outline'}
               size={28}
-              color={isClosed ? COLORS.textMuted : COLORS.primary}
+              color={isClosed ? COLORS.textSecondary : COLORS.primary}
             />
           </View>
-          {isClosed ? (
-            <View style={styles.closedStatusBadge}>
-              <Text style={styles.closedStatusText}>Coleção fechada</Text>
-            </View>
-          ) : null}
-          <View style={styles.periodRow}>
-            <Ionicons name="calendar-outline" size={14} color={COLORS.textMuted} />
-            <Text style={styles.periodText}>{period}</Text>
-          </View>
-          {showCategoryBadge ? (
-            <CategoryPill
-              label={categoryLabel(collection.categoryId)}
-              slug={collection.categoryId?.replace('cat_', '')}
-              compact
-            />
-          ) : null}
-
-          <View style={styles.statsRow}>
-            <View style={styles.stat}>
-              <Text style={[styles.statValue, styles.statSuccess]}>{progress.bought}</Text>
-              <Text style={styles.statLabel}>Compraram</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.stat}>
-              <Text style={[styles.statValue, styles.statPending]}>{progress.pending}</Text>
-              <Text style={styles.statLabel}>Pendentes</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.stat}>
-              <Text style={styles.statValue}>
-                {progress.completedCities}/{progress.totalCities}
-              </Text>
-              <Text style={styles.statLabel}>Cidades</Text>
-            </View>
-          </View>
+          <Text style={styles.collectionName}>{collection.name}</Text>
+          <Text style={styles.collectionSubtitle}>
+            {[isClosed ? 'Fechada' : null, period, showCategoryBadge ? categoryLabel(collection.categoryId) : null]
+              .filter(Boolean)
+              .join(' · ')}
+          </Text>
+          <Text style={styles.summaryText}>
+            {progress.bought} de {progress.total}{' '}
+            {progress.total === 1 ? 'cliente comprou' : 'clientes compraram'}
+            {progress.totalCities > 0
+              ? ` · ${progress.completedCities}/${progress.totalCities} cidades`
+              : ''}
+          </Text>
         </View>
 
         {showFinancial && (
           <View style={styles.section}>
             <Text style={styles.sectionLabelOutside}>RESUMO FINANCEIRO</Text>
             <View style={styles.card}>
-              <View style={styles.statsRow}>
-                <View style={styles.stat}>
-                  <Text style={[styles.statValue, styles.statSuccess]}>{formatBRL(soldAmount)}</Text>
-                  <Text style={styles.statLabel}>Vendido</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.stat}>
-                  <Text style={styles.statValue}>
-                    {hasGoal ? formatBRL(goalAmount) : '—'}
-                  </Text>
-                  <Text style={styles.statLabel}>Meta</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.stat}>
-                  <Text style={[styles.statValue, styles.statWarning]}>
-                    {hasGoal ? formatBRL(remaining) : '—'}
-                  </Text>
-                  <Text style={styles.statLabel}>Faltam</Text>
-                </View>
+              {/* Dinheiro em lista de chave-valor, com o valor alinhado à
+                  direita: é assim que se compara uma coluna de números. */}
+              <View style={styles.moneyRow}>
+                <Text style={styles.moneyLabel}>Vendido</Text>
+                <Text style={styles.moneyValue}>{formatBRL(soldAmount)}</Text>
+              </View>
+              <View style={styles.rowDivider} />
+              <View style={styles.moneyRow}>
+                <Text style={styles.moneyLabel}>Meta</Text>
+                <Text style={styles.moneyValue}>{hasGoal ? formatBRL(goalAmount) : '—'}</Text>
+              </View>
+              <View style={styles.rowDivider} />
+              <View style={styles.moneyRow}>
+                <Text style={styles.moneyLabel}>Faltam</Text>
+                <Text style={styles.moneyValue}>{hasGoal ? formatBRL(remaining) : '—'}</Text>
               </View>
               {hasGoal && (
                 <ProgressRow
@@ -316,9 +310,9 @@ export default function CollectionDetailScreen() {
           <Text style={styles.sectionLabelOutside}>COBERTURA</Text>
           <View style={styles.card}>
             <StackedBarChart
-              title="CLIENTES"
+              title="Clientes"
               segments={[
-                { value: progress.bought, color: COLORS.success, label: 'Compraram' },
+                { value: progress.bought, color: STATUS_COLORS.all, label: 'Compraram' },
                 { value: progress.pending, color: COLORS.surfaceBorderStrong, label: 'Pendentes' },
               ]}
               height={8}
@@ -331,9 +325,9 @@ export default function CollectionDetailScreen() {
             <View style={styles.cardInnerDivider} />
 
             <StackedBarChart
-              title="CIDADES"
+              title="Cidades"
               segments={[
-                { value: progress.completedCities, color: COLORS.success, label: 'Completas' },
+                { value: progress.completedCities, color: STATUS_COLORS.all, label: 'Completas' },
                 {
                   value: Math.max(0, progress.totalCities - progress.completedCities),
                   color: COLORS.surfaceBorder,
@@ -350,23 +344,11 @@ export default function CollectionDetailScreen() {
         </View>
 
         <View style={styles.section}>
-          <TouchableOpacity
-            style={styles.sectionToggle}
-            onPress={() => setBuyersExpanded((v) => !v)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.sectionLabel}>
-              CLIENTES QUE COMPRARAM ({boughtClients.length})
-            </Text>
-            <Ionicons
-              name={buyersExpanded ? 'chevron-up' : 'chevron-down'}
-              size={16}
-              color={COLORS.textMuted}
-            />
-          </TouchableOpacity>
+          <Text style={styles.sectionLabelOutside}>
+            CLIENTES QUE COMPRARAM ({boughtClients.length})
+          </Text>
 
-          {buyersExpanded &&
-            (boughtClients.length === 0 ? (
+          {(boughtClients.length === 0 ? (
               <View style={styles.card}>
                 <Text style={styles.emptyText}>Nenhuma compra registrada ainda</Text>
               </View>
@@ -377,25 +359,33 @@ export default function CollectionDetailScreen() {
                     {index > 0 && <View style={styles.rowDivider} />}
                     <TouchableOpacity
                       style={styles.buyerRow}
-                      onPress={() => router.push(`/client/${row.client.id}`)}
+                      onPress={() =>
+                        nav.open(
+                          `client-${row.client.id}`,
+                          <ClientDetailScreen id={row.client.id} />,
+                          `/client/${row.client.id}`
+                        )
+                      }
                       activeOpacity={0.7}
                     >
-                      <View style={styles.buyerAvatar}>
+                      <View
+                        style={[
+                          styles.buyerAvatar,
+                          { backgroundColor: getAvatarColor(row.client.id) },
+                        ]}
+                      >
                         <Text style={styles.buyerAvatarText}>
-                          {row.client.name.charAt(0).toUpperCase()}
+                          {clientInitials(displayClientName(row.client))}
                         </Text>
                       </View>
                       <View style={styles.buyerBody}>
                         <Text style={styles.buyerName} numberOfLines={1}>
-                          {row.client.name}
+                          {displayClientName(row.client)}
                         </Text>
-                        <View style={styles.buyerMetaRow}>
-                          <Ionicons name="location-outline" size={12} color={COLORS.textMuted} />
-                          <Text style={styles.buyerMeta} numberOfLines={1}>
-                            {row.client.city}, PI
-                            {row.purchasedAt ? ` · ${formatDateTimeBR(row.purchasedAt)}` : ''}
-                          </Text>
-                        </View>
+                        <Text style={styles.buyerMeta} numberOfLines={1}>
+                          {row.client.city}, PI
+                          {row.purchasedAt ? ` · ${formatDateBR(row.purchasedAt)}` : ''}
+                        </Text>
                       </View>
                       <View style={styles.buyerRight}>
                         {row.sale ? (
@@ -504,6 +494,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
   },
+  // No painel flutuante do desktop, deixa o vidro do painel (DesktopSidePanel)
+  // aparecer em vez de cobrir tudo com fundo opaco. Totalmente transparente
+  // (não translúcido) — empilhar duas camadas translúcidas soma opacidade.
+  containerDesktop: {
+    backgroundColor: 'transparent',
+  },
   headerSafe: {
     backgroundColor: COLORS.backgroundSubtle,
   },
@@ -519,6 +515,43 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     gap: SPACING.lg,
     paddingBottom: 48,
+  },
+  collectionName: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.xl,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+    textAlign: 'center',
+  },
+  collectionSubtitle: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.md,
+    textAlign: 'center',
+  },
+  summaryText: {
+    ...FONTS.tabular,
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
+    textAlign: 'center',
+    marginTop: SPACING.sm,
+  },
+  moneyRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: SPACING.md,
+    minHeight: 44,
+    paddingHorizontal: SPACING.lg,
+  },
+  moneyLabel: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.md,
+  },
+  moneyValue: {
+    ...FONTS.tabular,
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.md,
+    fontWeight: '600',
   },
   profileCard: {
     backgroundColor: COLORS.surface,
@@ -538,90 +571,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: SPACING.xs,
   },
-  profileCardClosed: {
-    backgroundColor: COLORS.backgroundSubtle,
-  },
-  profileIconClosed: {
-    backgroundColor: COLORS.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
-  },
-  closedStatusBadge: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.full,
-    paddingHorizontal: SPACING.md,
-    paddingVertical: 4,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorderStrong,
-  },
-  closedStatusText: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-  periodRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  periodText: {
-    color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.sm,
-    fontWeight: '500',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: SPACING.lg,
-    paddingTop: SPACING.lg,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: COLORS.surfaceBorder,
-    width: '100%',
-  },
-  stat: { flex: 1, alignItems: 'center' },
-  statValue: {
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.lg,
-    fontWeight: '700',
-    letterSpacing: -0.3,
-  },
-  statSuccess: { color: COLORS.success },
-  statPending: { color: COLORS.textSecondary },
-  statWarning: { color: COLORS.warning },
-  statLabel: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    marginTop: 2,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  statDivider: {
-    width: StyleSheet.hairlineWidth,
-    height: 28,
-    backgroundColor: COLORS.surfaceBorder,
-  },
   section: { gap: SPACING.sm },
-  sectionToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.xs,
-    gap: SPACING.sm,
-  },
   sectionLabelOutside: {
     color: COLORS.textMuted,
     fontSize: FONTS.sizes.xs,
     fontWeight: '600',
     letterSpacing: 0.6,
     paddingHorizontal: SPACING.xs,
-  },
-  sectionLabel: {
-    flex: 1,
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    letterSpacing: 0.6,
   },
   card: {
     backgroundColor: COLORS.surface,
@@ -662,6 +618,8 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   progressPct: {
+    ...FONTS.tabular,
+    color: COLORS.textSecondary,
     fontSize: FONTS.sizes.xs,
     fontWeight: '600',
     minWidth: 32,
@@ -687,14 +645,13 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.primaryBg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   buyerAvatarText: {
-    color: COLORS.primary,
-    fontSize: FONTS.sizes.md,
-    fontWeight: '700',
+    color: '#FFFFFF',
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '600',
   },
   buyerBody: {
     flex: 1,
@@ -705,11 +662,6 @@ const styles = StyleSheet.create({
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.md,
     fontWeight: '600',
-  },
-  buyerMetaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
   },
   buyerMeta: {
     flex: 1,
@@ -723,6 +675,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   buyerAmount: {
+    ...FONTS.tabular,
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.sm,
     fontWeight: '600',

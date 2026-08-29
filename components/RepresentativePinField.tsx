@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { DEFAULT_REP_PIN, isValidAccessPin, MAX_ACCESS_PIN_LENGTH } from '../constants/userCategories';
-import { COLORS, FONTS, RADIUS, SPACING } from '../constants/colors';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../constants/colors';
 
 type CreateProps = {
   mode: 'create';
@@ -129,12 +129,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   input: {
+    minHeight: HIT_TARGET,
     backgroundColor: COLORS.backgroundSubtle,
     borderRadius: RADIUS.lg,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
+    fontSize: FONTS.sizes.lg,
     letterSpacing: 4,
     textAlign: 'center',
     borderWidth: StyleSheet.hairlineWidth,

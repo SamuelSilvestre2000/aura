@@ -7,41 +7,50 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Linking,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { Alert } from '../../utils/alert';
-import { goBack } from '../../utils/navigation';
-import { getScreenTopInset } from '../../utils/safeArea';
 import { useClients } from '../../hooks/useClients';
 import { useAuth } from '../../hooks/useAuth';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
 import { useCollections } from '../../hooks/useCollections';
 import { usePurchases } from '../../hooks/usePurchases';
+import { usePanelNav } from '../../hooks/usePanelNav';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
+import { useScreenTopInset } from '../../hooks/useScreenTopInset';
 import { NotionHeader } from '../../components/NotionHeader';
 import { HeaderBackButton } from '../../components/HeaderBackButton';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
-import { CategoryPillRow } from '../../components/CategoryPill';
+import ClientEditScreen from './edit';
 import { labelsFromCategoryIds } from '../../constants/categoryPills';
 import { PurchaseChip } from '../../components/PurchaseChip';
 import { PullToRefresh } from '../../components/PullToRefresh';
 import { SaleSheet } from '../../components/SaleSheet';
 import { isCollectionClosed } from '../../utils/collectionStatus';
+import { Client } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
 import { formatBRL } from '../../utils/money';
 import { formatCnpj } from '../../utils/cnpj';
-import { displayClientName } from '../../utils/clientName';
+import { clientInitials, displayClientName } from '../../utils/clientName';
+import { getAvatarColor } from '../../utils/avatarColor';
 
 type SaleTarget = {
   collectionId: string;
   collectionName: string;
 };
 
-export default function ClientDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
+type Props = { id?: string };
+
+export default function ClientDetailScreen({ id: propId }: Props = {}) {
+  const params = useLocalSearchParams<{ id: string }>();
+  const id = propId ?? params.id;
+  const nav = usePanelNav();
+  const isDesktop = useIsDesktop();
+  const topInset = useScreenTopInset('modal');
   const insets = useSafeAreaInsets();
 
   const { clients, deleteClient, loading: clientsLoading, refresh: refreshClients } = useClients();
@@ -60,9 +69,7 @@ export default function ClientDetailScreen() {
 
   const [saleTarget, setSaleTarget] = useState<SaleTarget | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [collectionsExpanded, setCollectionsExpanded] = useState(false);
   const [visibleCollectionsCount, setVisibleCollectionsCount] = useState(3);
-  const [addressExpanded, setAddressExpanded] = useState(false);
 
   /**
    * Cada tela mantém sua própria cópia local dos dados — sem isso, criar,
@@ -100,7 +107,7 @@ export default function ClientDetailScreen() {
           onPress: async () => {
             if (id) {
               await deleteClient(id);
-              goBack(router);
+              nav.back();
             }
           },
         },
@@ -108,20 +115,54 @@ export default function ClientDetailScreen() {
     );
   };
 
-  const handleWhatsAppMobile = () => {
-    if (client?.mobile) {
-      const phone = client.mobile.replace(/\D/g, '');
-      Linking.openURL(`whatsapp://send?phone=55${phone}`);
-    }
+  /**
+   * wa.me em vez do esquema whatsapp://: o esquema falha em silêncio quando o
+   * app não está instalado, e no navegador não abre nada. O link https abre o
+   * app quando ele existe e cai no WhatsApp Web quando não.
+   *
+   * O 55 é fixo porque os cadastros guardam só o número nacional — se um dia
+   * entrar cliente de fora do país, este pedaço precisa sair daqui.
+   */
+  const handleWhatsApp = (value: string) => {
+    const digits = value.replace(/\D/g, '');
+    const withCountry = digits.startsWith('55') && digits.length > 11 ? digits : `55${digits}`;
+    Linking.openURL(`https://wa.me/${withCountry}`);
   };
 
+  /** Toque num telefone liga, como em qualquer lugar do sistema. */
+  const handleCall = (value: string) => {
+    Linking.openURL(`tel:${value.replace(/\D/g, '')}`);
+  };
+
+  const handleEmail = (value: string) => {
+    Linking.openURL(`mailto:${value}`);
+  };
+
+  /** Copiar continua possível, agora onde se espera: no toque longo. */
   const handleCopy = (value: string) => {
     void Clipboard.setStringAsync(value);
   };
 
+  /**
+   * O representante vai à loja: tendo endereço, abrir a rota é a ação óbvia.
+   * Cada plataforma tem seu esquema; na web cai no Google Maps.
+   */
+  const handleRoute = (target: Client) => {
+    const query = encodeURIComponent(
+      [target.street, target.neighborhood, target.city, 'PI'].filter(Boolean).join(', ')
+    );
+    const url =
+      Platform.OS === 'ios'
+        ? `maps://?q=${query}`
+        : Platform.OS === 'android'
+          ? `geo:0,0?q=${query}`
+          : `https://www.google.com/maps/search/?api=1&query=${query}`;
+    Linking.openURL(url);
+  };
+
   if (clientsLoading) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.center, isDesktop && styles.containerDesktop]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
@@ -129,10 +170,10 @@ export default function ClientDetailScreen() {
 
   if (!client) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.center, isDesktop && styles.containerDesktop]}>
         <Ionicons name="person-outline" size={40} color={COLORS.textMuted} />
         <Text style={styles.notFoundText}>Cliente não encontrado</Text>
-        <TouchableOpacity onPress={() => goBack(router)} style={styles.outlineButton}>
+        <TouchableOpacity onPress={() => nav.back()} style={styles.outlineButton}>
           <Ionicons name="arrow-back" size={16} color={COLORS.primary} />
           <Text style={styles.outlineButtonText}>Voltar</Text>
         </TouchableOpacity>
@@ -140,8 +181,16 @@ export default function ClientDetailScreen() {
     );
   }
 
-  const { labels, slugs } = labelsFromCategoryIds(client.categoryIds);
+  const { labels } = labelsFromCategoryIds(client.categoryIds);
   const name = displayClientName(client);
+  const primaryPhone = client.mobile || client.phone;
+  const hasAddress = Boolean(client.street || client.neighborhood || client.city);
+  /** Rua, bairro e a linha de cidade/CEP — o endereço como se escreve num envelope. */
+  const addressLines = [
+    client.street,
+    client.neighborhood,
+    [`${client.city}, PI`, client.zipCode].filter(Boolean).join(' · '),
+  ].filter(Boolean) as string[];
   const purchasedCollections = collections.filter((col) =>
     getPurchaseStatus(client.id, col.id)
   );
@@ -149,18 +198,31 @@ export default function ClientDetailScreen() {
   const openPurchasedCollections = purchasedCollections.filter((col) => !isCollectionClosed(col));
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.headerSafe, { paddingTop: getScreenTopInset(insets) }]}>
+    <View style={[styles.container, isDesktop && styles.containerDesktop]}>
+      <View
+        style={[
+          styles.headerSafe,
+          isDesktop && styles.containerDesktop,
+          { paddingTop: topInset },
+        ]}
+      >
         <NotionHeader
           title={name}
           showBorder
           compact
-          leftAction={<HeaderBackButton onPress={() => goBack(router)} />}
+          leftAction={<HeaderBackButton onPress={() => nav.back()} />}
           rightAction={
             canManageClients ? (
               <HeaderLinkButton
                 label="Editar"
-                onPress={() => router.push(`/client/edit?id=${client.id}`)}
+                onPress={() =>
+                  nav.open(
+                    `client-edit-${client.id}`,
+                    <ClientEditScreen id={client.id} />,
+                    '/client/edit',
+                    { id: client.id }
+                  )
+                }
               />
             ) : undefined
           }
@@ -170,39 +232,79 @@ export default function ClientDetailScreen() {
       <PullToRefresh refreshing={refreshing} onRefresh={handleRefresh}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.profileCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
+          <View style={[styles.avatar, { backgroundColor: getAvatarColor(client.id) }]}>
+            <Text style={styles.avatarText}>{clientInitials(name)}</Text>
           </View>
           <Text style={styles.clientName}>{name}</Text>
           {client.tradeName && client.tradeName !== name ? (
             <Text style={styles.clientTradeName}>{client.tradeName}</Text>
           ) : null}
-          {showCategoryBadges && labels.length > 0 ? (
-            <CategoryPillRow labels={labels} slugs={slugs} />
-          ) : null}
-          <View style={styles.locationRow}>
-            <Ionicons name="location-outline" size={14} color={COLORS.textMuted} />
-            <Text style={styles.locationText}>{client.city}, PI</Text>
+          <Text style={styles.clientSubtitle}>
+            {[`${client.city}, PI`, showCategoryBadges ? labels.join(', ') : '']
+              .filter(Boolean)
+              .join(' · ')}
+          </Text>
+
+          {/*
+            Fileira de ações logo abaixo do nome, como em Contatos: num app de
+            campo, ligar e traçar rota são o que se faz aqui — antes ficavam
+            escondidos numa linha no meio da seção de contato.
+          */}
+          <View style={styles.actionsRow}>
+            {primaryPhone ? (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => handleCall(primaryPhone)}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Ligar"
+              >
+                <Ionicons name="call" size={20} color={COLORS.primary} />
+                <Text style={styles.actionButtonText}>Ligar</Text>
+              </TouchableOpacity>
+            ) : null}
+            {client.mobile ? (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => handleWhatsApp(client.mobile!)}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="WhatsApp"
+              >
+                <Ionicons name="logo-whatsapp" size={20} color={COLORS.primary} />
+                <Text style={styles.actionButtonText}>WhatsApp</Text>
+              </TouchableOpacity>
+            ) : null}
+            {hasAddress ? (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => handleRoute(client)}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Rota"
+              >
+                <Ionicons name="navigate" size={20} color={COLORS.primary} />
+                <Text style={styles.actionButtonText}>Rota</Text>
+              </TouchableOpacity>
+            ) : null}
+            {client.email ? (
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={() => handleEmail(client.email!)}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Email"
+              >
+                <Ionicons name="mail" size={20} color={COLORS.primary} />
+                <Text style={styles.actionButtonText}>Email</Text>
+              </TouchableOpacity>
+            ) : null}
           </View>
 
-          <View style={styles.statsRow}>
-            <View style={styles.stat}>
-              <Text style={styles.statValue}>{collections.length}</Text>
-              <Text style={styles.statLabel}>Coleções</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.stat}>
-              <Text style={[styles.statValue, styles.statSuccess]}>{boughtCount}</Text>
-              <Text style={styles.statLabel}>Compradas</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.stat}>
-              <Text style={[styles.statValue, styles.statPending]}>
-                {collections.length - boughtCount}
-              </Text>
-              <Text style={styles.statLabel}>Pendentes</Text>
-            </View>
-          </View>
+          <Text style={styles.summaryText}>
+            {boughtCount} de {collections.length}{' '}
+            {collections.length === 1 ? 'coleção comprada' : 'coleções compradas'}
+          </Text>
         </View>
 
         {client.cnpj || client.phone || client.mobile || client.email ? (
@@ -217,7 +319,7 @@ export default function ClientDetailScreen() {
                     </View>
                     <View style={styles.infoBody}>
                       <Text style={styles.infoLabel}>CNPJ</Text>
-                      <Text style={styles.infoValue}>{formatCnpj(client.cnpj)}</Text>
+                      <Text style={styles.infoValueNumeric}>{formatCnpj(client.cnpj)}</Text>
                     </View>
                   </View>
                   {client.phone || client.mobile || client.email ? (
@@ -231,7 +333,8 @@ export default function ClientDetailScreen() {
                     {client.mobile ? (
                       <TouchableOpacity
                         style={styles.phoneCol}
-                        onPress={() => handleCopy(client.mobile!)}
+                        onPress={() => handleCall(client.mobile!)}
+                        onLongPress={() => handleCopy(client.mobile!)}
                         activeOpacity={0.7}
                       >
                         <View style={styles.infoIconWrap}>
@@ -239,7 +342,7 @@ export default function ClientDetailScreen() {
                         </View>
                         <View style={styles.infoBody}>
                           <Text style={styles.infoLabel}>Celular</Text>
-                          <Text style={styles.infoValue} numberOfLines={1}>
+                          <Text style={styles.infoValueAction} numberOfLines={1}>
                             {client.mobile}
                           </Text>
                         </View>
@@ -249,7 +352,8 @@ export default function ClientDetailScreen() {
                     {client.phone ? (
                       <TouchableOpacity
                         style={styles.phoneCol}
-                        onPress={() => handleCopy(client.phone!)}
+                        onPress={() => handleCall(client.phone!)}
+                        onLongPress={() => handleCopy(client.phone!)}
                         activeOpacity={0.7}
                       >
                         <View style={styles.infoIconWrap}>
@@ -257,28 +361,21 @@ export default function ClientDetailScreen() {
                         </View>
                         <View style={styles.infoBody}>
                           <Text style={styles.infoLabel}>Telefone</Text>
-                          <Text style={styles.infoValue} numberOfLines={1}>
+                          <Text style={styles.infoValueAction} numberOfLines={1}>
                             {client.phone}
                           </Text>
                         </View>
                       </TouchableOpacity>
                     ) : null}
                   </View>
-                  {client.mobile ? (
-                    <>
-                      <View style={styles.rowDivider} />
-                      <TouchableOpacity style={styles.actionRow} onPress={handleWhatsAppMobile} activeOpacity={0.7}>
-                        <Text style={[styles.actionLink, styles.whatsappLink]}>WhatsApp</Text>
-                      </TouchableOpacity>
-                    </>
-                  ) : null}
                   {client.email ? <View style={styles.rowDivider} /> : null}
                 </>
               ) : null}
               {client.email ? (
                 <TouchableOpacity
                   style={styles.infoRow}
-                  onPress={() => handleCopy(client.email!)}
+                  onPress={() => handleEmail(client.email!)}
+                  onLongPress={() => handleCopy(client.email!)}
                   activeOpacity={0.7}
                 >
                   <View style={styles.infoIconWrap}>
@@ -286,7 +383,7 @@ export default function ClientDetailScreen() {
                   </View>
                   <View style={styles.infoBody}>
                     <Text style={styles.infoLabel}>Email</Text>
-                    <Text style={styles.infoValue} numberOfLines={1}>
+                    <Text style={styles.infoValueAction} numberOfLines={1}>
                       {client.email}
                     </Text>
                   </View>
@@ -296,63 +393,33 @@ export default function ClientDetailScreen() {
           </View>
         ) : null}
 
-        {client.street || client.neighborhood || client.zipCode ? (
+        {hasAddress ? (
           <View style={styles.section}>
-            <TouchableOpacity
-              style={styles.sectionToggle}
-              onPress={() => setAddressExpanded((v) => !v)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.sectionLabel}>ENDEREÇO</Text>
-              <Ionicons
-                name={addressExpanded ? 'chevron-up' : 'chevron-down'}
-                size={16}
-                color={COLORS.textMuted}
-              />
-            </TouchableOpacity>
-            {addressExpanded && (
+            <Text style={styles.sectionLabelOutside}>ENDEREÇO</Text>
             <View style={styles.card}>
-              {client.street ? (
-                <>
-                  <View style={styles.infoRow}>
-                    <View style={styles.infoIconWrap}>
-                      <Ionicons name="location-outline" size={18} color={COLORS.textSecondary} />
-                    </View>
-                    <View style={styles.infoBody}>
-                      <Text style={styles.infoLabel}>Logradouro</Text>
-                      <Text style={styles.infoValue}>{client.street}</Text>
-                    </View>
-                  </View>
-                  {client.neighborhood || client.zipCode ? <View style={styles.rowDivider} /> : null}
-                </>
-              ) : null}
-              {client.neighborhood ? (
-                <>
-                  <View style={styles.infoRow}>
-                    <View style={styles.infoIconWrap}>
-                      <Ionicons name="map-outline" size={18} color={COLORS.textSecondary} />
-                    </View>
-                    <View style={styles.infoBody}>
-                      <Text style={styles.infoLabel}>Bairro</Text>
-                      <Text style={styles.infoValue}>{client.neighborhood}</Text>
-                    </View>
-                  </View>
-                  {client.zipCode ? <View style={styles.rowDivider} /> : null}
-                </>
-              ) : null}
-              {client.zipCode ? (
-                <View style={styles.infoRow}>
-                  <View style={styles.infoIconWrap}>
-                    <Ionicons name="navigate-outline" size={18} color={COLORS.textSecondary} />
-                  </View>
-                  <View style={styles.infoBody}>
-                    <Text style={styles.infoLabel}>CEP</Text>
-                    <Text style={styles.infoValue}>{client.zipCode}</Text>
-                  </View>
+              {/*
+                Endereço é um dado só, então é uma linha só — em três linhas
+                rotuladas (logradouro, bairro, CEP) o representante precisava
+                remontar mentalmente o endereço para saber onde fica. Tocar
+                abre a rota, como em Contatos.
+              */}
+              <TouchableOpacity
+                style={styles.infoRow}
+                onPress={() => handleRoute(client)}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Abrir rota"
+              >
+                <View style={styles.infoIconWrap}>
+                  <Ionicons name="location-outline" size={18} color={COLORS.textSecondary} />
                 </View>
-              ) : null}
+                <View style={styles.infoBody}>
+                  <Text style={styles.infoLabel}>Endereço</Text>
+                  <Text style={styles.addressText}>{addressLines.join('\n')}</Text>
+                </View>
+                <Ionicons name="navigate" size={17} color={COLORS.primary} />
+              </TouchableOpacity>
             </View>
-            )}
           </View>
         ) : null}
 
@@ -366,24 +433,10 @@ export default function ClientDetailScreen() {
         ) : null}
 
         <View style={styles.section}>
-          <TouchableOpacity
-            style={styles.sectionToggle}
-            onPress={() =>
-              setCollectionsExpanded((v) => {
-                if (v) setVisibleCollectionsCount(3);
-                return !v;
-              })
-            }
-            activeOpacity={0.7}
-          >
-            <Text style={styles.sectionLabel}>COLEÇÕES ({purchasedCollections.length})</Text>
-            <Ionicons
-              name={collectionsExpanded ? 'chevron-up' : 'chevron-down'}
-              size={16}
-              color={COLORS.textMuted}
-            />
-          </TouchableOpacity>
-          {collectionsExpanded && (purchasedCollections.length === 0 ? (
+          <Text style={styles.sectionLabelOutside}>
+            COLEÇÕES ({purchasedCollections.length})
+          </Text>
+          {(purchasedCollections.length === 0 ? (
             <View style={styles.card}>
               <Text style={styles.emptyText}>Nenhuma compra registrada</Text>
             </View>
@@ -441,7 +494,7 @@ export default function ClientDetailScreen() {
               ) : null}
             </View>
           ))}
-          {collectionsExpanded && openPurchasedCollections.length === 0 && purchasedCollections.length > 0 ? (
+          {openPurchasedCollections.length === 0 && purchasedCollections.length > 0 ? (
             <Text style={styles.sectionHint}>
               Todas as coleções estão fechadas — vendas não podem ser alteradas.
             </Text>
@@ -503,6 +556,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
   },
+  // No painel flutuante do desktop, deixa o vidro do painel (DesktopSidePanel)
+  // aparecer em vez de cobrir tudo com fundo opaco. Totalmente transparente
+  // (não translúcido) — empilhar duas camadas translúcidas soma opacidade.
+  containerDesktop: {
+    backgroundColor: 'transparent',
+  },
   headerSafe: {
     backgroundColor: COLORS.backgroundSubtle,
   },
@@ -532,15 +591,10 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: COLORS.primaryBg,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: SPACING.xs,
-  },
-  avatarText: {
-    color: COLORS.primary,
-    fontSize: FONTS.sizes.xl,
-    fontWeight: '700',
   },
   clientName: {
     color: COLORS.textPrimary,
@@ -555,43 +609,43 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: -2,
   },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: SPACING.xs,
-  },
-  locationText: {
-    color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.sm,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: SPACING.lg,
-    paddingTop: SPACING.lg,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: COLORS.surfaceBorder,
-    width: '100%',
-  },
-  stat: { flex: 1, alignItems: 'center' },
-  statValue: {
-    color: COLORS.textPrimary,
+  avatarText: {
+    color: '#FFFFFF',
     fontSize: FONTS.sizes.xl,
-    fontWeight: '700',
+    fontWeight: '600',
   },
-  statSuccess: { color: COLORS.success },
-  statPending: { color: COLORS.textSecondary },
-  statLabel: {
-    color: COLORS.textMuted,
+  clientSubtitle: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.md,
+    textAlign: 'center',
+  },
+  // Alvo de 44 de altura; o rótulo cabe embaixo do símbolo, como em Contatos.
+  actionsRow: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+    alignSelf: 'stretch',
+    marginTop: SPACING.lg,
+  },
+  actionButton: {
+    flex: 1,
+    minHeight: 56,
+    gap: 4,
+    paddingVertical: SPACING.sm,
+    borderRadius: RADIUS.lg,
+    backgroundColor: COLORS.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionButtonText: {
+    color: COLORS.primary,
     fontSize: FONTS.sizes.xs,
-    marginTop: 2,
     fontWeight: '500',
   },
-  statDivider: {
-    width: StyleSheet.hairlineWidth,
-    height: 28,
-    backgroundColor: COLORS.surfaceBorder,
+  summaryText: {
+    ...FONTS.tabular,
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
+    marginTop: SPACING.lg,
   },
   section: { gap: SPACING.sm },
   sectionLabelOutside: {
@@ -600,20 +654,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.6,
     paddingHorizontal: SPACING.xs,
-  },
-  sectionToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.xs,
-    gap: SPACING.sm,
-  },
-  sectionLabel: {
-    flex: 1,
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    letterSpacing: 0.6,
   },
   sectionHint: {
     color: COLORS.textMuted,
@@ -645,6 +685,23 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.4,
   },
+  infoValueAction: {
+    color: COLORS.primary,
+    fontSize: FONTS.sizes.md,
+    fontWeight: '500',
+  },
+  addressText: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.md,
+    fontWeight: '500',
+    lineHeight: 21,
+  },
+  infoValueNumeric: {
+    ...FONTS.tabular,
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.md,
+    fontWeight: '500',
+  },
   infoValue: {
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.md,
@@ -667,10 +724,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surfaceBorder,
     marginVertical: SPACING.sm,
   },
-  actionRow: {
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-  },
   loadMoreRow: {
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.lg,
@@ -680,14 +733,6 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontSize: FONTS.sizes.sm,
     fontWeight: '600',
-  },
-  actionLink: {
-    color: COLORS.primary,
-    fontSize: FONTS.sizes.sm,
-    fontWeight: '600',
-  },
-  whatsappLink: {
-    color: '#25D366',
   },
   notesText: {
     color: COLORS.textSecondary,
@@ -732,6 +777,7 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sizes.sm,
   },
   collectionAmount: {
+    ...FONTS.tabular,
     color: COLORS.primary,
     fontSize: FONTS.sizes.sm,
     fontWeight: '500',

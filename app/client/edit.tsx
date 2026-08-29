@@ -10,16 +10,19 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Alert } from '../../utils/alert';
-import { goBack } from '../../utils/navigation';
 import { useClients } from '../../hooks/useClients';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useAuth } from '../../hooks/useAuth';
+import { usePanelNav } from '../../hooks/usePanelNav';
+import { useIsDesktop } from '../../hooks/useIsDesktop';
 import { getAllowedCategoriesForUser } from '../../services/categories';
 import { Category } from '../../types';
 import { CategoryMultiSelect } from '../../components/CategoryMultiSelect';
 import { FormScreen } from '../../components/FormScreen';
+import { FormSection } from '../../components/FormSection';
+import { FormRow } from '../../components/FormRow';
 import { HeaderLinkButton } from '../../components/HeaderLinkButton';
-import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../../constants/colors';
 import { formatCnpj, isValidCnpj, maskCnpjInput } from '../../utils/cnpj';
 
 function maskCepInput(value: string): string {
@@ -46,15 +49,20 @@ type SelectedCity = {
   lng: number;
 };
 
-export default function EditClientScreen() {
+type Props = { id?: string };
+
+export default function EditClientScreen({ id: propId }: Props = {}) {
   const router = useRouter();
+  const nav = usePanelNav();
+  const isDesktop = useIsDesktop();
   const { user, can: canDo } = useAuth();
   const params = useLocalSearchParams<{ id: string }>();
+  const id = propId ?? params.id;
 
   const { clients, updateClient, loading: clientsLoading, refresh: refreshClients } = useClients();
   const { cities, loading: geoLoading, refresh: refreshCities } = useGeoJSON();
 
-  const client = useMemo(() => clients.find((c) => c.id === params.id), [clients, params.id]);
+  const client = useMemo(() => clients.find((c) => c.id === id), [clients, id]);
 
   const [name, setName] = useState('');
   const [tradeName, setTradeName] = useState('');
@@ -80,7 +88,13 @@ export default function EditClientScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    if (!canDo('manage_clients')) router.replace('/(tabs)');
+    if (canDo('manage_clients')) return;
+    if (nav.isDesktop) {
+      nav.back();
+      return;
+    }
+    router.replace('/(tabs)');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canDo, router]);
 
   const loadCategories = useCallback(async () => {
@@ -187,7 +201,7 @@ export default function EditClientScreen() {
         notes: notes.trim() || undefined,
         categoryIds,
       });
-      goBack(router);
+      nav.back();
     } catch {
       Alert.alert('Erro', 'Não foi possível atualizar o cliente.');
     } finally {
@@ -197,7 +211,7 @@ export default function EditClientScreen() {
 
   if (clientsLoading || (client && !initialized)) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.center, isDesktop && styles.containerDesktop]}>
         <ActivityIndicator size="large" color={COLORS.primary} />
       </View>
     );
@@ -205,10 +219,10 @@ export default function EditClientScreen() {
 
   if (!client) {
     return (
-      <View style={styles.center}>
+      <View style={[styles.center, isDesktop && styles.containerDesktop]}>
         <Ionicons name="person-outline" size={40} color={COLORS.textMuted} />
         <Text style={styles.notFoundText}>Cliente não encontrado</Text>
-        <TouchableOpacity onPress={() => goBack(router)} style={styles.outlineButton}>
+        <TouchableOpacity onPress={() => nav.back()} style={styles.outlineButton}>
           <Ionicons name="arrow-back" size={16} color={COLORS.primary} />
           <Text style={styles.outlineButtonText}>Voltar</Text>
         </TouchableOpacity>
@@ -221,7 +235,7 @@ export default function EditClientScreen() {
   return (
     <FormScreen
       title="Editar cliente"
-      onBack={() => goBack(router)}
+      onBack={() => nav.back()}
       onRefresh={handleRefresh}
       refreshing={refreshing}
       headerRight={
@@ -233,139 +247,143 @@ export default function EditClientScreen() {
         />
       }
     >
-      <View style={styles.field}>
-        <Text style={styles.label}>NOME DA LOJA</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ex: Boutique Moda Piauí"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={name}
-          onChangeText={setName}
-          returnKeyType="next"
-          autoFocus
-        />
-      </View>
+      <FormSection title="Informações básicas">
+        <FormRow label="Nome da loja" required first>
+          <TextInput
+            style={styles.rowInput}
+            placeholder="Ex: Boutique Moda Piauí"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={name}
+            onChangeText={setName}
+            returnKeyType="next"
+            autoFocus
+          />
+        </FormRow>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>NOME FANTASIA</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Nome usado no dia a dia da loja"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={tradeName}
-          onChangeText={setTradeName}
-          returnKeyType="next"
-        />
-      </View>
+        <FormRow label="Nome fantasia">
+          <TextInput
+            style={styles.rowInput}
+            placeholder="Usado no dia a dia"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={tradeName}
+            onChangeText={setTradeName}
+            returnKeyType="next"
+          />
+        </FormRow>
+      </FormSection>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>CNPJ</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="00.000.000/0000-00"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={cnpj}
-          onChangeText={(text) => setCnpj(maskCnpjInput(text))}
-          keyboardType="number-pad"
-          returnKeyType="next"
-        />
-      </View>
+      <FormSection title="Identificação">
+        <FormRow label="CNPJ" first>
+          <TextInput
+            style={[styles.rowInput, styles.rowInputNumeric]}
+            placeholder="00.000.000/0000-00"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={cnpj}
+            onChangeText={(text) => setCnpj(maskCnpjInput(text))}
+            keyboardType="number-pad"
+            returnKeyType="next"
+          />
+        </FormRow>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>INSCRIÇÃO MUNICIPAL</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="000000000"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={municipalRegistration}
-          onChangeText={setMunicipalRegistration}
-          keyboardType="number-pad"
-          maxLength={20}
-          returnKeyType="next"
-        />
-      </View>
+        <FormRow label="Inscr. municipal">
+          <TextInput
+            style={[styles.rowInput, styles.rowInputNumeric]}
+            placeholder="000000000"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={municipalRegistration}
+            onChangeText={setMunicipalRegistration}
+            keyboardType="number-pad"
+            maxLength={20}
+            returnKeyType="next"
+          />
+        </FormRow>
+      </FormSection>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>CIDADE NO PIAUÍ</Text>
-        <Text style={styles.hint}>O cliente aparece no mapa na cidade selecionada.</Text>
-        <TextInput
-          style={[styles.input, selectedCity && styles.inputSelected]}
-          placeholder={geoLoading ? 'Carregando cidades...' : 'Buscar cidade...'}
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={citySearch}
-          onChangeText={(text) => {
-            setCitySearch(text);
-            if (text !== selectedCity?.name) setSelectedCity(null);
-            setShowCityList(true);
-          }}
-          onFocus={() => setShowCityList(true)}
-          editable={!geoLoading}
-          returnKeyType="search"
-        />
-        {selectedCity ? (
-          <View style={styles.cityBadge}>
-            <Ionicons name="checkmark-circle" size={14} color={COLORS.success} />
-            <Text style={styles.cityBadgeText}>{selectedCity.name} — PI</Text>
+      <FormSection
+        title="Endereço"
+        footer="O cliente aparece no mapa na cidade selecionada."
+      >
+        <FormRow label="Cidade" required first alignTop={showCityList && !selectedCity}>
+          <View style={styles.cityControl}>
+            <TextInput
+              style={styles.rowInput}
+              placeholder={geoLoading ? 'Carregando cidades...' : 'Buscar cidade...'}
+              placeholderTextColor={COLORS.textPlaceholder}
+              value={citySearch}
+              onChangeText={(text) => {
+                setCitySearch(text);
+                if (text !== selectedCity?.name) setSelectedCity(null);
+                setShowCityList(true);
+              }}
+              onFocus={() => setShowCityList(true)}
+              editable={!geoLoading}
+              returnKeyType="search"
+            />
+            {selectedCity ? (
+              <View style={styles.cityBadge}>
+                <Ionicons name="checkmark-circle" size={14} color={COLORS.success} />
+                <Text style={styles.cityBadgeText}>{selectedCity.name} — PI</Text>
+              </View>
+            ) : null}
+            {showCityList && filteredCities.length > 0 && !selectedCity ? (
+              <View style={styles.cityList}>
+                {filteredCities.map((city, index) => (
+                  <TouchableOpacity
+                    key={city.code}
+                    style={[styles.cityRow, index > 0 && styles.cityRowBorder]}
+                    onPress={() => handleSelectCity(city)}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="location-outline" size={16} color={COLORS.textSecondary} />
+                    <Text style={styles.cityRowText}>{city.name}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : null}
           </View>
-        ) : null}
-        {showCityList && filteredCities.length > 0 && !selectedCity ? (
-          <View style={styles.cityList}>
-            {filteredCities.map((city, index) => (
-              <TouchableOpacity
-                key={city.code}
-                style={[styles.cityRow, index > 0 && styles.cityRowBorder]}
-                onPress={() => handleSelectCity(city)}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="location-outline" size={16} color={COLORS.textMuted} />
-                <Text style={styles.cityRowText}>{city.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        ) : null}
-      </View>
+        </FormRow>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>LOGRADOURO</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Rua, avenida, número..."
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={street}
-          onChangeText={setStreet}
-          returnKeyType="next"
-        />
-      </View>
+        <FormRow label="Logradouro">
+          <TextInput
+            style={styles.rowInput}
+            placeholder="Rua, avenida, número..."
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={street}
+            onChangeText={setStreet}
+            returnKeyType="next"
+          />
+        </FormRow>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>BAIRRO</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Bairro"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={neighborhood}
-          onChangeText={setNeighborhood}
-          returnKeyType="next"
-        />
-      </View>
+        <FormRow label="Bairro">
+          <TextInput
+            style={styles.rowInput}
+            placeholder="Bairro"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={neighborhood}
+            onChangeText={setNeighborhood}
+            returnKeyType="next"
+          />
+        </FormRow>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>CEP</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="00000-000"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={zipCode}
-          onChangeText={(text) => setZipCode(maskCepInput(text))}
-          keyboardType="number-pad"
-          returnKeyType="next"
-        />
-      </View>
+        <FormRow label="CEP">
+          <TextInput
+            style={[styles.rowInput, styles.rowInputNumeric]}
+            placeholder="00000-000"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={zipCode}
+            onChangeText={(text) => setZipCode(maskCepInput(text))}
+            keyboardType="number-pad"
+            returnKeyType="next"
+          />
+        </FormRow>
+      </FormSection>
 
       {showCategoryField ? (
-        <View style={styles.field}>
-          <Text style={styles.label}>CATEGORIAS</Text>
-          <Text style={styles.hint}>Linhas de produto atendidas nesta loja.</Text>
+        <FormSection
+          title="Categorias"
+          footer="Linhas de produto atendidas nesta loja."
+          variant="plain"
+        >
           {loadingCategories ? (
             <ActivityIndicator size="small" color={COLORS.primary} style={styles.catLoading} />
           ) : (
@@ -375,83 +393,80 @@ export default function EditClientScreen() {
               onChange={setCategoryIds}
             />
           )}
-        </View>
+        </FormSection>
       ) : null}
 
-      <View style={styles.field}>
-        <Text style={styles.label}>TELEFONE</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="(86) 99999-9999"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={phone}
-          onChangeText={setPhone}
-          keyboardType="phone-pad"
-          returnKeyType="next"
-        />
-      </View>
+      <FormSection title="Contato">
+        <FormRow label="Telefone" first>
+          <TextInput
+            style={[styles.rowInput, styles.rowInputNumeric]}
+            placeholder="(86) 3000-0000"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={phone}
+            onChangeText={setPhone}
+            keyboardType="phone-pad"
+            returnKeyType="next"
+          />
+        </FormRow>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>CELULAR</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="(86) 99999-9999"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={mobile}
-          onChangeText={(text) => setMobile(maskPhoneInput(text))}
-          keyboardType="phone-pad"
-          maxLength={15}
-          returnKeyType="next"
-        />
-      </View>
+        <FormRow label="Celular">
+          <TextInput
+            style={[styles.rowInput, styles.rowInputNumeric]}
+            placeholder="(86) 99999-9999"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={mobile}
+            onChangeText={setMobile}
+            keyboardType="phone-pad"
+            returnKeyType="next"
+          />
+        </FormRow>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>EMAIL</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="contato@loja.com.br"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={email}
-          onChangeText={setEmail}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="next"
-        />
-      </View>
+        <FormRow label="Email">
+          <TextInput
+            style={styles.rowInput}
+            placeholder="contato@loja.com.br"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="next"
+          />
+        </FormRow>
+      </FormSection>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>INSTAGRAM</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="@usuario"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={instagram}
-          onChangeText={setInstagram}
-          autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="next"
-        />
-      </View>
+      <FormSection title="Redes sociais">
+        <FormRow label="Instagram" first>
+          <TextInput
+            style={styles.rowInput}
+            placeholder="@usuario"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={instagram}
+            onChangeText={setInstagram}
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="next"
+          />
+        </FormRow>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>FACEBOOK</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="facebook.com/loja"
-          placeholderTextColor={COLORS.textPlaceholder}
-          value={facebook}
-          onChangeText={setFacebook}
-          autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="next"
-        />
-      </View>
+        <FormRow label="Facebook">
+          <TextInput
+            style={styles.rowInput}
+            placeholder="facebook.com/loja"
+            placeholderTextColor={COLORS.textPlaceholder}
+            value={facebook}
+            onChangeText={setFacebook}
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="next"
+          />
+        </FormRow>
+      </FormSection>
 
-      <View style={styles.field}>
-        <Text style={styles.label}>OBSERVAÇÕES</Text>
+      <FormSection title="Observações" variant="plain">
         <TextInput
-          style={[styles.input, styles.inputMultiline]}
+          style={styles.notesInput}
           placeholder="Horário, contato na loja, referências..."
           placeholderTextColor={COLORS.textPlaceholder}
           value={notes}
@@ -461,12 +476,36 @@ export default function EditClientScreen() {
           textAlignVertical="top"
           returnKeyType="done"
         />
-      </View>
+      </FormSection>
     </FormScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  // No painel do desktop estas telas tambem flutuam sobre o mapa: fundo opaco
+  // cobriria o vidro durante a transicao.
+  containerDesktop: {
+    backgroundColor: 'transparent',
+  },
+  rowInput: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.lg,
+    paddingVertical: 0,
+    textAlign: 'right',
+  },
+  rowInputNumeric: {
+    ...FONTS.tabular,
+  },
+  cityControl: {
+    gap: SPACING.sm,
+  },
+  notesInput: {
+    minHeight: 88,
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.lg,
+    padding: 0,
+    textAlignVertical: 'top',
+  },
   center: {
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
@@ -495,35 +534,6 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontSize: FONTS.sizes.sm,
     fontWeight: '600',
-  },
-  field: { gap: SPACING.sm },
-  label: {
-    color: COLORS.textMuted,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    letterSpacing: 0.6,
-  },
-  hint: {
-    color: COLORS.textPlaceholder,
-    fontSize: FONTS.sizes.xs,
-    marginBottom: 2,
-  },
-  input: {
-    backgroundColor: COLORS.surface,
-    borderRadius: RADIUS.lg,
-    paddingHorizontal: SPACING.lg,
-    paddingVertical: SPACING.md,
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.md,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
-  },
-  inputSelected: {
-    borderColor: COLORS.primary,
-  },
-  inputMultiline: {
-    minHeight: 80,
-    paddingTop: SPACING.md,
   },
   cityBadge: {
     flexDirection: 'row',

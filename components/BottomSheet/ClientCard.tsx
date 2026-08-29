@@ -1,14 +1,14 @@
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { Client } from '../../types';
 import { COLORS, FONTS, RADIUS, SPACING } from '../../constants/colors';
-import { useRouter } from 'expo-router';
-import { CategoryPillRow } from '../CategoryPill';
+import { usePanelNav } from '../../hooks/usePanelNav';
 import { labelsFromCategoryIds } from '../../constants/categoryPills';
 import { PurchaseChip } from '../PurchaseChip';
 import { formatBRL } from '../../utils/money';
-import { displayClientName } from '../../utils/clientName';
+import { clientInitials, displayClientName } from '../../utils/clientName';
+import { getAvatarColor } from '../../utils/avatarColor';
+import ClientDetailScreen from '../../app/client/[id]';
 
 type Props = {
   client: Client;
@@ -36,9 +36,10 @@ export function ClientCard({
   closed = false,
   saleAmount,
 }: Props) {
-  const router = useRouter();
-  const { labels, slugs } = labelsFromCategoryIds(client.categoryIds);
+  const nav = usePanelNav();
+  const { labels } = labelsFromCategoryIds(client.categoryIds);
   const name = displayClientName(client);
+  const subtitle = showCategoryBadges ? labels.join(', ') : '';
 
   return (
     <TouchableOpacity
@@ -49,36 +50,42 @@ export function ClientCard({
         index > 0 && styles.containerBorder,
         highlighted && styles.containerHighlighted,
       ]}
-      onPress={() => router.push(`/client/${client.id}`)}
+      onPress={() =>
+        nav.open(`client-${client.id}`, <ClientDetailScreen id={client.id} />, `/client/${client.id}`)
+      }
       activeOpacity={0.7}
     >
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{name.charAt(0).toUpperCase()}</Text>
+      <View style={[styles.avatar, { backgroundColor: getAvatarColor(client.id) }]}>
+        <Text style={styles.avatarText}>{clientInitials(name)}</Text>
       </View>
 
+      {/*
+        Título e uma linha de apoio, como na lista de clientes: o telefone é
+        ação e mora na tela do cliente, não numa linha de lista.
+      */}
       <View style={styles.body}>
         <Text style={styles.name} numberOfLines={1}>{name}</Text>
-        {showCategoryBadges && labels.length > 0 ? (
-          <CategoryPillRow labels={labels} slugs={slugs} />
-        ) : null}
-        {client.phone ? (
-          <View style={styles.phoneRow}>
-            <Ionicons name="call-outline" size={12} color={COLORS.textMuted} />
-            <Text style={styles.phone} numberOfLines={1}>{client.phone}</Text>
-          </View>
+        {subtitle ? (
+          <Text style={styles.subtitle} numberOfLines={1}>{subtitle}</Text>
         ) : null}
       </View>
 
+      {/*
+        O valor fica em cima e o estado embaixo, alinhados à direita: a coluna
+        de reais é o que se compara de relance, e o chip de compra é o controle
+        que se toca. Sem chevron — a linha inteira já abre o cliente, e o
+        chevron competia com o alvo do chip.
+      */}
       <View style={styles.actions}>
-        {collectionId &&
-          (closed
-            ? saleAmount != null && (
-                <View style={styles.saleAmountChip}>
-                  <Text style={styles.saleAmountText}>{formatBRL(saleAmount)}</Text>
-                </View>
-              )
-            : <PurchaseChip purchased={purchased} onPress={onToggle} />)}
-        <Ionicons name="chevron-forward" size={16} color={COLORS.textMuted} />
+        {saleAmount != null && saleAmount > 0 ? (
+          <Text style={styles.saleAmountText}>{formatBRL(saleAmount)}</Text>
+        ) : null}
+        {collectionId && !closed ? (
+          <PurchaseChip purchased={purchased} onPress={onToggle} />
+        ) : null}
+        {collectionId && closed && (saleAmount == null || saleAmount === 0) ? (
+          <Text style={styles.closedText}>Fechada</Text>
+        ) : null}
       </View>
     </TouchableOpacity>
   );
@@ -113,51 +120,42 @@ const styles = StyleSheet.create({
   containerHighlighted: {
     backgroundColor: COLORS.primaryBg,
   },
+  avatarText: {
+    color: '#FFFFFF',
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '600',
+  },
   avatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.primaryBg,
+    backgroundColor: COLORS.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  avatarText: {
-    color: COLORS.primary,
-    fontSize: FONTS.sizes.md,
-    fontWeight: '700',
-  },
   body: { flex: 1, gap: 4 },
+  subtitle: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.md,
+  },
   name: {
     color: COLORS.textPrimary,
     fontSize: FONTS.sizes.md,
     fontWeight: '600',
   },
-  phoneRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
-  },
-  phone: {
-    color: COLORS.textSecondary,
-    fontSize: FONTS.sizes.sm,
-    flex: 1,
-  },
   actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
+    alignItems: 'flex-end',
+    gap: 3,
     flexShrink: 0,
   },
-  saleAmountChip: {
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 5,
-    borderRadius: RADIUS.sm,
-    backgroundColor: COLORS.successBg,
-  },
   saleAmountText: {
-    fontSize: FONTS.sizes.xs,
+    ...FONTS.tabular,
+    fontSize: FONTS.sizes.md,
     fontWeight: '600',
-    color: COLORS.success,
+    color: COLORS.textPrimary,
+  },
+  closedText: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
   },
 });

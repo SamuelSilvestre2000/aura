@@ -235,6 +235,28 @@ async function initDatabase(database: SQLite.SQLiteDatabase): Promise<void> {
       created_at TEXT NOT NULL,
       UNIQUE(client_id, user_id, assignment_type)
     );
+
+    -- Cidades sem economia para comportar a marca. Espelha
+    -- supabase/migrations/010: escopo por organização + marca, não por usuário.
+    CREATE TABLE IF NOT EXISTS city_exclusions (
+      id TEXT PRIMARY KEY,
+      organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      brand_id TEXT REFERENCES brands(id) ON DELETE CASCADE,
+      city_code TEXT NOT NULL,
+      note TEXT,
+      created_at TEXT NOT NULL,
+      created_by TEXT REFERENCES users(id) ON DELETE SET NULL
+    );
+
+    -- No SQLite, como no Postgres, UNIQUE trata NULL como sempre distinto:
+    -- sem os dois índices parciais a mesma cidade entraria várias vezes.
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_city_exclusions_org_brand_city
+      ON city_exclusions (organization_id, brand_id, city_code)
+      WHERE brand_id IS NOT NULL;
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_city_exclusions_org_city_no_brand
+      ON city_exclusions (organization_id, city_code)
+      WHERE brand_id IS NULL;
   `);
 
   await migrateUsersTable(database);
@@ -260,6 +282,7 @@ async function initDatabase(database: SQLite.SQLiteDatabase): Promise<void> {
   await migrateSalesV1(database);
   await migrateCollectionCategoryV1(database);
   await migrateCollectionVigenteV1(database);
+  await migrateCollectionTypeV1(database);
   await migrateRepScopeFromUserCategories(database);
 
   const count = await database.getFirstAsync<{ count: number }>(
@@ -447,6 +470,61 @@ async function migrateCollectionCategoryV1(database: SQLite.SQLiteDatabase): Pro
 
 async function migrateCollectionVigenteV1(database: SQLite.SQLiteDatabase): Promise<void> {
   await addColumnIfMissing(database, 'collections', 'is_vigente', 'INTEGER NOT NULL DEFAULT 0');
+}
+
+/** Tipo/temporada da coleção (Alto Verão, Outono/Inverno, Primavera, ...). */
+async function migrateCollectionTypeV1(database: SQLite.SQLiteDatabase): Promise<void> {
+  const migrated = await database.getFirstAsync<{ value: string }>(
+    "SELECT value FROM app_meta WHERE key = 'collection_type_v1'"
+  );
+  if (migrated?.value === '1') return;
+
+  await database.execAsync(`
+    CREATE TABLE IF NOT EXISTS collection_types (
+      id TEXT PRIMARY KEY,
+      organization_id TEXT REFERENCES organizations(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      slug TEXT NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      UNIQUE(organization_id, slug)
+    );
+  `);
+
+  await addColumnIfMissing(database, 'collections', 'collection_type_id', 'TEXT');
+
+  const now = new Date().toISOString();
+  const seedTypes: Array<[id: string, name: string, slug: string, sortOrder: number]> = [
+    ['ctype_outono_inverno', 'Outono/Inverno', 'outono-inverno', 0],
+    ['ctype_alto_verao', 'Alto Verão', 'alto-verao', 1],
+    ['ctype_primavera', 'Primavera', 'primavera', 2],
+  ];
+  for (const [id, name, slug, sortOrder] of seedTypes) {
+    await database.runAsync(
+      `INSERT OR IGNORE INTO collection_types (id, organization_id, name, slug, sort_order, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [id, DEFAULT_ORG_ID, name, slug, sortOrder, now]
+    );
+  }
+
+  // Backfill best-effort das coleções já existentes; nomes que não batem com
+  // nenhum padrão ficam sem tipo (sem tela de edição de coleção hoje).
+  await database.runAsync(
+    `UPDATE collections SET collection_type_id = 'ctype_alto_verao'
+     WHERE collection_type_id IS NULL AND name LIKE '%alto ver%o%'`
+  );
+  await database.runAsync(
+    `UPDATE collections SET collection_type_id = 'ctype_outono_inverno'
+     WHERE collection_type_id IS NULL AND (name LIKE '%outono%' OR name LIKE '%inverno%')`
+  );
+  await database.runAsync(
+    `UPDATE collections SET collection_type_id = 'ctype_primavera'
+     WHERE collection_type_id IS NULL AND name LIKE '%primavera%'`
+  );
+
+  await database.runAsync(
+    "INSERT OR REPLACE INTO app_meta (key, value) VALUES ('collection_type_v1', '1')"
+  );
 }
 
 async function migrateRepScopeFromUserCategories(

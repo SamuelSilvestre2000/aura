@@ -10,9 +10,11 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, SPACING } from '../constants/colors';
 import { getScreenTopInset } from '../utils/safeArea';
+import { useIsDesktop } from '../hooks/useIsDesktop';
 import { NotionHeader } from './NotionHeader';
 import { HeaderBackButton } from './HeaderBackButton';
 import { PullToRefresh } from './PullToRefresh';
+import { useScreenTopInset } from '../hooks/useScreenTopInset';
 
 type Props = {
   title: string;
@@ -35,6 +37,12 @@ export function FormScreen({
   refreshing = false,
 }: Props) {
   const insets = useSafeAreaInsets();
+  const isDesktop = useIsDesktop();
+  /**
+   * Mesma regra de todas as telas: dentro do painel do desktop a moldura do
+   * painel já é a margem; no mobile isto é página cheia, sem barra por cima.
+   */
+  const headerTopInset = useScreenTopInset('modal');
 
   const scrollView = (
     <ScrollView
@@ -47,8 +55,8 @@ export function FormScreen({
   );
 
   return (
-    <View style={styles.container}>
-      <View style={{ paddingTop: getScreenTopInset(insets) }}>
+    <View style={[styles.container, isDesktop && styles.containerDesktop]}>
+      <View style={{ paddingTop: headerTopInset }}>
         <NotionHeader
           title={title}
           showBorder
@@ -76,6 +84,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.backgroundSubtle,
+  },
+  // No painel flutuante do desktop, deixa o vidro do painel (DesktopSidePanel)
+  // aparecer em vez de cobrir tudo com fundo opaco. Totalmente transparente
+  // (não translúcido) — empilhar duas camadas translúcidas soma opacidade.
+  containerDesktop: {
+    backgroundColor: 'transparent',
   },
   flex: { flex: 1 },
   content: {

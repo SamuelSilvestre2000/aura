@@ -23,7 +23,7 @@ export function DateField({ label, value, onChange, minimumDate, maximumDate, re
     <View style={styles.field}>
       <Text style={styles.label}>
         {label}
-        {required && <Text style={styles.required}> *</Text>}
+        {required ? <Text style={styles.required}> · obrigatório</Text> : null}
       </Text>
       {React.createElement('input', {
         type: 'date',
@@ -58,12 +58,12 @@ const inputStyle: React.CSSProperties = {
 const styles = StyleSheet.create({
   field: { gap: SPACING.sm },
   label: {
-    color: COLORS.textPrimary,
-    fontSize: FONTS.sizes.xs,
-    fontWeight: '600',
-    letterSpacing: 0.4,
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
+    fontWeight: '500',
   },
   required: {
-    color: COLORS.error,
+    color: COLORS.textMuted,
+    fontSize: FONTS.sizes.sm,
   },
 });
