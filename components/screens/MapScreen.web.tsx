@@ -8,6 +8,25 @@ import { MapContainer, TileLayer, Polygon, CircleMarker, useMap } from 'react-le
 import type { Map as LeafletMapInstance } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
+/*
+  Dessatura os tiles no proprio navegador, em vez de depender de um basemap
+  claro de terceiros. O filtro roda na GPU e nao custa requisicao nem chave.
+  A opacidade fica no filtro e nao no elemento: opacity no container faria os
+  poligonos de status desbotarem junto.
+*/
+const TILE_FILTER_CSS = `
+  .aura-map-tiles {
+    filter: saturate(0.35) brightness(1.06) contrast(0.92);
+  }
+`;
+
+if (typeof document !== 'undefined' && !document.getElementById('aura-map-tiles-style')) {
+  const style = document.createElement('style');
+  style.id = 'aura-map-tiles-style';
+  style.textContent = TILE_FILTER_CSS;
+  document.head.appendChild(style);
+}
+
 import { getScreenBottomInset, PANEL_TOP_INSET } from '../../utils/safeArea';
 import { getTopBarInset, TOP_BAR_CONTENT_HEIGHT } from '../TopTabBar';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
@@ -585,15 +604,19 @@ export default function MapScreenWeb() {
             style={{ width: '100%', height: '100%' }}
           >
             {/*
-              Basemap claro e dessaturado: o dado desta tela sao os poligonos de
-              status, e o tile padrao do OSM (verdes e beges saturados) disputa
-              atencao com eles. Servico externo de uso justo, atribuicao abaixo.
+              O dado desta tela sao os poligonos de status, e o tile padrao do
+              OSM (verdes e beges saturados) disputa atencao com eles. A
+              dessaturacao acontece no navegador, por CSS — ver TILE_FILTER_CSS.
+
+              Ja foi um basemap claro da CARTO, trocado de volta porque o
+              servico passou a exigir chave e carimba "API KEY REQUIRED" sobre
+              os proprios tiles. O OSM nao pede chave.
             */}
             <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-              subdomains={['a', 'b', 'c', 'd']}
-              maxZoom={20}
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+              className="aura-map-tiles"
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              maxZoom={19}
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
             {hasCities &&
               filteredCities.map((city) => {
