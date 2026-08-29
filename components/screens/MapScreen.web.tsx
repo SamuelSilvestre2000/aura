@@ -37,7 +37,7 @@ if (typeof document !== 'undefined' && !document.getElementById('aura-map-tiles-
   document.head.appendChild(style);
 }
 
-import { PANEL_TOP_INSET } from '../../utils/safeArea';
+import { getScreenTopInset, PANEL_TOP_INSET } from '../../utils/safeArea';
 import { getTopBarInset, TOP_BAR_CONTENT_HEIGHT } from '../TopTabBar';
 import { useGeoJSON } from '../../hooks/useGeoJSON';
 import { useClients } from '../../hooks/useClients';
@@ -411,7 +411,12 @@ export default function MapScreenWeb() {
     }
   }, [refreshingMap, refreshClients, refreshCollections, refreshPurchases, refreshCities, effectiveFilter]);
 
-  const headerTop = getTopBarInset(insets);
+  /*
+    No desktop a TopTabBar ocupa o topo e precisa ser reservada. No celular ela
+    nao existe — quem navega e a dock —, entao reservar os 44px dela empurrava a
+    busca para baixo sem motivo. Mesmo ajuste que o MapScreen nativo ja tinha.
+  */
+  const headerTop = isDesktop ? getTopBarInset(insets) : getScreenTopInset(insets, 4);
   const tabBarOffset = getTabBarBottomInset(insets, SPACING.sm);
 
   /**
