@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, FlatList } from 'react-native';
+import { FlatList, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { CityGeoData, Client, CityStatus, Collection, Sale } from '../../types';
 import {
@@ -12,6 +12,7 @@ import {
   RADIUS,
   SPACING,
 } from '../../constants/colors';
+import { useCityExclusions } from '../../hooks/useCityExclusions';
 import { PANEL_TOP_INSET } from '../../utils/safeArea';
 import { isCollectionClosed } from '../../utils/collectionStatus';
 import { formatBRL } from '../../utils/money';
@@ -89,6 +90,9 @@ export function CityDetailsPanel({
    * tem o nome como assunto. Fechar é o X circular no canto, e a ação de
    * criar desceu para o fim da lista, junto do conteúdo que ela cria.
    */
+  const { isCityExcluded, setCityExcluded } = useCityExclusions();
+  const excluded = selectedCity ? isCityExcluded(selectedCity.code) : false;
+
   const renderHeader = useCallback(() => {
     if (!selectedCity) return null;
     return (
@@ -100,6 +104,19 @@ export function CityDetailsPanel({
             </Text>
             <Text style={styles.subtitle}>Piauí · {countLabel}</Text>
           </View>
+          {canManageClients ? (
+            <TouchableOpacity
+              onPress={onAddClient}
+              style={styles.addButton}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel={`Novo cliente em ${selectedCity.name}`}
+            >
+              <View style={styles.addCircle}>
+                <Ionicons name="add" size={22} color={COLORS.primary} />
+              </View>
+            </TouchableOpacity>
+          ) : null}
           <TouchableOpacity
             onPress={onClose}
             style={styles.closeButton}
@@ -158,6 +175,31 @@ export function CityDetailsPanel({
           </View>
         ) : null}
 
+        {/*
+          A cidade pode simplesmente não comportar a marca: sem economia local,
+          não há lojista para vender. Sem declarar isso, ela fica vermelha no
+          mapa como qualquer cidade sem venda, e o mapa passa a cobrar uma
+          venda que não existe para ser feita.
+        */}
+        {canManageClients ? (
+          <View style={styles.viabilityRow}>
+            <View style={styles.viabilityInfo}>
+              <Text style={styles.viabilityTitle}>Cidade sem praça para a marca</Text>
+              <Text style={styles.viabilitySubtitle}>
+                {excluded
+                  ? 'Aparece esmaecida no mapa, fora da cobrança de vendas'
+                  : 'Marque se a cidade não tem economia para uma loja da marca'}
+              </Text>
+            </View>
+            <Switch
+              value={excluded}
+              onValueChange={(next) => void setCityExcluded(selectedCity.code, next)}
+              trackColor={{ false: COLORS.surfaceBorderStrong, true: COLORS.textMuted }}
+              thumbColor="#fff"
+            />
+          </View>
+        ) : null}
+
         {clients.length > 0 ? <Text style={styles.sectionLabel}>Clientes</Text> : null}
       </View>
     );
@@ -168,25 +210,16 @@ export function CityDetailsPanel({
     statusIcon,
     countLabel,
     onClose,
+    canManageClients,
+    onAddClient,
+    excluded,
+    setCityExcluded,
     activeCollection,
     collectionEndLabel,
     boughtCount,
     totalSold,
     clients.length,
   ]);
-
-  /** A ação de criar fecha a lista, como a última linha de uma lista do sistema. */
-  const renderFooter = useCallback(() => {
-    if (!canManageClients || clients.length === 0) return null;
-    return (
-      <TouchableOpacity style={styles.addCard} onPress={onAddClient} activeOpacity={0.7}>
-        <View style={styles.addIcon}>
-          <Ionicons name="add" size={17} color={COLORS.primary} />
-        </View>
-        <Text style={styles.addCardText}>Novo cliente em {selectedCity?.name}</Text>
-      </TouchableOpacity>
-    );
-  }, [canManageClients, clients.length, onAddClient, selectedCity?.name]);
 
   const renderEmpty = useCallback(() => {
     if (clients.length > 0) return null;
@@ -248,7 +281,6 @@ export function CityDetailsPanel({
       keyExtractor={(item) => item.id}
       renderItem={renderItem}
       ListHeaderComponent={renderHeader}
-      ListFooterComponent={renderFooter}
       ListEmptyComponent={renderEmpty}
       contentContainerStyle={styles.listContent}
       showsVerticalScrollIndicator={false}
@@ -281,6 +313,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   closeCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: COLORS.fill,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addButton: {
+    minWidth: HIT_TARGET,
+    minHeight: HIT_TARGET,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+  },
+  addCircle: {
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -376,32 +422,25 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: COLORS.fillStrong,
   },
-  addCard: {
+  statusText: { fontSize: FONTS.sizes.md, fontWeight: '600' },
+  // Cabeçalho de seção da lista, no mesmo estilo das outras telas.
+  viabilityRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.md,
-    minHeight: HIT_TARGET + 16,
-    marginTop: SPACING.md,
-    paddingHorizontal: SPACING.lg,
-    borderRadius: RADIUS.lg,
-    backgroundColor: COLORS.surface,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: COLORS.surfaceBorder,
+    paddingVertical: SPACING.md,
   },
-  addIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.fill,
-    alignItems: 'center',
-    justifyContent: 'center',
+  viabilityInfo: { flex: 1 },
+  viabilityTitle: {
+    color: COLORS.textPrimary,
+    fontSize: FONTS.sizes.md,
+    fontWeight: '500',
   },
-  addCardText: {
-    color: COLORS.primary,
-    fontSize: FONTS.sizes.lg,
+  viabilitySubtitle: {
+    color: COLORS.textSecondary,
+    fontSize: FONTS.sizes.sm,
+    marginTop: 2,
   },
-  statusText: { fontSize: FONTS.sizes.md, fontWeight: '600' },
-  // Cabeçalho de seção da lista, no mesmo estilo das outras telas.
   sectionLabel: {
     ...FONTS.text.sectionHeader,
     color: COLORS.textSecondary,

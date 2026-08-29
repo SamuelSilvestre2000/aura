@@ -1,14 +1,16 @@
 import React, { useRef, useState, useCallback, useMemo, useEffect } from 'react';
 import {
+  ActivityIndicator,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StatusBar,
   StyleSheet,
-  View,
   Text,
   TouchableOpacity,
-  ActivityIndicator,
-  Platform,
-  StatusBar,
-  Modal,
-  Pressable,
+  View,
+  useWindowDimensions,
 } from 'react-native';
 import MapView, { PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import BottomSheet from '@gorhom/bottom-sheet';
@@ -22,6 +24,7 @@ import { useClients } from '../../hooks/useClients';
 import { useCollections } from '../../hooks/useCollections';
 import { usePurchases } from '../../hooks/usePurchases';
 import { useCityStatus } from '../../hooks/useCityStatus';
+import { useCityExclusions } from '../../hooks/useCityExclusions';
 import { useMapTheme } from '../../hooks/useMapTheme';
 import { useAuth } from '../../hooks/useAuth';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
@@ -30,7 +33,7 @@ import {
   filterCollectionsByCategory,
 } from '../../utils/categoryFilter';
 import { isCollectionClosed } from '../../utils/collectionStatus';
-import { getScreenBottomInset } from '../../utils/safeArea';
+import { useKeyboardOverlap } from '../../hooks/useKeyboardOverlap';
 import { getVigenteCollectionId } from '../../utils/collectionVigente';
 import { CategoryPickerPill } from '../CategoryPickerPill';
 
@@ -42,9 +45,13 @@ import { CitySheet } from '../BottomSheet/CitySheet';
 import { Ionicons } from '@expo/vector-icons';
 
 import { CityGeoData } from '../../types';
-import { COLORS,
-  MATERIALS,
-  HIT_TARGET, FONTS, RADIUS, SPACING } from '../../constants/colors';
+import {
+  COLORS,
+  HIT_TARGET,
+  FONTS,
+  RADIUS,
+  SPACING,
+} from '../../constants/colors';
 import { clientInitials, displayClientName } from '../../utils/clientName';
 import { getAvatarColor } from '../../utils/avatarColor';
 import { DARK_MAP_STYLE, LIGHT_MAP_STYLE } from '../../constants/mapStyles';
@@ -73,7 +80,8 @@ export default function MapScreen() {
   const [selectedCollectionId, setSelectedCollectionId] = useState<string | null>(null);
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
   const [topUIHeight, setTopUIHeight] = useState(0);
-  const [bottomUIHeight, setBottomUIHeight] = useState(0);
+  /** Altura da barra de busca: é dela para baixo que os resultados crescem. */
+  const [searchBarHeight, setSearchBarHeight] = useState(0);
   const [refreshingMap, setRefreshingMap] = useState(false);
   const didInitialLocate = useRef(false);
   const mapRegionRef = useRef<Region>(DEFAULT_MAP_REGION);
@@ -154,6 +162,7 @@ export default function MapScreen() {
   const activeCollection = visibleCollections.find((c) => c.id === activeCollectionId) || null;
 
   const { getCityStatus } = useCityStatus(filteredClients, purchases, activeCollectionId);
+  const { isCityExcluded } = useCityExclusions();
 
   const searchQuery = search.trim().toLowerCase();
 
@@ -410,6 +419,17 @@ export default function MapScreen() {
 
   const handleSearchClear = useCallback(() => setSearch(''), []);
 
+  /**
+   * Buscar é trocar de contexto: a folha da cidade que estava aberta sai da
+   * frente, senão os resultados nascem por cima de um painel que ninguém mais
+   * está lendo.
+   */
+  const handleSearchFocus = useCallback(() => {
+    bottomSheetRef.current?.close();
+    setSelectedCity(null);
+    setHighlightedClientId(null);
+  }, []);
+
   const citySheetTopInset = topUIHeight ? topUIHeight + SPACING.lg : 0;
 
   if (geoError && cities.length === 0) {
@@ -433,12 +453,23 @@ export default function MapScreen() {
    * existe mais, e que empurrava a busca para baixo.
    */
   const headerTop = insets.top + 4;
-  const bottomOffset = getScreenBottomInset(insets, SPACING.sm);
   /**
    * A dock flutua sobre o mapa: sem reservar a altura dela, os controles ficam
-   * por baixo. bottomUIHeight sozinho so conhecia o que o proprio mapa desenha.
+   * por baixo.
    */
+  const { height: windowHeight } = useWindowDimensions();
+  const keyboardOverlap = useKeyboardOverlap();
   const tabBarOffset = getTabBarBottomInset(insets, SPACING.sm);
+
+  /**
+   * Os resultados vão da busca até a dock, sem passar por baixo dela nem do
+   * teclado. Com o teclado aberto é ele o limite; fechado, é a dock. O
+   * `keyboardOverlap` é 0 no Android, onde a janela já encolhe sozinha.
+   */
+  const resultsMaxHeight = Math.max(
+    120,
+    windowHeight - (headerTop + searchBarHeight + 6) - Math.max(keyboardOverlap, tabBarOffset) - SPACING.md
+  );
   const mapCustomStyle = mapTheme === 'dark' ? DARK_MAP_STYLE : LIGHT_MAP_STYLE;
 
   return (
@@ -478,6 +509,7 @@ export default function MapScreen() {
                   key={city.code}
                   city={city}
                   status={getCityStatus(city.code)}
+                  excluded={isCityExcluded(city.code)}
                   onPress={handleCityPress}
                 />
               ))}
@@ -508,7 +540,10 @@ export default function MapScreen() {
             Busca no topo, como em produção: é o primeiro alcance da tela e
             carrega o atalho da conta. Os filtros do mapa vêm logo abaixo.
           */}
-          <View style={styles.searchContainer}>
+          <View
+            style={styles.searchContainer}
+            onLayout={(e) => setSearchBarHeight(e.nativeEvent.layout.height)}
+          >
             <SearchBar
               variant="map"
               value={search}
@@ -518,88 +553,14 @@ export default function MapScreen() {
               onProfilePress={() => router.push('/(tabs)/settings')}
               profileInitial={user?.name.charAt(0).toUpperCase()}
               profileImageUri={user?.photoUri}
+              onFocus={handleSearchFocus}
             />
-          </View>
-
-          {activeCollection && (
-            <View style={styles.collectionContainer}>
-              <View style={styles.pillRow}>
-                {visibleCollections.length > 1 ? (
-                  <TouchableOpacity
-                    style={styles.collectionPill}
-                    onPress={() => setShowCollectionPicker(true)}
-                    activeOpacity={0.75}
-                  >
-                    <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
-                    <Text style={styles.collectionPillText} numberOfLines={1}>
-                      {activeCollection.name}
-                    </Text>
-                    <Ionicons name="chevron-down" size={13} color={COLORS.textMuted} />
-                  </TouchableOpacity>
-                ) : (
-                  <View style={styles.collectionPill}>
-                    <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
-                    <Text style={styles.collectionPillText} numberOfLines={1}>
-                      {activeCollection.name}
-                    </Text>
-                  </View>
-                )}
-
-                <CategoryPickerPill
-                  categories={userCategories}
-                  value={categoryFilter}
-                  onChange={setCategoryFilter}
-                />
-              </View>
-            </View>
-          )}
-        </View>
-
-        {!selectedCity && (
-          <View
-            style={[styles.bottomControls, { paddingBottom: tabBarOffset + bottomUIHeight }]}
-            pointerEvents="box-none"
-          >
-            <TouchableOpacity
-              style={styles.mapActionBtn}
-              onPress={handleCenterMap}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="Centralizar no mapa"
-            >
-              <Ionicons name="navigate" size={20} color={COLORS.primary} />
-            </TouchableOpacity>
-
-            {/* Atualizar é ação de dados: separado do controle de mapa. */}
-            <TouchableOpacity
-              style={[styles.mapActionBtn, styles.mapActionBtnDetached]}
-              onPress={handleRefreshMap}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel="Atualizar dados"
-            >
-              {refreshingMap ? (
-                <ActivityIndicator size="small" color={COLORS.primary} />
-              ) : (
-                <Ionicons name="refresh" size={20} color={COLORS.primary} />
-              )}
-            </TouchableOpacity>
-            {/* {canManageClients && (
-              <TouchableOpacity style={styles.mapActionBtn} onPress={() => openNewClient()} activeOpacity={0.7}>
-                <Ionicons name="add" size={22} color={COLORS.primary} />
-              </TouchableOpacity>
-            )} */}
-          </View>
-        )}
-
-        <View
-          style={[styles.bottomSearchWrapper, { paddingBottom: bottomOffset }]}
-          pointerEvents="box-none"
-          onLayout={(e) => setBottomUIHeight(e.nativeEvent.layout.height)}
-        >
-          <View style={styles.searchAnchor}>
             {showSearchResults && (
-              <View style={styles.searchResults}>
+              <ScrollView
+                style={[styles.searchResults, { maxHeight: resultsMaxHeight }]}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
                 {citySearchResults.length === 0 && clientSearchResults.length === 0 ? (
                   <Text style={styles.searchResultsEmpty}>Nenhum resultado encontrado</Text>
                 ) : (
@@ -658,11 +619,81 @@ export default function MapScreen() {
                     )}
                   </>
                 )}
-              </View>
+              </ScrollView>
             )}
-
           </View>
+
+          {activeCollection && (
+            <View style={styles.collectionContainer}>
+              <View style={styles.pillRow}>
+                {visibleCollections.length > 1 ? (
+                  <TouchableOpacity
+                    style={styles.collectionPill}
+                    onPress={() => setShowCollectionPicker(true)}
+                    activeOpacity={0.75}
+                  >
+                    <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
+                    <Text style={styles.collectionPillText} numberOfLines={1}>
+                      {activeCollection.name}
+                    </Text>
+                    <Ionicons name="chevron-down" size={13} color={COLORS.textMuted} />
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.collectionPill}>
+                    <Ionicons name="albums-outline" size={14} color={COLORS.primary} />
+                    <Text style={styles.collectionPillText} numberOfLines={1}>
+                      {activeCollection.name}
+                    </Text>
+                  </View>
+                )}
+
+                <CategoryPickerPill
+                  categories={userCategories}
+                  value={categoryFilter}
+                  onChange={setCategoryFilter}
+                />
+              </View>
+            </View>
+          )}
         </View>
+
+        {!selectedCity && (
+          <View
+            style={[styles.bottomControls, { paddingBottom: tabBarOffset }]}
+            pointerEvents="box-none"
+          >
+            <TouchableOpacity
+              style={styles.mapActionBtn}
+              onPress={handleCenterMap}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Centralizar no mapa"
+            >
+              <Ionicons name="navigate" size={20} color={COLORS.primary} />
+            </TouchableOpacity>
+
+            {/* Atualizar é ação de dados: separado do controle de mapa. */}
+            <TouchableOpacity
+              style={[styles.mapActionBtn, styles.mapActionBtnDetached]}
+              onPress={handleRefreshMap}
+              activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Atualizar dados"
+            >
+              {refreshingMap ? (
+                <ActivityIndicator size="small" color={COLORS.primary} />
+              ) : (
+                <Ionicons name="refresh" size={20} color={COLORS.primary} />
+              )}
+            </TouchableOpacity>
+            {/* {canManageClients && (
+              <TouchableOpacity style={styles.mapActionBtn} onPress={() => openNewClient()} activeOpacity={0.7}>
+                <Ionicons name="add" size={22} color={COLORS.primary} />
+              </TouchableOpacity>
+            )} */}
+          </View>
+        )}
+
 
         {/* Modal seleção de coleção */}
         <Modal
@@ -746,6 +777,10 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     marginHorizontal: SPACING.md,
+    // Âncora dos resultados. O zIndex é necessário porque as pills de filtro são
+    // irmãs posteriores no topUI, e no React Native o irmão posterior pinta em
+    // cima — sem isto o dropdown nasceria atrás delas.
+    zIndex: 30,
   },
   topUI: {
     position: 'absolute',
@@ -754,30 +789,17 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 10,
   },
-  bottomSearchWrapper: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 12,
-    paddingTop: SPACING.sm,
-    zIndex: 10,
-  },
-  searchAnchor: {
-    position: 'relative',
-  },
   searchResults: {
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: '100%',
-    marginBottom: 6,
+    top: '100%',
+    marginTop: 6,
     backgroundColor: COLORS.surface,
     borderRadius: RADIUS.lg,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.surfaceBorder,
     paddingVertical: SPACING.xs,
-    maxHeight: 320,
     overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -850,7 +872,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'flex-start',
     gap: 6,
-    backgroundColor: MATERIALS.regular.background,
+    backgroundColor: COLORS.surface,
     borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.md,
     paddingVertical: 6,
@@ -927,7 +949,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    backgroundColor: MATERIALS.thick.background,
+    backgroundColor: COLORS.surface,
     borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.sm,
@@ -950,7 +972,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: SPACING.sm,
-    backgroundColor: MATERIALS.thick.background,
+    backgroundColor: COLORS.surface,
     borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.md,
     paddingVertical: 6,
@@ -983,10 +1005,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 14,
-    // Mais opaco que na web: sem backdropFilter, o material fino sobre um mapa
-    // claro quase nao se ve — no nativo a superficie precisa se sustentar
-    // sozinha.
-    backgroundColor: MATERIALS.thick.background,
+    backgroundColor: COLORS.surface,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: StyleSheet.hairlineWidth,

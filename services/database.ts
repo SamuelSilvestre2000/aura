@@ -235,6 +235,28 @@ async function initDatabase(database: SQLite.SQLiteDatabase): Promise<void> {
       created_at TEXT NOT NULL,
       UNIQUE(client_id, user_id, assignment_type)
     );
+
+    -- Cidades sem economia para comportar a marca. Espelha
+    -- supabase/migrations/010: escopo por organização + marca, não por usuário.
+    CREATE TABLE IF NOT EXISTS city_exclusions (
+      id TEXT PRIMARY KEY,
+      organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      brand_id TEXT REFERENCES brands(id) ON DELETE CASCADE,
+      city_code TEXT NOT NULL,
+      note TEXT,
+      created_at TEXT NOT NULL,
+      created_by TEXT REFERENCES users(id) ON DELETE SET NULL
+    );
+
+    -- No SQLite, como no Postgres, UNIQUE trata NULL como sempre distinto:
+    -- sem os dois índices parciais a mesma cidade entraria várias vezes.
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_city_exclusions_org_brand_city
+      ON city_exclusions (organization_id, brand_id, city_code)
+      WHERE brand_id IS NOT NULL;
+
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_city_exclusions_org_city_no_brand
+      ON city_exclusions (organization_id, city_code)
+      WHERE brand_id IS NULL;
   `);
 
   await migrateUsersTable(database);

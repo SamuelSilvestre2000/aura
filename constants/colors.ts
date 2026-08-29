@@ -40,6 +40,20 @@ export const STATUS_STROKE: Record<
 };
 
 /**
+ * Cidade sem praça para a marca. Não é um status: os quatro status dizem como
+ * as vendas foram, e este diz que não há venda a fazer ali. Por isso sai da
+ * escala de cor por completo — cinza neutro, sem matiz —, e vem mais denso que
+ * qualquer status: a cidade é lida como fora do jogo, não como um resultado
+ * ruim. Sem isso ela ficaria vermelha, cobrando uma venda que não existe.
+ */
+export const CITY_EXCLUDED = {
+  color: '#8E8E93',
+  fillOpacity: 0.45,
+  strokeAlpha: '99',
+  strokeWidth: 1,
+} as const;
+
+/**
  * Glifo por status — o mapa não pode depender só do matiz. Cerca de 1 em 12
  * homens não distingue verde de vermelho, e o público do app é majoritariamente
  * masculino: sem símbolo, uma praça vendida e uma praça perdida são iguais.
@@ -147,11 +161,15 @@ export const MATERIALS = {
   thin: {
     background: 'rgba(252, 251, 249, 0.55)',
     blur: 'blur(20px) saturate(1.7)',
+    intensity: 25,
+    tint: 'rgba(252, 251, 249, 0.20)',
   },
   /** Cápsula de navegação, busca, controles de zoom. */
   regular: {
     background: 'rgba(252, 251, 249, 0.68)',
     blur: 'blur(30px) saturate(1.8)',
+    intensity: 45,
+    tint: 'rgba(252, 251, 249, 0.26)',
   },
   /**
    * Painel lateral e bottom sheet: aqui se lê, então cede menos lugar ao fundo
@@ -161,8 +179,12 @@ export const MATERIALS = {
   thick: {
     background: 'rgba(252, 251, 249, 0.78)',
     blur: 'blur(40px) saturate(1.8)',
+    intensity: 60,
+    tint: 'rgba(252, 251, 249, 0.32)',
   },
 } as const;
+
+export type MaterialName = keyof typeof MATERIALS;
 
 // ─── Paleta de avatares de cliente ────────────────────────────────────────────
 // Cor determinística por id (estilo Contatos da Apple): o mesmo cliente sempre

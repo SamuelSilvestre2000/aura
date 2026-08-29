@@ -15,6 +15,7 @@ import { useClients } from '../../hooks/useClients';
 import { useCollections } from '../../hooks/useCollections';
 import { usePurchases } from '../../hooks/usePurchases';
 import { useCityStatus } from '../../hooks/useCityStatus';
+import { useCityExclusions } from '../../hooks/useCityExclusions';
 import { useAuth } from '../../hooks/useAuth';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
 import { useIsDesktop } from '../../hooks/useIsDesktop';
@@ -48,6 +49,7 @@ import NewClientScreen from '../../app/client/new';
 
 import { CityGeoData } from '../../types';
 import {
+  CITY_EXCLUDED,
   COLORS,
   FONTS,
   HIT_TARGET,
@@ -222,6 +224,7 @@ export default function MapScreenWeb() {
       : null;
 
   const { getCityStatus } = useCityStatus(filteredClients, purchases, activeCollectionId);
+  const { isCityExcluded } = useCityExclusions();
 
   const searchQuery = search.trim().toLowerCase();
 
@@ -595,6 +598,7 @@ export default function MapScreenWeb() {
             {hasCities &&
               filteredCities.map((city) => {
                 const status = getCityStatus(city.code);
+                const excluded = isCityExcluded(city.code);
                 const ring = city.coordinates[0];
                 if (!ring || ring.length < 3) return null;
                 const positions: [number, number][] = ring.map(([lng, lat]) => [lat, lng]);
@@ -603,10 +607,14 @@ export default function MapScreenWeb() {
                     key={city.code}
                     positions={positions}
                     pathOptions={{
-                      color: `${STATUS_COLORS[status]}${STATUS_STROKE_ALPHA}`,
-                      weight: STATUS_STROKE[status].width,
-                      dashArray: STATUS_STROKE[status].dash?.join(' '),
-                      fillColor: hexAlpha(STATUS_COLORS[status], STATUS_FILL_OPACITY[status]),
+                      color: excluded
+                        ? `${CITY_EXCLUDED.color}${CITY_EXCLUDED.strokeAlpha}`
+                        : `${STATUS_COLORS[status]}${STATUS_STROKE_ALPHA}`,
+                      weight: excluded ? CITY_EXCLUDED.strokeWidth : STATUS_STROKE[status].width,
+                      dashArray: excluded ? undefined : STATUS_STROKE[status].dash?.join(' '),
+                      fillColor: excluded
+                        ? hexAlpha(CITY_EXCLUDED.color, CITY_EXCLUDED.fillOpacity)
+                        : hexAlpha(STATUS_COLORS[status], STATUS_FILL_OPACITY[status]),
                       fillOpacity: 1,
                     }}
                     eventHandlers={{ click: () => handleCityPress(city) }}

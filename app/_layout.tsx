@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import { AuthProvider, useAuth } from '../hooks/useAuth';
 import { CollectionsProvider } from '../hooks/useCollections';
 import { PurchasesProvider } from '../hooks/usePurchases';
+import { CityExclusionsProvider } from '../hooks/useCityExclusions';
 import { DesktopPanelProvider } from '../contexts/DesktopPanel';
 import { NOTION_MODAL_OPTIONS } from '../constants/navigation';
 import { COLORS } from '../constants/colors';
@@ -83,6 +84,7 @@ export default function RootLayout() {
         <AuthProvider>
           <CollectionsProvider>
           <PurchasesProvider>
+          <CityExclusionsProvider>
           {/*
             As telas de detalhe e formulario sao rotas irmas de (tabs): no
             celular o expo-router as monta neste Stack, fora do layout das
@@ -108,6 +110,7 @@ export default function RootLayout() {
             </Stack>
           </AuthGate>
           </DesktopPanelProvider>
+          </CityExclusionsProvider>
           </PurchasesProvider>
           </CollectionsProvider>
         </AuthProvider>

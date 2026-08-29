@@ -173,6 +173,21 @@ export type Sale = {
 // ─── Status calculado por cidade ──────────────────────────────────────────────
 export type CityStatus = 'all' | 'partial' | 'none' | 'no-clients';
 
+/**
+ * Cidade sem economia para comportar a marca. Não é um CityStatus: status é
+ * calculado a partir das compras, e este é um fato declarado sobre a cidade —
+ * misturar os dois faria o cálculo de status ter que conhecer o banco.
+ */
+export type CityExclusion = {
+  id: string;
+  organizationId: string;
+  brandId?: string;
+  cityCode: string;
+  note?: string;
+  createdAt: string;
+  createdBy?: string;
+};
+
 // ─── Dados geográficos ─────────────────────────────────────────────────────────
 export type CityGeoData = {
   code: string;         // código IBGE (codarea)

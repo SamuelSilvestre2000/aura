@@ -1,29 +1,15 @@
 import React from 'react';
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, MATERIALS, RADIUS, SPACING } from '../constants/colors';
+import { COLORS, RADIUS, SPACING } from '../constants/colors';
 import { useAuth } from '../hooks/useAuth';
 
 /** Altura interna do dock (área dos ícones). */
 export const TAB_BAR_CONTENT_HEIGHT = 52;
 
 const DOCK_WRAPPER_PADDING_TOP = 8;
-
-/**
- * A dock flutua sobre o mapa e sobre as listas, então usa o mesmo material da
- * cápsula do desktop. Espesso de propósito: `backdropFilter` não existe no
- * ViewStyle do React Native, só na web — e sem o desfoque um material fino
- * deixaria o texto da lista passar nítido por trás da barra.
- */
-const DOCK_BLUR =
-  Platform.OS === 'web'
-    ? ({
-        backdropFilter: MATERIALS.regular.blur,
-        WebkitBackdropFilter: MATERIALS.regular.blur,
-      } as any)
-    : null;
 
 export const TAB_ORDER = ['index', 'clients', 'collections', 'settings'] as const;
 type TabName = (typeof TAB_ORDER)[number];
@@ -73,7 +59,7 @@ export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarPro
 
   return (
     <View style={[styles.wrapper, { paddingBottom: bottomPad }]}>
-      <View style={[styles.dock, { height: TAB_BAR_CONTENT_HEIGHT }, DOCK_BLUR]}>
+      <View style={[styles.dock, { height: TAB_BAR_CONTENT_HEIGHT }]}>
         {orderedRoutes.map((route) => {
           const { options } = descriptors[route.key];
           const routeIndex = state.routes.findIndex((r) => r.key === route.key);
@@ -132,7 +118,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     padding: 4,
-    backgroundColor: MATERIALS.thick.background,
+    backgroundColor: COLORS.surface,
     borderRadius: RADIUS.full,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: COLORS.floatingBorder,

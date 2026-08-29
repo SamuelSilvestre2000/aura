@@ -1,7 +1,7 @@
 import React from 'react';
-import { Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View, type TextStyle } from 'react-native';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View, type TextStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, FONTS, HIT_TARGET, MATERIALS, RADIUS, SPACING } from '../constants/colors';
+import { COLORS, FONTS, HIT_TARGET, RADIUS, SPACING } from '../constants/colors';
 
 /** Remove o contorno azul de foco que o navegador desenha em <input> na web (RNW-only). */
 const NO_OUTLINE_STYLE = { outlineStyle: 'none' } as unknown as TextStyle;
@@ -16,20 +16,9 @@ type Props = {
   onProfilePress?: () => void;
   profileImageUri?: string | null;
   profileInitial?: string;
+  /** Focar a busca é entrar em outro contexto: quem chama aproveita para fechar o que estava aberto. */
+  onFocus?: () => void;
 };
-
-/**
- * Sobre o mapa a busca é de vidro, como todo o resto que flutua ali. Espesso,
- * não fino: sem `backdropFilter` no nativo os nomes de cidade e as estradas
- * passariam nítidos por trás do texto que se digita.
- */
-const MAP_BLUR =
-  Platform.OS === 'web'
-    ? ({
-        backdropFilter: MATERIALS.thick.blur,
-        WebkitBackdropFilter: MATERIALS.thick.blur,
-      } as any)
-    : null;
 
 export function SearchBar({
   value,
@@ -40,11 +29,14 @@ export function SearchBar({
   onProfilePress,
   profileImageUri,
   profileInitial,
+  onFocus,
 }: Props) {
   const isMap = variant === 'map';
 
-  return (
-    <View style={[styles.container, isMap && styles.containerMap, isMap ? MAP_BLUR : null]}>
+  const rootStyle = [styles.container, isMap && styles.containerMap];
+
+  const content = (
+    <>
       <Ionicons
         name="search-outline"
         size={18}
@@ -60,6 +52,7 @@ export function SearchBar({
         onChangeText={onChangeText}
         returnKeyType="search"
         clearButtonMode="never"
+        onFocus={onFocus}
       />
 
       {value.length > 0 && (
@@ -87,8 +80,10 @@ export function SearchBar({
           </TouchableOpacity>
         </>
       ) : null}
-    </View>
+    </>
   );
+
+  return <View style={rootStyle}>{content}</View>;
 }
 
 const styles = StyleSheet.create({
@@ -111,7 +106,7 @@ const styles = StyleSheet.create({
     paddingRight: SPACING.sm,
     paddingVertical: 6,
     minHeight: 44,
-    backgroundColor: MATERIALS.thick.background,
+    backgroundColor: COLORS.surface,
     borderColor: COLORS.floatingBorder,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
